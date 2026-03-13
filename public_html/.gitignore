@@ -1,0 +1,32 @@
+# Database credentials — never commit real credentials
+application/config/database.php
+
+# SQL dump contains API keys — keep off GitHub
+myschool.sql
+
+# Uploads & user content
+uploads/
+uploads.zip
+
+# CodeIgniter cache & logs
+application/logs/*.php
+application/cache/*
+
+# System folder (framework files — not needed in repo)
+system/
+
+# Update pack
+update_pack/
+
+# Heavy vendor libraries (install on server separately)
+application/libraries/stripe/
+application/libraries/twilio_library/
+
+# Assets (large JS/CSS files — serve from CDN or upload separately)
+assets/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+*.code-workspace
+desktop.ini
