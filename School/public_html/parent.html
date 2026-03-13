@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parent Dashboard — MindStrong Universe</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--accent:#06b6d4;--accent2:#3b82f6}
+.user-avatar{background:linear-gradient(135deg,#06b6d4,#3b82f6)}
+.nav-item.active{background:rgba(6,182,212,.12);color:var(--cyan)}
+.nav-item.active::before{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.view-panel{display:none}.view-panel.active{display:block}
+
+/* Child chip */
+.child-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.child-chip{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:.2s}
+.child-chip.active{border-color:var(--cyan);background:rgba(6,182,212,.08)}
+.cc-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.cc-name{font-weight:600;font-size:13px}.cc-class{font-size:11px;color:var(--muted)}
+
+/* Grade bar in overview */
+.grade-subj-bar{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.grade-subj-bar:last-child{border-bottom:none}
+.gsb-label{width:110px;font-size:13px;font-weight:500}
+.gsb-prog{flex:1}.gsb-pct{width:36px;text-align:right;font-size:12px;color:var(--muted)}
+
+/* Attendance calendar */
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-dh{text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12px;font-weight:500;background:rgba(255,255,255,.04);cursor:default;position:relative}
+.cal-day.present{background:rgba(16,185,129,.25);color:#10b981}
+.cal-day.absent{background:rgba(244,63,94,.25);color:#f43f5e}
+.cal-day.late{background:rgba(245,158,11,.25);color:#f59e0b}
+.cal-day.today{outline:2px solid var(--cyan);outline-offset:1px}
+.cal-day.empty{opacity:.25}
+.cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.cal-legend-dot{width:12px;height:12px;border-radius:3px}
+
+/* Fee rows */
+.fee-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+.fee-row:last-child{border-bottom:none}
+.fee-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fee-info{flex:1;min-width:0}.fee-title{font-size:13px;font-weight:500}.fee-date{font-size:11px;color:var(--muted)}
+.fee-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.fee-amount{font-weight:700;font-size:14px}
+.btn-pay{padding:5px 12px;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-pay:hover{opacity:.85}
+
+/* Messages */
+.msg-layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:420px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.msg-contacts{border-right:1px solid var(--border);overflow-y:auto}
+.contact-item{display:flex;align-items:center;gap:10px;padding:14px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:.2s}
+.contact-item:hover{background:rgba(255,255,255,.04)}
+.contact-item.active{background:rgba(6,182,212,.1)}
+.ct-name{font-size:13px;font-weight:600}.ct-sub{font-size:11px;color:var(--muted)}
+.msg-chat{display:flex;flex-direction:column}
+.chat-hd{padding:14px 18px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px}
+.chat-msgs{flex:1;padding:16px 18px;overflow-y:auto;max-height:300px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:9px 13px;border-radius:12px;max-width:75%;font-size:13px;line-height:1.5}
+.msg.in{background:rgba(255,255,255,.07);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.out{background:linear-gradient(135deg,rgba(6,182,212,.25),rgba(59,130,246,.25));align-self:flex-end;border-bottom-right-radius:3px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:2px}
+.chat-input-row{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border)}
+.chat-input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-size:13px;outline:none}
+.chat-input:focus{border-color:var(--cyan)}
+
+/* Schedule */
+.tt-wrap{overflow-x:auto;margin-top:16px}
+.tt-grid{display:grid;grid-template-columns:68px repeat(5,1fr);gap:4px;min-width:600px}
+.tt-hd,.tt-period{background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center;font-size:12px;font-weight:600;color:var(--muted)}
+.tt-cell{border-radius:8px;padding:8px 10px;font-size:12px;min-height:54px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.tt-cell.empty{background:rgba(255,255,255,.02)}
+.tt-sub{font-weight:600;font-size:12px}
+.tt-room{font-size:10px;color:var(--muted)}
+.tt-break{grid-column:1/-1;background:rgba(255,255,255,.03);border-radius:8px;padding:6px;text-align:center;font-size:11px;color:var(--muted);font-style:italic}
+
+/* Report card */
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:680px}
+.rc-header{text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid var(--border)}
+.rc-school{font-size:22px;font-weight:800;background:linear-gradient(90deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.rc-title{font-size:14px;color:var(--muted);margin-top:4px}
+.rc-student{display:flex;justify-content:space-between;margin-bottom:20px;gap:20px;flex-wrap:wrap}
+.rc-field{font-size:13px}.rc-field span{font-weight:600;color:var(--text)}
+.rc-table{width:100%;border-collapse:collapse;font-size:13px}
+.rc-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
+.rc-table td{padding:9px 10px;border-bottom:1px solid var(--border)}
+.rc-summary{display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:2px solid var(--border);flex-wrap:wrap;gap:12px}
+.rc-sum-item{text-align:center}.rc-sum-val{font-size:22px;font-weight:800;color:var(--cyan)}.rc-sum-label{font-size:11px;color:var(--muted)}
+.rc-remark{margin-top:18px;padding:14px;background:rgba(6,182,212,.07);border-radius:10px;border-left:3px solid var(--cyan);font-size:13px;line-height:1.6}
+
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:680px){.settings-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.form-input,.form-select{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box}
+.form-input:focus,.form-select:focus{border-color:var(--cyan)}
+.form-select option{background:#1e293b}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#1e293b;border:1px solid var(--border);border-radius:18px;padding:28px;width:90%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal-hd{font-size:17px;font-weight:700;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:0}
+.modal-close:hover{color:var(--text)}
+
+/* Performance panel */
+.perf-subject-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.perf-subject-row:last-child{border-bottom:none}
+.psb-name{width:120px;font-size:13px;font-weight:500}
+.psb-bar{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.psb-fill{height:100%;border-radius:4px;transition:width .5s}
+.psb-pct{width:40px;text-align:right;font-size:12px;font-weight:600}
+
+.notif-panel{position:absolute;right:0;top:calc(100% + 8px);background:#1e293b;border:1px solid var(--border);border-radius:14px;width:300px;z-index:200;box-shadow:0 12px 40px rgba(0,0,0,.4);display:none}
+.notif-panel.open{display:block}
+.notif-wrap{position:relative}
+.notif-hd{padding:14px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;cursor:pointer}
+.notif-hd span{color:var(--muted);font-size:11px}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-top:4px;flex-shrink:0}
+.notif-dot.red{background:var(--red)}.notif-dot.amber{background:var(--amber)}
+.notif-body .nb-title{font-size:12px;font-weight:500}.notif-body .nb-time{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🧠</div>
+    <div class="logo-text">MindStrong<span>Universe</span></div>
+  </div>
+  <div style="padding:8px">
+    <div class="user-block">
+      <div class="user-avatar avatar" id="sidebarInitial">P</div>
+      <div class="user-info">
+        <div class="name" id="sidebarName">Parent</div>
+        <div class="role" style="color:var(--cyan)">Parent</div>
+        <div class="user-online">Online</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-section">Overview</div>
+  <a class="nav-item active" id="nav-overview" onclick="showView('overview');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Dashboard
+  </a>
+
+  <div class="nav-section">Academics</div>
+  <a class="nav-item" id="nav-grades" onclick="showView('grades');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    Grades &amp; Scores
+  </a>
+  <a class="nav-item" id="nav-attendance" onclick="showView('attendance');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Attendance
+  </a>
+  <a class="nav-item" id="nav-schedule" onclick="showView('schedule');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Schedule
+  </a>
+  <a class="nav-item" id="nav-reports" onclick="showView('reports');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Report Card
+  </a>
+
+  <div class="nav-section">Finance</div>
+  <a class="nav-item" id="nav-fees" onclick="showView('fees');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Fees &amp; Payments
+  </a>
+
+  <div class="nav-section">Communication</div>
+  <a class="nav-item" id="nav-messages" onclick="showView('messages');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Message Teacher
+    <span class="nav-badge" id="msgBadge" style="display:none">1</span>
+  </a>
+
+  <div class="nav-section">Account</div>
+  <a class="nav-item" id="nav-settings" onclick="showView('settings');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+
+  <div class="sidebar-footer">
+    <a class="nav-item" href="#" style="margin:0" onclick="logout();return false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title" id="topbarTitle">Parent Dashboard</div>
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search…">
+    </div>
+    <div class="notif-wrap">
+      <div class="tb-btn" id="bellBtn" onclick="toggleNotif()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="tb-badge" id="notifBadge">3</span>
+      </div>
+      <div class="notif-panel" id="notifPanel">
+        <div class="notif-hd">Notifications <span onclick="document.getElementById('notifPanel').classList.remove('open')">Dismiss all</span></div>
+        <div class="notif-item"><div class="notif-dot red"></div><div class="notif-body"><div class="nb-title">Fee payment overdue — Sports Levy</div><div class="nb-time">2 days overdue</div></div></div>
+        <div class="notif-item"><div class="notif-dot amber"></div><div class="notif-body"><div class="nb-title">Exam results posted — Term 2</div><div class="nb-time">Yesterday</div></div></div>
+        <div class="notif-item"><div class="notif-dot"></div><div class="notif-body"><div class="nb-title">New message from Mr. Martinez</div><div class="nb-time">2 days ago</div></div></div>
+      </div>
+    </div>
+    <div class="tb-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg></div>
+  </header>
+
+  <div class="content">
+
+    <!-- ===== OVERVIEW ===== -->
+    <div class="view-panel active" id="panel-overview">
+      <div class="page-hd">
+        <h2>Hello, <span id="greetName">Parent</span> 👋</h2>
+        <p>Monitor your child's academic journey in real time.</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#06b6d4"></div>
+          <div class="stat-top"><div class="stat-icon">🎓</div><span class="stat-trend up">This term</span></div>
+          <div class="stat-val" id="statGPA">3.7</div>
+          <div class="stat-label">Child's GPA</div>
+          <div style="margin-top:10px"><div class="prog"><div class="prog-fill" id="gpaProg" style="width:92%"></div></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#10b981"></div>
+          <div class="stat-top"><div class="stat-icon">📅</div><span class="stat-trend up" id="attTrend">Excellent</span></div>
+          <div class="stat-val" id="statAtt">91%</div>
+          <div class="stat-label">Attendance Rate</div>
+          <div style="margin-top:10px"><div class="prog"><div class="prog-fill" id="attProg" style="width:91%;background:linear-gradient(90deg,#10b981,#06b6d4)"></div></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f43f5e"></div>
+          <div class="stat-top"><div class="stat-icon">💰</div><span class="stat-trend down">Action needed</span></div>
+          <div class="stat-val" id="statFees">2</div>
+          <div class="stat-label">Unpaid Fee(s)</div>
+          <div style="margin-top:10px;font-size:12px;color:var(--red)">Overdue or pending payment</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#a855f7"></div>
+          <div class="stat-top"><div class="stat-icon">💬</div><span class="stat-trend neutral">Unread</span></div>
+          <div class="stat-val" id="statMsgs">1</div>
+          <div class="stat-label">Unread Messages</div>
+          <div style="margin-top:10px;font-size:12px;color:var(--muted)">From teachers</div>
+        </div>
+      </div>
+
+      <div class="g21 mb">
+        <!-- Grade summary -->
+        <div class="c">
+          <div class="c-hd">
+            <div><div class="c-title">Grade Overview</div><div class="c-sub">Current semester averages</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="showView('grades')">View All →</button>
+          </div>
+          <div id="gradeOverviewBars"></div>
+        </div>
+
+        <!-- Today's schedule mini -->
+        <div class="c">
+          <div class="c-hd">
+            <div><div class="c-title">Today's Classes</div><div class="c-sub" id="todayDateStr">—</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="showView('schedule')">Full Schedule →</button>
+          </div>
+          <div id="todaySchedule"></div>
+        </div>
+      </div>
+
+      <!-- Fee alert -->
+      <div class="c mb" id="feesAlertCard">
+        <div class="c-hd">
+          <div><div class="c-title">Fees &amp; Payments</div><div class="c-sub">Outstanding items</div></div>
+          <button class="btn btn-ghost btn-sm" onclick="showView('fees')">Manage Fees →</button>
+        </div>
+        <div id="feesOverviewList"></div>
+      </div>
+    </div><!-- /overview -->
+
+    <!-- ===== GRADES ===== -->
+    <div class="view-panel" id="panel-grades">
+      <div class="page-hd">
+        <h2>Grades &amp; Scores</h2>
+        <p>Full academic performance across all subjects.</p>
+      </div>
+      <div class="c mb">
+        <div class="c-hd">
+          <div><div class="c-title">Subject Performance</div><div class="c-sub">Current term results</div></div>
+          <button class="btn btn-primary btn-sm" onclick="window.print()">Print Report</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Subject</th><th>Teacher</th><th>Test 1</th><th>Test 2</th><th>Midterm</th><th>Final</th><th>Average</th><th>Grade</th></tr></thead>
+            <tbody id="gradesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="g2 mb">
+        <div class="c">
+          <div class="c-hd"><div><div class="c-title">Performance Trend</div><div class="c-sub">Average by subject</div></div></div>
+          <div id="gradesPerfBars" style="margin-top:8px"></div>
+        </div>
+        <div class="c">
+          <div class="c-hd"><div><div class="c-title">Academic Standing</div><div class="c-sub">Term summary</div></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:12px 0" id="gradesSummaryGrid"></div>
+        </div>
+      </div>
+    </div><!-- /grades -->
+
+    <!-- ===== ATTENDANCE ===== -->
+    <div class="view-panel" id="panel-attendance">
+      <div class="page-hd">
+        <h2>Attendance</h2>
+        <p>Track your child's daily school attendance.</p>
+      </div>
+
+      <div class="stat-grid mb" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#10b981"></div>
+          <div class="stat-top"><div class="stat-icon">✅</div></div>
+          <div class="stat-val" id="attPresent">—</div>
+          <div class="stat-label">Days Present</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f43f5e"></div>
+          <div class="stat-top"><div class="stat-icon">❌</div></div>
+          <div class="stat-val" id="attAbsent">—</div>
+          <div class="stat-label">Days Absent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f59e0b"></div>
+          <div class="stat-top"><div class="stat-icon">⏰</div></div>
+          <div class="stat-val" id="attLate">—</div>
+          <div class="stat-label">Days Late</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#06b6d4"></div>
+          <div class="stat-top"><div class="stat-icon">📊</div></div>
+          <div class="stat-val" id="attPct">—</div>
+          <div class="stat-label">Attendance %</div>
+        </div>
+      </div>
+
+      <div class="c mb">
+        <div class="c-hd">
+          <div><div class="c-title">Attendance Calendar</div><div class="c-sub" id="attCalSub">Last 5 weeks</div></div>
+          <span class="c-badge" id="attRateBadge">—</span>
+        </div>
+        <div class="cal-header">
+          <div class="cal-dh">Sun</div><div class="cal-dh">Mon</div><div class="cal-dh">Tue</div>
+          <div class="cal-dh">Wed</div><div class="cal-dh">Thu</div><div class="cal-dh">Fri</div><div class="cal-dh">Sat</div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(16,185,129,.5)"></div>Present</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(244,63,94,.5)"></div>Absent</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(245,158,11,.5)"></div>Late</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,255,255,.07)"></div>Weekend</div>
+        </div>
+      </div>
+
+      <div class="c">
+        <div class="c-hd"><div><div class="c-title">Absence Log</div><div class="c-sub">Dates marked absent or late</div></div></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Day</th><th>Status</th><th>Reason</th></tr></thead>
+            <tbody id="absenceLog"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /attendance -->
+
+    <!-- ===== SCHEDULE ===== -->
+    <div class="view-panel" id="panel-schedule">
+      <div class="page-hd">
+        <h2>Weekly Schedule</h2>
+        <p>Your child's class timetable for this term.</p>
+      </div>
+      <div class="c">
+        <div class="c-hd">
+          <div><div class="c-title">Class Timetable</div><div class="c-sub" id="ttTermLabel">Term 2 — 2025/26</div></div>
+        </div>
+        <div class="tt-wrap">
+          <div class="tt-grid" id="ttGrid"></div>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px" id="ttLegend"></div>
+      </div>
+    </div><!-- /schedule -->
+
+    <!-- ===== REPORT CARD ===== -->
+    <div class="view-panel" id="panel-reports">
+      <div class="page-hd">
+        <h2>Report Card</h2>
+        <p>Official academic report for this term.</p>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report Card</button>
+        <button class="btn btn-ghost" onclick="exportReportCSV()">⬇ Export CSV</button>
+      </div>
+      <div class="report-card" id="reportCard">
+        <div class="rc-header">
+          <div class="rc-school">🧠 MindStrong Universe</div>
+          <div class="rc-title">Official Academic Report Card — Term 2, 2025/26</div>
+        </div>
+        <div class="rc-student">
+          <div class="rc-field">Student: <span id="rc-student-name">—</span></div>
+          <div class="rc-field">Class: <span>Grade 9 — Section A</span></div>
+          <div class="rc-field">Term: <span>Term 2</span></div>
+          <div class="rc-field">Year: <span>2025/2026</span></div>
+        </div>
+        <table class="rc-table">
+          <thead><tr><th>Subject</th><th>Test 1</th><th>Test 2</th><th>Midterm</th><th>Final</th><th>Average</th><th>Grade</th><th>Remark</th></tr></thead>
+          <tbody id="rcTableBody"></tbody>
+        </table>
+        <div class="rc-summary">
+          <div class="rc-sum-item"><div class="rc-sum-val" id="rcGPA">—</div><div class="rc-sum-label">GPA</div></div>
+          <div class="rc-sum-item"><div class="rc-sum-val" id="rcAvg">—</div><div class="rc-sum-label">Overall Average</div></div>
+          <div class="rc-sum-item"><div class="rc-sum-val" id="rcRank">—</div><div class="rc-sum-label">Class Rank</div></div>
+          <div class="rc-sum-item"><div class="rc-sum-val" id="rcAtt">—</div><div class="rc-sum-label">Attendance</div></div>
+        </div>
+        <div class="rc-remark" id="rcRemark">—</div>
+      </div>
+    </div><!-- /reports -->
+
+    <!-- ===== FEES ===== -->
+    <div class="view-panel" id="panel-fees">
+      <div class="page-hd">
+        <h2>Fees &amp; Payments</h2>
+        <p>Manage school fee payments and view billing history.</p>
+      </div>
+
+      <div class="stat-grid mb" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f43f5e"></div>
+          <div class="stat-top"><div class="stat-icon">⚠️</div></div>
+          <div class="stat-val" id="feeStatUnpaid">—</div>
+          <div class="stat-label">Outstanding</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#10b981"></div>
+          <div class="stat-top"><div class="stat-icon">✅</div></div>
+          <div class="stat-val" id="feeStatPaid">—</div>
+          <div class="stat-label">Paid This Year</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#06b6d4"></div>
+          <div class="stat-top"><div class="stat-icon">💵</div></div>
+          <div class="stat-val" id="feeStatTotal">—</div>
+          <div class="stat-label">Total Billed</div>
+        </div>
+      </div>
+
+      <div class="c">
+        <div class="c-hd">
+          <div><div class="c-title">All Fee Items</div><div class="c-sub">Current billing year</div></div>
+        </div>
+        <div id="feesFullList"></div>
+      </div>
+
+      <div class="c" style="margin-top:20px">
+        <div class="c-hd"><div><div class="c-title">Payment History</div><div class="c-sub">Confirmed transactions</div></div></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Reference</th><th>Status</th></tr></thead>
+            <tbody id="payHistoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /fees -->
+
+    <!-- ===== MESSAGES ===== -->
+    <div class="view-panel" id="panel-messages">
+      <div class="page-hd">
+        <h2>Messages</h2>
+        <p>Direct communication with your child's teachers.</p>
+      </div>
+      <div class="msg-layout c">
+        <div class="msg-contacts" id="contactList"></div>
+        <div class="msg-chat" id="msgChatArea">
+          <div class="chat-hd" id="chatHeader">Select a teacher</div>
+          <div class="chat-msgs" id="chatMsgs"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="chatIn" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()">
+            <button class="btn btn-primary btn-sm" onclick="sendMsg()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /messages -->
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="view-panel" id="panel-settings">
+      <div class="page-hd">
+        <h2>Settings</h2>
+        <p>Update your parent account preferences.</p>
+      </div>
+
+      <div class="c mb">
+        <div class="c-hd"><div><div class="c-title">Profile</div><div class="c-sub">Personal information</div></div></div>
+        <div class="settings-grid" style="padding:8px 0">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" id="stgName" placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="stgEmail" type="email" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input class="form-input" id="stgPhone" placeholder="+1 (555) 000-0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Relationship to Student</label>
+            <select class="form-select" id="stgRelation">
+              <option value="mother">Mother</option>
+              <option value="father">Father</option>
+              <option value="guardian">Guardian</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="c mb">
+        <div class="c-hd"><div><div class="c-title">Notifications</div><div class="c-sub">Choose what alerts you receive</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:8px 0">
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfGrades" checked style="accent-color:var(--cyan)"><span style="font-size:13px">Grade updates &amp; report cards</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfAtt" checked style="accent-color:var(--cyan)"><span style="font-size:13px">Attendance alerts (absence / late)</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfFees" checked style="accent-color:var(--cyan)"><span style="font-size:13px">Fee reminders &amp; payment confirmations</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfMsg" checked style="accent-color:var(--cyan)"><span style="font-size:13px">New messages from teachers</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfAnnounce" style="accent-color:var(--cyan)"><span style="font-size:13px">School announcements</span></label>
+        </div>
+      </div>
+
+      <div class="c mb">
+        <div class="c-hd"><div><div class="c-title">Security</div><div class="c-sub">Change your password</div></div></div>
+        <div class="settings-grid" style="padding:8px 0">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input class="form-input" id="stgPwOld" type="password" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input class="form-input" id="stgPwNew" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="savePassword()">Update Password</button>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+    </div><!-- /settings -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-hd">
+      Pay Fee <button class="modal-close" onclick="closeModal('payModal')">×</button>
+    </div>
+    <div id="payModalBody" style="margin-bottom:16px"></div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Payment Method</label>
+      <select class="form-select" id="payMethod">
+        <option value="card">Credit / Debit Card</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="cash">Cash at Office</option>
+        <option value="online">Online Portal</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:18px">
+      <label class="form-label">Reference / Note (optional)</label>
+      <input class="form-input" id="payRef" placeholder="e.g. Transaction #12345">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('payModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmPayment()">Confirm Payment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Session ──────────────────────────────────────────────────────────────────
+const _sess = JSON.parse(localStorage.getItem('ms_session') || '{}');
+const uname = _sess.name || 'Parent';
+document.getElementById('greetName').textContent = uname.split(' ')[0];
+document.getElementById('sidebarName').textContent = uname;
+document.getElementById('sidebarInitial').textContent = uname[0]?.toUpperCase() || 'P';
+document.getElementById('rc-student-name').textContent = uname;
+
+function logout() { localStorage.removeItem('ms_session'); window.location.href = 'login.html'; }
+
+function toast(msg, color) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:${color||'#facc15'};font-family:monospace;font-weight:700;padding:12px 24px;border-radius:10px;z-index:9999;border:1px solid rgba(250,204,21,.3);pointer-events:none`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+function comingSoon(label) { toast('🚧 ' + (label || 'Coming Soon')); }
+
+// ── View Router ───────────────────────────────────────────────────────────────
+const VIEW_TITLES = {
+  overview: 'Parent Dashboard', grades: 'Grades & Scores', attendance: 'Attendance',
+  schedule: 'Schedule', reports: 'Report Card', fees: 'Fees & Payments',
+  messages: 'Messages', settings: 'Settings'
+};
+
+function showView(name) {
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topbarTitle').textContent = VIEW_TITLES[name] || 'Parent Dashboard';
+  // Lazy render
+  if (name === 'attendance') renderAttPanel();
+  if (name === 'schedule') renderSchedule();
+  if (name === 'reports') renderReportCard();
+  if (name === 'fees') renderFeesPanel();
+  if (name === 'messages') renderMessages();
+  if (name === 'settings') loadSettings();
+}
+
+// ── Demo Data Seeds ──────────────────────────────────────────────────────────
+const SUBJECTS = [
+  { name: 'Mathematics', teacher: 'Mr. Martinez', color: '#a855f7' },
+  { name: 'Science',     teacher: 'Ms. Singh',    color: '#06b6d4' },
+  { name: 'English',     teacher: 'Mrs. Johnson', color: '#10b981' },
+  { name: 'History',     teacher: 'Mr. Lee',      color: '#f59e0b' },
+  { name: 'Physics',     teacher: 'Dr. Okafor',   color: '#3b82f6' },
+  { name: 'Art',         teacher: 'Ms. Rivera',   color: '#ec4899' }
+];
+
+function getGrades() {
+  const key = 'ms_parent_grades';
+  const stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  const grades = SUBJECTS.map((s, i) => {
+    const seed = (s.name.charCodeAt(0) + i * 11) % 35;
+    const t1 = 60 + seed + (i % 3) * 4;
+    const t2 = 62 + ((seed * 2) % 30);
+    const mid = 58 + ((seed + 5) % 35);
+    const fin = 65 + ((seed * 3) % 28);
+    const avg = Math.round((t1 + t2 + mid + fin) / 4);
+    return { subject: s.name, teacher: s.teacher, t1, t2, midterm: mid, final: fin, avg };
+  });
+  localStorage.setItem(key, JSON.stringify(grades));
+  return grades;
+}
+
+function gradeLabel(avg) {
+  if (avg >= 95) return 'A+'; if (avg >= 90) return 'A'; if (avg >= 85) return 'A-';
+  if (avg >= 80) return 'B+'; if (avg >= 75) return 'B'; if (avg >= 70) return 'B-';
+  if (avg >= 65) return 'C+'; if (avg >= 60) return 'C'; if (avg >= 55) return 'D'; return 'F';
+}
+function gradePill(g) {
+  const map = { 'A+': 'pill-green', A: 'pill-green', 'A-': 'pill-green', 'B+': 'pill-cyan', B: 'pill-cyan', 'B-': 'pill-cyan', 'C+': 'pill-amber', C: 'pill-amber', D: 'pill-amber', F: 'pill-red' };
+  return `<span class="pill ${map[g] || 'pill-blue'}">${g}</span>`;
+}
+function gradeRemark(avg) {
+  if (avg >= 90) return 'Outstanding'; if (avg >= 80) return 'Very Good';
+  if (avg >= 70) return 'Good'; if (avg >= 60) return 'Satisfactory'; return 'Needs Improvement';
+}
+
+// ── Attendance ───────────────────────────────────────────────────────────────
+function getAttendanceData() {
+  const key = 'ms_parent_attendance';
+  const stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  const today = new Date();
+  const data = {};
+  for (let i = 1; i <= 45; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    const ds = d.toISOString().slice(0, 10);
+    const r = (d.getDate() * 7 + i * 3) % 100;
+    data[ds] = r < 2 ? 'absent' : r < 7 ? 'late' : 'present';
+  }
+  localStorage.setItem(key, JSON.stringify(data));
+  return data;
+}
+
+function renderAttPanel() {
+  const data = getAttendanceData();
+  const entries = Object.entries(data);
+  let p = 0, ab = 0, lt = 0;
+  entries.forEach(([, s]) => { if (s === 'present') p++; else if (s === 'absent') ab++; else lt++; });
+  const tot = p + ab + lt;
+  document.getElementById('attPresent').textContent = p;
+  document.getElementById('attAbsent').textContent = ab;
+  document.getElementById('attLate').textContent = lt;
+  const pct = tot > 0 ? Math.round(p / tot * 100) : 0;
+  document.getElementById('attPct').textContent = pct + '%';
+  document.getElementById('attRateBadge').textContent = pct + '% Present';
+
+  // Calendar
+  buildCalendar(data);
+
+  // Absence log
+  const logRows = entries
+    .filter(([, s]) => s !== 'present')
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 20)
+    .map(([d, s]) => {
+      const dt = new Date(d);
+      const day = dt.toLocaleDateString('en-US', { weekday: 'long' });
+      const status = s === 'absent' ? '<span class="pill pill-red">Absent</span>' : '<span class="pill pill-amber">Late</span>';
+      return `<tr><td>${d}</td><td>${day}</td><td>${status}</td><td style="color:var(--muted)">—</td></tr>`;
+    }).join('');
+  document.getElementById('absenceLog').innerHTML = logRows || '<tr><td colspan="4" style="text-align:center;color:var(--muted)">No absences recorded</td></tr>';
+}
+
+function buildCalendar(data) {
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(today.getDate() - 34);
+  start.setDate(start.getDate() - start.getDay());
+  const cal = document.getElementById('calGrid');
+  if (!cal) return;
+  cal.innerHTML = '';
+  for (let i = 0; i < 35; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const ds = d.toISOString().slice(0, 10);
+    const isWk = d.getDay() === 0 || d.getDay() === 6;
+    const isFut = d > today;
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d.getDate();
+    el.title = ds;
+    if (isWk) { el.classList.add('empty'); }
+    else if (isFut) { el.style.opacity = '.3'; }
+    else if (data[ds]) { el.classList.add(data[ds]); }
+    else if (!isFut && !isWk) { el.classList.add('present'); }
+    if (ds === today.toISOString().slice(0, 10)) el.classList.add('today');
+    cal.appendChild(el);
+  }
+}
+
+// ── Fees ──────────────────────────────────────────────────────────────────────
+const DEFAULT_FEES = [
+  { id: 'f1', title: 'Tuition Fee — March 2026', due: 'Mar 15, 2026', amount: 850, status: 'pending', invoice: 'INV-2026-031' },
+  { id: 'f2', title: 'Lab & Materials Fee — Q1', due: 'Jan 10, 2026', amount: 120, status: 'paid', invoice: 'INV-2026-011' },
+  { id: 'f3', title: 'Sports Levy — Term 2', due: 'Feb 1, 2026', amount: 75, status: 'overdue', invoice: 'INV-2026-021' },
+  { id: 'f4', title: 'Registration Fee — 2025/26', due: 'Sep 2, 2025', amount: 200, status: 'paid', invoice: 'INV-2025-091' },
+  { id: 'f5', title: 'Library & Tech Fee', due: 'Oct 1, 2025', amount: 60, status: 'paid', invoice: 'INV-2025-101' },
+  { id: 'f6', title: 'Tuition Fee — April 2026', due: 'Apr 15, 2026', amount: 850, status: 'pending', invoice: 'INV-2026-041' }
+];
+
+function getFees() {
+  const stored = localStorage.getItem('ms_parent_fees');
+  return stored ? JSON.parse(stored) : DEFAULT_FEES;
+}
+function saveFees(fees) { localStorage.setItem('ms_parent_fees', JSON.stringify(fees)); }
+
+function getPayHistory() {
+  const stored = localStorage.getItem('ms_parent_pay_history');
+  if (stored) return JSON.parse(stored);
+  return [
+    { date: 'Jan 10, 2026', desc: 'Lab & Materials Fee — Q1', amount: 120, ref: 'INV-2026-011', method: 'Card' },
+    { date: 'Sep 2, 2025', desc: 'Registration Fee — 2025/26', amount: 200, ref: 'INV-2025-091', method: 'Bank Transfer' },
+    { date: 'Oct 1, 2025', desc: 'Library & Tech Fee', amount: 60, ref: 'INV-2025-101', method: 'Card' }
+  ];
+}
+
+let pendingPayFeeId = null;
+
+function openPayModal(feeId) {
+  pendingPayFeeId = feeId;
+  const fees = getFees();
+  const fee = fees.find(f => f.id === feeId);
+  if (!fee) return;
+  document.getElementById('payModalBody').innerHTML = `
+    <div style="background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.2);border-radius:10px;padding:14px;margin-bottom:4px">
+      <div style="font-weight:600;font-size:14px;margin-bottom:4px">${fee.title}</div>
+      <div style="font-size:13px;color:var(--muted)">Due: ${fee.due}</div>
+      <div style="font-size:20px;font-weight:800;color:var(--cyan);margin-top:8px">$${fee.amount}</div>
+    </div>`;
+  document.getElementById('payRef').value = fee.invoice;
+  openModal('payModal');
+}
+
+function confirmPayment() {
+  if (!pendingPayFeeId) return;
+  const fees = getFees();
+  const fee = fees.find(f => f.id === pendingPayFeeId);
+  if (!fee) return;
+  fee.status = 'paid';
+  saveFees(fees);
+
+  const history = getPayHistory();
+  history.unshift({
+    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+    desc: fee.title, amount: fee.amount,
+    ref: document.getElementById('payRef').value || fee.invoice,
+    method: document.getElementById('payMethod').value
+  });
+  localStorage.setItem('ms_parent_pay_history', JSON.stringify(history));
+
+  closeModal('payModal');
+  toast('✅ Payment recorded successfully!', '#10b981');
+  renderFeesPanel();
+  updateOverviewStats();
+}
+
+function renderFeesPanel() {
+  const fees = getFees();
+  const unpaid = fees.filter(f => f.status !== 'paid');
+  const paid = fees.filter(f => f.status === 'paid');
+  const totalUnpaid = unpaid.reduce((s, f) => s + f.amount, 0);
+  const totalPaid = paid.reduce((s, f) => s + f.amount, 0);
+  const totalAll = fees.reduce((s, f) => s + f.amount, 0);
+
+  document.getElementById('feeStatUnpaid').textContent = '$' + totalUnpaid;
+  document.getElementById('feeStatPaid').textContent = '$' + totalPaid;
+  document.getElementById('feeStatTotal').textContent = '$' + totalAll;
+
+  const statusMap = { paid: { icon: '✅', bg: 'rgba(16,185,129,.12)', pill: 'pill-green' }, pending: { icon: '📄', bg: 'rgba(245,158,11,.12)', pill: 'pill-amber' }, overdue: { icon: '⚠️', bg: 'rgba(244,63,94,.12)', pill: 'pill-red' } };
+  document.getElementById('feesFullList').innerHTML = fees.map(f => {
+    const st = statusMap[f.status] || statusMap.pending;
+    const payBtn = f.status !== 'paid' ? `<button class="btn-pay" onclick="openPayModal('${f.id}')">Pay Now</button>` : '';
+    return `<div class="fee-row">
+      <div class="fee-icon" style="background:${st.bg}">${st.icon}</div>
+      <div class="fee-info"><div class="fee-title">${f.title}</div><div class="fee-date">${f.status === 'paid' ? 'Paid' : 'Due'}: ${f.due}</div></div>
+      <div class="fee-right"><div class="fee-amount">$${f.amount}</div><span class="pill ${st.pill}">${f.status.charAt(0).toUpperCase()+f.status.slice(1)}</span>${payBtn}</div>
+    </div>`;
+  }).join('');
+
+  const history = getPayHistory();
+  document.getElementById('payHistoryBody').innerHTML = history.length
+    ? history.map(h => `<tr><td>${h.date}</td><td>${h.desc}</td><td style="color:var(--green);font-weight:600">$${h.amount}</td><td style="color:var(--muted)">${h.ref}</td><td><span class="pill pill-green">Paid</span></td></tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No payment history</td></tr>';
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+const TEACHERS = [
+  { id: 't1', name: 'Mr. Martinez', subject: 'Mathematics', avatarBg: 'linear-gradient(135deg,#a855f7,#3b82f6)' },
+  { id: 't2', name: 'Ms. Singh',    subject: 'Science',     avatarBg: 'linear-gradient(135deg,#06b6d4,#10b981)' },
+  { id: 't3', name: 'Mrs. Johnson', subject: 'English',     avatarBg: 'linear-gradient(135deg,#f59e0b,#f43f5e)' }
+];
+
+function getMessages() {
+  const stored = localStorage.getItem('ms_parent_messages');
+  if (stored) return JSON.parse(stored);
+  const init = {
+    t1: [
+      { from: 'out', text: 'How is my child performing in Math this term?', time: '2 days ago' },
+      { from: 'in', text: "They're doing great! Currently at a 91% average — very engaged in class.", time: '2 days ago' },
+      { from: 'out', text: 'That\'s wonderful! Any areas to focus on at home?', time: 'Yesterday' },
+      { from: 'in', text: 'Geometry could use a bit more practice. I can send study sheets.', time: 'Yesterday' }
+    ],
+    t2: [{ from: 'in', text: "Your child's lab report grades have been posted. Please check the portal.", time: '3 days ago' }],
+    t3: []
+  };
+  localStorage.setItem('ms_parent_messages', JSON.stringify(init));
+  return init;
+}
+function saveMessages(msgs) { localStorage.setItem('ms_parent_messages', JSON.stringify(msgs)); }
+
+let activeContactId = 't1';
+
+function renderMessages() {
+  const msgs = getMessages();
+  const unread = { t1: 1, t2: 0, t3: 0 };
+  document.getElementById('contactList').innerHTML = TEACHERS.map(t => {
+    const lastMsg = msgs[t.id]?.at(-1);
+    const badge = unread[t.id] ? `<span class="nav-badge" style="margin-left:auto;margin-right:0">${unread[t.id]}</span>` : '';
+    return `<div class="contact-item ${t.id === activeContactId ? 'active' : ''}" onclick="openContact('${t.id}')" id="contact-${t.id}">
+      <div class="avatar" style="background:${t.avatarBg}">${t.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ct-name">${t.name}</div>
+        <div class="ct-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lastMsg ? lastMsg.text.slice(0, 30) + (lastMsg.text.length > 30 ? '…' : '') : t.subject}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+  openContact(activeContactId, true);
+  updateMsgBadge();
+}
+
+function openContact(id, skipRender) {
+  activeContactId = id;
+  if (!skipRender) {
+    document.querySelectorAll('.contact-item').forEach(c => c.classList.remove('active'));
+    const el = document.getElementById('contact-' + id);
+    if (el) el.classList.add('active');
+  }
+  const teacher = TEACHERS.find(t => t.id === id);
+  const msgs = getMessages();
+  const thread = msgs[id] || [];
+  document.getElementById('chatHeader').innerHTML = teacher
+    ? `<div class="avatar" style="background:${teacher.avatarBg};width:30px;height:30px;font-size:12px">${teacher.name[0]}</div>${teacher.name} — ${teacher.subject}`
+    : 'Chat';
+  document.getElementById('chatMsgs').innerHTML = thread.length
+    ? thread.map(m => `<div class="msg ${m.from}"><div>${m.text}</div><div class="msg-time">${m.time || ''}</div></div>`).join('')
+    : '<div style="text-align:center;color:var(--muted);font-size:13px;margin:20px 0">No messages yet. Start the conversation!</div>';
+  document.getElementById('chatMsgs').scrollTop = 99999;
+}
+
+function sendMsg() {
+  const inp = document.getElementById('chatIn');
+  const text = inp.value.trim();
+  if (!text) return;
+  const msgs = getMessages();
+  if (!msgs[activeContactId]) msgs[activeContactId] = [];
+  msgs[activeContactId].push({ from: 'out', text, time: 'Just now' });
+  saveMessages(msgs);
+  inp.value = '';
+  openContact(activeContactId, true);
+}
+
+function updateMsgBadge() {
+  const badge = document.getElementById('msgBadge');
+  badge.textContent = '1';
+  badge.style.display = 'inline-flex';
+}
+
+// ── Schedule / Timetable ──────────────────────────────────────────────────────
+const TT_COLORS = { Mathematics: '#a855f7', Science: '#06b6d4', English: '#10b981', History: '#f59e0b', Physics: '#3b82f6', Art: '#ec4899', PE: '#10b981', Music: '#f43f5e' };
+const TT_DATA = {
+  '08:00': { Mon: ['Mathematics','101'], Tue: ['English','204'], Wed: ['Science','Lab 2'], Thu: ['Mathematics','101'], Fri: ['Art','Art Room'] },
+  '09:15': { Mon: ['Science','Lab 2'], Tue: ['History','305'], Wed: ['Mathematics','101'], Thu: ['English','204'], Fri: ['Physics','Lab 1'] },
+  '10:30': { Mon: ['English','204'], Tue: ['Physics','Lab 1'], Wed: ['History','305'], Thu: ['Science','Lab 2'], Fri: ['Mathematics','101'] },
+  'BREAK': null,
+  '13:00': { Mon: ['History','305'], Tue: ['Mathematics','101'], Wed: ['Art','Art Room'], Thu: ['Physics','Lab 1'], Fri: ['English','204'] },
+  '14:15': { Mon: ['Physics','Lab 1'], Tue: ['PE','Gym'], Wed: ['English','204'], Thu: ['Art','Art Room'], Fri: ['History','305'] },
+  '15:30': { Mon: ['Music','Hall'], Tue: ['Art','Art Room'], Wed: ['PE','Gym'], Thu: ['Music','Hall'], Fri: ['PE','Gym'] }
+};
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+function renderSchedule() {
+  const grid = document.getElementById('ttGrid');
+  grid.innerHTML = '';
+  // Header
+  grid.innerHTML += '<div class="tt-period"></div>' + DAYS.map(d => `<div class="tt-hd">${d}</div>`).join('');
+  Object.entries(TT_DATA).forEach(([period, dayMap]) => {
+    if (period === 'BREAK') {
+      grid.innerHTML += `<div class="tt-break" style="grid-column:1/-1">☕ Break — 11:30–13:00</div>`;
+      return;
+    }
+    grid.innerHTML += `<div class="tt-period">${period}</div>`;
+    DAYS.forEach(d => {
+      if (dayMap && dayMap[d]) {
+        const [sub, room] = dayMap[d];
+        const col = TT_COLORS[sub] || '#666';
+        grid.innerHTML += `<div class="tt-cell" style="background:${col}1a;border-left:3px solid ${col}"><div class="tt-sub" style="color:${col}">${sub}</div><div class="tt-room">${room}</div></div>`;
+      } else {
+        grid.innerHTML += '<div class="tt-cell empty"></div>';
+      }
+    });
+  });
+
+  const legend = document.getElementById('ttLegend');
+  legend.innerHTML = Object.entries(TT_COLORS).map(([sub, col]) =>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:10px;height:10px;border-radius:2px;background:${col}"></div>${sub}</div>`
+  ).join('');
+}
+
+// ── Report Card ───────────────────────────────────────────────────────────────
+function renderReportCard() {
+  const grades = getGrades();
+  const tbody = document.getElementById('rcTableBody');
+  const total = grades.reduce((s, g) => s + g.avg, 0);
+  const overall = Math.round(total / grades.length);
+  const overallGrade = gradeLabel(overall);
+  const gpa = (overall / 100 * 4).toFixed(1);
+
+  tbody.innerHTML = grades.map(g => {
+    const gl = gradeLabel(g.avg);
+    return `<tr>
+      <td style="font-weight:500">${g.subject}</td>
+      <td>${g.t1}</td><td>${g.t2}</td><td>${g.midterm}</td><td>${g.final}</td>
+      <td style="font-weight:700">${g.avg}%</td>
+      <td>${gradePill(gl)}</td>
+      <td style="color:var(--muted);font-size:12px">${gradeRemark(g.avg)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('rcGPA').textContent = gpa;
+  document.getElementById('rcAvg').textContent = overall + '%';
+  document.getElementById('rcRank').textContent = '7th';
+  const attData = getAttendanceData();
+  const days = Object.values(attData);
+  const prs = days.filter(s => s === 'present').length;
+  document.getElementById('rcAtt').textContent = days.length ? Math.round(prs / days.length * 100) + '%' : '—';
+
+  const remark = overall >= 85 ? 'Excellent academic performance this term. Keep up the outstanding work!'
+    : overall >= 70 ? 'Good academic performance. Continue to build on your strengths and focus on weaker areas.'
+    : overall >= 60 ? 'Satisfactory performance. There is room for improvement. Please seek additional support where needed.'
+    : 'Performance requires immediate attention. Please arrange a meeting with your class teacher.';
+  document.getElementById('rcRemark').textContent = remark;
+}
+
+function exportReportCSV() {
+  const grades = getGrades();
+  const rows = [['Subject', 'Teacher', 'Test 1', 'Test 2', 'Midterm', 'Final', 'Average', 'Grade']];
+  grades.forEach(g => {
+    rows.push([g.subject, g.teacher, g.t1, g.t2, g.midterm, g.final, g.avg + '%', gradeLabel(g.avg)]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv,' + encodeURIComponent(csv);
+  a.download = 'report-card.csv';
+  a.click();
+}
+
+// ── Overview Render ───────────────────────────────────────────────────────────
+function renderOverview() {
+  document.getElementById('todayDateStr').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  // Grade bars
+  const grades = getGrades();
+  document.getElementById('gradeOverviewBars').innerHTML = grades.map(g => {
+    const pct = g.avg;
+    const col = pct >= 80 ? '#10b981' : pct >= 65 ? '#f59e0b' : '#f43f5e';
+    return `<div class="grade-subj-bar">
+      <div class="gsb-label">${g.subject}</div>
+      <div class="gsb-prog prog"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="gsb-pct">${pct}%</div>
+      <div>${gradePill(gradeLabel(pct))}</div>
+    </div>`;
+  }).join('');
+
+  // Today's schedule
+  const today = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const todayDay = dayNames[today.getDay()];
+  const scheduleLines = Object.entries(TT_DATA).filter(([p, d]) => p !== 'BREAK' && d && d[todayDay]);
+  document.getElementById('todaySchedule').innerHTML = scheduleLines.length
+    ? scheduleLines.map(([period, dayMap]) => {
+        const [sub, room] = dayMap[todayDay];
+        const col = TT_COLORS[sub] || '#666';
+        return `<div class="sched-item">
+          <div class="sched-time">${period}</div>
+          <div class="sched-line" style="background:${col}"></div>
+          <div class="sched-info"><div class="sched-sub">${sub}</div><div class="sched-room">${room}</div></div>
+        </div>`;
+      }).join('')
+    : '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No classes today</div>';
+
+  // Fees overview
+  const fees = getFees();
+  const unpaid = fees.filter(f => f.status !== 'paid');
+  const stMap = { pending: { icon: '📄', bg: 'rgba(245,158,11,.12)', pill: 'pill-amber' }, overdue: { icon: '⚠️', bg: 'rgba(244,63,94,.12)', pill: 'pill-red' } };
+  document.getElementById('feesOverviewList').innerHTML = unpaid.length
+    ? unpaid.map(f => {
+        const st = stMap[f.status] || stMap.pending;
+        return `<div class="fee-row">
+          <div class="fee-icon" style="background:${st.bg}">${st.icon}</div>
+          <div class="fee-info"><div class="fee-title">${f.title}</div><div class="fee-date">Due: ${f.due}</div></div>
+          <div class="fee-right"><div class="fee-amount">$${f.amount}</div><span class="pill ${st.pill}">${f.status.charAt(0).toUpperCase()+f.status.slice(1)}</span><button class="btn-pay" onclick="showView('fees')">Pay Now</button></div>
+        </div>`;
+      }).join('')
+    : '<div style="text-align:center;color:var(--green);padding:20px;font-size:13px">✅ All fees are paid up to date!</div>';
+
+  // Stats
+  updateOverviewStats();
+}
+
+function updateOverviewStats() {
+  const grades = getGrades();
+  const avg = grades.reduce((s, g) => s + g.avg, 0) / grades.length;
+  const gpa = (avg / 100 * 4).toFixed(1);
+  document.getElementById('statGPA').textContent = gpa;
+  document.getElementById('gpaProg').style.width = Math.min((avg / 100) * 100, 100) + '%';
+
+  const attData = getAttendanceData();
+  const days = Object.values(attData);
+  const prs = days.filter(s => s === 'present').length;
+  const pct = days.length ? Math.round(prs / days.length * 100) : 0;
+  document.getElementById('statAtt').textContent = pct + '%';
+  document.getElementById('attProg').style.width = pct + '%';
+  const at = document.getElementById('attTrend');
+  at.textContent = pct >= 90 ? 'Excellent' : pct >= 75 ? 'Good' : 'Needs attention';
+  at.className = 'stat-trend ' + (pct >= 90 ? 'up' : pct >= 75 ? 'neutral' : 'down');
+
+  const fees = getFees();
+  document.getElementById('statFees').textContent = fees.filter(f => f.status !== 'paid').length;
+}
+
+// ── Grades Panel ──────────────────────────────────────────────────────────────
+function renderGradesPanel() {
+  const grades = getGrades();
+  document.getElementById('gradesTableBody').innerHTML = grades.map(g => {
+    const gl = gradeLabel(g.avg);
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="background:rgba(128,128,128,.15);color:${SUBJECTS.find(s=>s.name===g.subject)?.color||'#ccc'}">${g.subject[0]}</div>
+        ${g.subject}
+      </div></td>
+      <td style="color:var(--muted)">${g.teacher}</td>
+      <td>${g.t1}</td><td>${g.t2}</td><td>${g.midterm}</td><td>${g.final}</td>
+      <td style="font-weight:700">${g.avg}%</td>
+      <td>${gradePill(gl)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('gradesPerfBars').innerHTML = grades.map(g => {
+    const col = g.avg >= 80 ? '#10b981' : g.avg >= 65 ? '#f59e0b' : '#f43f5e';
+    return `<div class="perf-subject-row">
+      <div class="psb-name">${g.subject}</div>
+      <div class="psb-bar"><div class="psb-fill" style="width:${g.avg}%;background:${col}"></div></div>
+      <div class="psb-pct" style="color:${col}">${g.avg}%</div>
+    </div>`;
+  }).join('');
+
+  const avg = Math.round(grades.reduce((s, g) => s + g.avg, 0) / grades.length);
+  const best = grades.reduce((a, b) => a.avg > b.avg ? a : b);
+  const worst = grades.reduce((a, b) => a.avg < b.avg ? a : b);
+  document.getElementById('gradesSummaryGrid').innerHTML = [
+    { label: 'Overall Avg', val: avg + '%', color: avg >= 80 ? 'var(--green)' : avg >= 65 ? 'var(--amber)' : 'var(--red)' },
+    { label: 'Overall Grade', val: gradeLabel(avg), color: 'var(--cyan)' },
+    { label: 'Best Subject', val: best.subject, color: 'var(--green)' },
+    { label: 'Needs Work', val: worst.subject, color: 'var(--amber)' },
+    { label: 'GPA', val: (avg / 100 * 4).toFixed(1), color: 'var(--purple)' },
+    { label: 'Subjects', val: grades.length, color: 'var(--muted)' }
+  ].map(i => `<div style="text-align:center;padding:8px;background:rgba(255,255,255,.04);border-radius:10px">
+    <div style="font-size:20px;font-weight:800;color:${i.color}">${i.val}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">${i.label}</div>
+  </div>`).join('');
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function getSettings() {
+  const stored = localStorage.getItem('ms_parent_settings');
+  return stored ? JSON.parse(stored) : { name: uname, email: _sess.email || '', phone: '', relation: 'mother', ntfGrades: true, ntfAtt: true, ntfFees: true, ntfMsg: true, ntfAnnounce: false };
+}
+function loadSettings() {
+  const s = getSettings();
+  document.getElementById('stgName').value = s.name || '';
+  document.getElementById('stgEmail').value = s.email || '';
+  document.getElementById('stgPhone').value = s.phone || '';
+  document.getElementById('stgRelation').value = s.relation || 'mother';
+  document.getElementById('ntfGrades').checked = s.ntfGrades !== false;
+  document.getElementById('ntfAtt').checked = s.ntfAtt !== false;
+  document.getElementById('ntfFees').checked = s.ntfFees !== false;
+  document.getElementById('ntfMsg').checked = s.ntfMsg !== false;
+  document.getElementById('ntfAnnounce').checked = !!s.ntfAnnounce;
+}
+function saveSettings() {
+  const s = {
+    name: document.getElementById('stgName').value,
+    email: document.getElementById('stgEmail').value,
+    phone: document.getElementById('stgPhone').value,
+    relation: document.getElementById('stgRelation').value,
+    ntfGrades: document.getElementById('ntfGrades').checked,
+    ntfAtt: document.getElementById('ntfAtt').checked,
+    ntfFees: document.getElementById('ntfFees').checked,
+    ntfMsg: document.getElementById('ntfMsg').checked,
+    ntfAnnounce: document.getElementById('ntfAnnounce').checked
+  };
+  localStorage.setItem('ms_parent_settings', JSON.stringify(s));
+  document.getElementById('sidebarName').textContent = s.name;
+  document.getElementById('sidebarInitial').textContent = s.name[0]?.toUpperCase() || 'P';
+  toast('✅ Settings saved!', '#10b981');
+}
+function savePassword() {
+  const old = document.getElementById('stgPwOld').value;
+  const nw = document.getElementById('stgPwNew').value;
+  if (!old || !nw) { toast('⚠️ Enter both fields', '#f59e0b'); return; }
+  if (nw.length < 6) { toast('⚠️ Password too short', '#f59e0b'); return; }
+  toast('✅ Password updated!', '#10b981');
+  document.getElementById('stgPwOld').value = '';
+  document.getElementById('stgPwNew').value = '';
+}
+
+// ── Modal Helpers ─────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+  if (!e.target.closest('.notif-wrap')) document.getElementById('notifPanel').classList.remove('open');
+});
+
+function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderOverview();
+renderGradesPanel(); // pre-render for performance view
+</script>
+</body>
+</html>

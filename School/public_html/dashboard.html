@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Dashboard — MindStrong Universe</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--accent:#a855f7;--accent2:#3b82f6}
+.user-avatar{background:linear-gradient(135deg,#a855f7,#3b82f6)}
+.nav-item.active{background:rgba(168,85,247,.12);color:var(--purple)}
+.nav-item.active::before{background:var(--purple);box-shadow:0 0 12px var(--purple)}
+.view-panel{display:none}.view-panel.active{display:block}
+
+/* XP / Streak */
+.xp-bar-wrap{margin-top:10px}
+.xp-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.xp-bar{height:7px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.xp-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#a855f7,#3b82f6)}
+.streak-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.2);color:var(--amber);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;margin-top:8px}
+
+/* Course cards */
+.course-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:4px}
+.course-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:.2s;text-decoration:none;display:block;color:var(--text)}
+.course-card:hover{border-color:var(--purple);transform:translateY(-2px)}
+.cc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+.cc-title{font-weight:700;font-size:14px;margin-bottom:2px}
+.cc-teacher{font-size:11px;color:var(--muted);margin-bottom:10px}
+.cc-prog-wrap{margin-top:10px}
+.cc-prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+
+/* Assignment rows */
+.assign-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.assign-row:last-child{border-bottom:none}
+.assign-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.assign-info{flex:1;min-width:0}
+.assign-title{font-size:13px;font-weight:500}
+.assign-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.assign-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-submit{padding:5px 14px;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-submit:hover{opacity:.85}
+.btn-submit:disabled{opacity:.45;cursor:default}
+
+/* Attendance calendar */
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-dh{text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12px;font-weight:500;background:rgba(255,255,255,.04)}
+.cal-day.present{background:rgba(16,185,129,.25);color:#10b981}
+.cal-day.absent{background:rgba(244,63,94,.25);color:#f43f5e}
+.cal-day.late{background:rgba(245,158,11,.25);color:#f59e0b}
+.cal-day.today{outline:2px solid var(--purple);outline-offset:1px}
+.cal-day.empty{opacity:.25}
+.cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.cal-legend-dot{width:12px;height:12px;border-radius:3px}
+
+/* Timetable */
+.tt-wrap{overflow-x:auto;margin-top:16px}
+.tt-grid{display:grid;grid-template-columns:68px repeat(5,1fr);gap:4px;min-width:600px}
+.tt-hd,.tt-period{background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center;font-size:12px;font-weight:600;color:var(--muted)}
+.tt-cell{border-radius:8px;padding:8px 10px;font-size:12px;min-height:54px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.tt-cell.empty{background:rgba(255,255,255,.02)}
+.tt-sub{font-weight:600;font-size:12px}
+.tt-room{font-size:10px;color:var(--muted)}
+.tt-break{grid-column:1/-1;background:rgba(255,255,255,.03);border-radius:8px;padding:6px;text-align:center;font-size:11px;color:var(--muted);font-style:italic}
+
+/* Messages */
+.msg-layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:420px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.msg-contacts{border-right:1px solid var(--border);overflow-y:auto}
+.contact-item{display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer;border-bottom:1px solid var(--border);transition:.2s}
+.contact-item:hover{background:rgba(255,255,255,.04)}
+.contact-item.active{background:rgba(168,85,247,.1)}
+.ct-name{font-size:13px;font-weight:600}.ct-sub{font-size:11px;color:var(--muted)}
+.msg-chat{display:flex;flex-direction:column}
+.chat-hd{padding:14px 18px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px}
+.chat-msgs{flex:1;padding:16px 18px;overflow-y:auto;max-height:300px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:9px 13px;border-radius:12px;max-width:75%;font-size:13px;line-height:1.5}
+.msg.in{background:rgba(255,255,255,.07);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.out{background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(59,130,246,.25));align-self:flex-end;border-bottom-right-radius:3px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:2px}
+.chat-input-row{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border)}
+.chat-input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-size:13px;outline:none}
+.chat-input:focus{border-color:var(--purple)}
+
+/* Practice/Games */
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:.2s}
+.game-card:hover{border-color:var(--purple);transform:translateY(-2px)}
+.game-icon{font-size:40px;margin-bottom:12px}
+.game-title{font-weight:700;font-size:15px;margin-bottom:6px}
+.game-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.game-btn{display:inline-block;margin-top:14px;padding:8px 20px;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border-radius:9px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:.2s}
+.game-btn:hover{opacity:.85}
+
+/* Leaderboard */
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{width:28px;text-align:center;font-weight:800;font-size:14px}
+.lb-rank.gold{color:#f59e0b}.lb-rank.silver{color:#9ca3af}.lb-rank.bronze{color:#cd7c4b}
+.lb-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:600}
+.lb-pts{font-size:11px;color:var(--muted)}
+.lb-xp{font-weight:700;font-size:13px;color:var(--purple)}
+.lb-row.you{background:rgba(168,85,247,.07);border-radius:8px;padding:10px 8px;margin:0 -8px}
+
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:680px){.settings-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.form-input,.form-select{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;width:100%;box-sizing:border-box}
+.form-input:focus,.form-select:focus{border-color:var(--purple)}
+.form-select option{background:#1e293b}
+
+/* Notif panel */
+.notif-panel{position:absolute;right:0;top:calc(100% + 8px);background:#1e293b;border:1px solid var(--border);border-radius:14px;width:300px;z-index:200;box-shadow:0 12px 40px rgba(0,0,0,.4);display:none}
+.notif-panel.open{display:block}
+.notif-wrap{position:relative}
+.notif-hd{padding:14px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;cursor:pointer}
+.notif-hd span{color:var(--muted);font-size:11px}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);margin-top:4px;flex-shrink:0}
+.notif-dot.amber{background:var(--amber)}.notif-dot.red{background:var(--red)}
+.notif-body .nb-title{font-size:12px;font-weight:500}.notif-body .nb-time{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🧠</div>
+    <div class="logo-text">MindStrong<span>Universe</span></div>
+  </div>
+  <div style="padding:8px">
+    <div class="user-block">
+      <div class="user-avatar avatar" id="sidebarInitial">S</div>
+      <div class="user-info">
+        <div class="name" id="sidebarName">Student</div>
+        <div class="role" style="color:var(--purple)">Student</div>
+        <div class="user-online">Online</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <a class="nav-item active" id="nav-overview" onclick="showView('overview');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item" id="nav-courses" onclick="showView('courses');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    My Courses
+  </a>
+  <a class="nav-item" id="nav-assignments" onclick="showView('assignments');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Assignments
+    <span class="nav-badge" id="assignBadge">3</span>
+  </a>
+  <a class="nav-item" id="nav-schedule" onclick="showView('schedule');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Schedule
+  </a>
+
+  <div class="nav-section">Academic</div>
+  <a class="nav-item" id="nav-grades" onclick="showView('grades');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    Grades
+  </a>
+  <a class="nav-item" id="nav-attendance" onclick="showView('attendance');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01"/></svg>
+    Attendance
+  </a>
+  <a class="nav-item" id="nav-practice" onclick="showView('practice');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    Practice &amp; Games
+  </a>
+  <a class="nav-item" id="nav-leaderboard" onclick="showView('leaderboard');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+    Leaderboard
+  </a>
+
+  <div class="nav-section">Connect</div>
+  <a class="nav-item" id="nav-messages" onclick="showView('messages');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Messages
+    <span class="nav-badge" id="msgBadge" style="display:none">1</span>
+  </a>
+
+  <div class="nav-section">Account</div>
+  <a class="nav-item" id="nav-settings" onclick="showView('settings');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+  <div class="sidebar-footer">
+    <a class="nav-item" href="#" style="margin:0" onclick="logout();return false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title" id="topbarTitle">Student Dashboard</div>
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search courses, grades…">
+    </div>
+    <div class="notif-wrap">
+      <div class="tb-btn" id="bellBtn" onclick="toggleNotif()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="tb-badge">3</span>
+      </div>
+      <div class="notif-panel" id="notifPanel">
+        <div class="notif-hd">Notifications <span onclick="document.getElementById('notifPanel').classList.remove('open')">Mark all read</span></div>
+        <div class="notif-item"><div class="notif-dot"></div><div class="notif-body"><div class="nb-title">Math assignment due tomorrow</div><div class="nb-time">10 min ago</div></div></div>
+        <div class="notif-item"><div class="notif-dot amber"></div><div class="notif-body"><div class="nb-title">Exam schedule posted — Week 12</div><div class="nb-time">1 hr ago</div></div></div>
+        <div class="notif-item"><div class="notif-dot"></div><div class="notif-body"><div class="nb-title">Attendance marked for today</div><div class="nb-time">Today, 8:15 AM</div></div></div>
+      </div>
+    </div>
+    <div class="tb-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg></div>
+  </header>
+
+  <div class="content">
+
+    <!-- ===== OVERVIEW ===== -->
+    <div class="view-panel active" id="panel-overview">
+      <div class="page-hd">
+        <h2>Good morning, <span id="greetName">Student</span> 👋</h2>
+        <p>Here's your academic overview — keep up the great work!</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#a855f7"></div>
+          <div class="stat-top"><div class="stat-icon">⚡</div><span class="stat-trend up" id="xpTrend">+240 XP</span></div>
+          <div class="stat-val" id="statXP">2,840</div>
+          <div class="stat-label">Total XP Earned</div>
+          <div class="xp-bar-wrap">
+            <div class="xp-label"><span id="xpLvLabel">Level 7</span><span id="xpNextLabel">Level 8</span></div>
+            <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:72%"></div></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#06b6d4"></div>
+          <div class="stat-top"><div class="stat-icon">📊</div><span class="stat-trend up" id="avgTrend">↑ 2.1%</span></div>
+          <div class="stat-val" id="statAvg">84.5%</div>
+          <div class="stat-label">Average Score</div>
+          <div style="margin-top:10px"><div class="prog"><div class="prog-fill" id="avgProg" style="width:84%"></div></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#10b981"></div>
+          <div class="stat-top"><div class="stat-icon">📚</div><span class="stat-trend neutral">Active</span></div>
+          <div class="stat-val" id="statCourses">6</div>
+          <div class="stat-label">Courses Enrolled</div>
+          <div style="margin-top:10px;font-size:12px;color:var(--muted)">All subjects this term</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f59e0b"></div>
+          <div class="stat-top"><div class="stat-icon">📅</div><span class="stat-trend up" id="attTrend">Excellent</span></div>
+          <div class="stat-val" id="statAtt">96%</div>
+          <div class="stat-label">Attendance Rate</div>
+          <div class="streak-badge" id="streakBadge">🔥 7-day streak</div>
+        </div>
+      </div>
+
+      <div class="g21 mb">
+        <div class="c">
+          <div class="c-hd">
+            <div><div class="c-title">My Courses</div><div class="c-sub">Performance this semester</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="showView('courses')">View all →</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Subject</th><th>Average</th><th>Progress</th><th>Status</th></tr></thead>
+              <tbody id="overviewCoursesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="c">
+          <div class="c-hd">
+            <div><div class="c-title">Today's Classes</div><div class="c-sub" id="todayDateStr">—</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="showView('schedule')">Full Schedule →</button>
+          </div>
+          <div id="todayScheduleList"></div>
+        </div>
+      </div>
+
+      <!-- Due soon -->
+      <div class="c mb">
+        <div class="c-hd">
+          <div><div class="c-title">Due Soon</div><div class="c-sub">Upcoming assignments</div></div>
+          <button class="btn btn-ghost btn-sm" onclick="showView('assignments')">All Assignments →</button>
+        </div>
+        <div id="dueSoonList"></div>
+      </div>
+    </div><!-- /overview -->
+
+    <!-- ===== COURSES ===== -->
+    <div class="view-panel" id="panel-courses">
+      <div class="page-hd">
+        <h2>My Courses</h2>
+        <p>All subjects enrolled this semester. Click to open learning materials.</p>
+      </div>
+      <div class="course-cards" id="courseCardGrid"></div>
+
+      <div class="c" style="margin-top:24px">
+        <div class="c-hd">
+          <div><div class="c-title">Learning Resources</div><div class="c-sub">School curriculum &amp; foundations</div></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;padding:8px 0">
+          <a class="btn btn-primary" href="school/index.html">📚 Open School Hub</a>
+          <a class="btn btn-ghost" href="school/foundations/index.html">🔬 Foundations</a>
+          <a class="btn btn-ghost" href="school/math-league.html">🧮 Math League</a>
+        </div>
+      </div>
+    </div><!-- /courses -->
+
+    <!-- ===== ASSIGNMENTS ===== -->
+    <div class="view-panel" id="panel-assignments">
+      <div class="page-hd">
+        <h2>Assignments</h2>
+        <p>Track and submit your pending work.</p>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap" id="assignFilterBtns">
+        <button class="btn btn-primary btn-sm" onclick="filterAssign('all')" id="af-all">All</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterAssign('pending')" id="af-pending">Pending</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterAssign('submitted')" id="af-submitted">Submitted</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterAssign('overdue')" id="af-overdue">Overdue</button>
+      </div>
+
+      <div class="c">
+        <div id="assignmentsList"></div>
+      </div>
+    </div><!-- /assignments -->
+
+    <!-- ===== SCHEDULE ===== -->
+    <div class="view-panel" id="panel-schedule">
+      <div class="page-hd">
+        <h2>Schedule</h2>
+        <p>Your weekly class timetable for this term.</p>
+      </div>
+      <div class="c">
+        <div class="c-hd">
+          <div><div class="c-title">Weekly Timetable</div><div class="c-sub">Term 2 — 2025/26</div></div>
+        </div>
+        <div class="tt-wrap">
+          <div class="tt-grid" id="ttGrid"></div>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px" id="ttLegend"></div>
+      </div>
+    </div><!-- /schedule -->
+
+    <!-- ===== GRADES ===== -->
+    <div class="view-panel" id="panel-grades">
+      <div class="page-hd">
+        <h2>Grades</h2>
+        <p>Detailed performance across all subjects.</p>
+      </div>
+      <div class="c mb">
+        <div class="c-hd">
+          <div><div class="c-title">Subject Grades</div><div class="c-sub">Current term</div></div>
+          <button class="btn btn-primary btn-sm" onclick="window.print()">Print</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Subject</th><th>Teacher</th><th>Test 1</th><th>Test 2</th><th>Midterm</th><th>Final</th><th>Average</th><th>Grade</th></tr></thead>
+            <tbody id="gradesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="c">
+          <div class="c-hd"><div><div class="c-title">Performance Chart</div></div></div>
+          <div id="gradesBars" style="margin-top:8px"></div>
+        </div>
+        <div class="c">
+          <div class="c-hd"><div><div class="c-title">Term Summary</div></div></div>
+          <div id="gradesSummary" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 0"></div>
+        </div>
+      </div>
+    </div><!-- /grades -->
+
+    <!-- ===== ATTENDANCE ===== -->
+    <div class="view-panel" id="panel-attendance">
+      <div class="page-hd">
+        <h2>Attendance</h2>
+        <p>Your daily attendance record for this term.</p>
+      </div>
+
+      <div class="stat-grid mb">
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#10b981"></div>
+          <div class="stat-top"><div class="stat-icon">✅</div></div>
+          <div class="stat-val" id="attPresent">—</div>
+          <div class="stat-label">Days Present</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f43f5e"></div>
+          <div class="stat-top"><div class="stat-icon">❌</div></div>
+          <div class="stat-val" id="attAbsent">—</div>
+          <div class="stat-label">Days Absent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f59e0b"></div>
+          <div class="stat-top"><div class="stat-icon">⏰</div></div>
+          <div class="stat-val" id="attLate">—</div>
+          <div class="stat-label">Days Late</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#a855f7"></div>
+          <div class="stat-top"><div class="stat-icon">📊</div></div>
+          <div class="stat-val" id="attPct">—</div>
+          <div class="stat-label">Rate</div>
+        </div>
+      </div>
+
+      <div class="c">
+        <div class="c-hd">
+          <div><div class="c-title">Attendance Calendar</div><div class="c-sub" id="attCalSub">Last 5 weeks</div></div>
+          <span class="c-badge" id="attRateBadge">—</span>
+        </div>
+        <div class="cal-header">
+          <div class="cal-dh">Sun</div><div class="cal-dh">Mon</div><div class="cal-dh">Tue</div>
+          <div class="cal-dh">Wed</div><div class="cal-dh">Thu</div><div class="cal-dh">Fri</div><div class="cal-dh">Sat</div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(16,185,129,.5)"></div>Present</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(244,63,94,.5)"></div>Absent</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(245,158,11,.5)"></div>Late</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,255,255,.07)"></div>Weekend</div>
+        </div>
+      </div>
+    </div><!-- /attendance -->
+
+    <!-- ===== PRACTICE ===== -->
+    <div class="view-panel" id="panel-practice">
+      <div class="page-hd">
+        <h2>Practice &amp; Games</h2>
+        <p>Sharpen your skills with interactive challenges and earn XP.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px">
+        <div class="game-card">
+          <div class="game-icon">🧮</div>
+          <div class="game-title">Math League</div>
+          <div class="game-desc">Compete in fast-paced math rounds, earn XP, and climb the leaderboard.</div>
+          <a class="game-btn" href="school/math-league.html">Play Now →</a>
+        </div>
+        <div class="game-card">
+          <div class="game-icon">🔬</div>
+          <div class="game-title">Science Foundations</div>
+          <div class="game-desc">Review key science concepts through interactive lessons and quizzes.</div>
+          <a class="game-btn" href="school/foundations/index.html">Start →</a>
+        </div>
+        <div class="game-card">
+          <div class="game-icon">📖</div>
+          <div class="game-title">School Hub</div>
+          <div class="game-desc">Explore all subjects, lessons, and learning modules in one place.</div>
+          <a class="game-btn" href="school/index.html">Explore →</a>
+        </div>
+        <div class="game-card">
+          <div class="game-icon">📝</div>
+          <div class="game-title">Practice Tests</div>
+          <div class="game-desc">Take timed practice exams for upcoming tests and track your scores.</div>
+          <button class="game-btn" onclick="toast('🚧 Practice Tests — Coming Soon!')">Coming Soon</button>
+        </div>
+        <div class="game-card">
+          <div class="game-icon">🤖</div>
+          <div class="game-title">AI Tutor</div>
+          <div class="game-desc">Get instant personalized help from your AI teacher on any subject.</div>
+          <button class="game-btn" onclick="toast('🚧 AI Tutor — Coming Soon!')">Coming Soon</button>
+        </div>
+        <div class="game-card">
+          <div class="game-icon">🎯</div>
+          <div class="game-title">Daily Challenge</div>
+          <div class="game-desc">Complete today's challenge to earn bonus XP and maintain your streak.</div>
+          <button class="game-btn" onclick="openDailyChallenge()">Start Challenge</button>
+        </div>
+      </div>
+
+      <div class="c">
+        <div class="c-hd"><div><div class="c-title">Your XP Progress</div><div class="c-sub">Level up by completing activities</div></div></div>
+        <div style="padding:12px 0" id="xpProgressSection"></div>
+      </div>
+    </div><!-- /practice -->
+
+    <!-- ===== LEADERBOARD ===== -->
+    <div class="view-panel" id="panel-leaderboard">
+      <div class="page-hd">
+        <h2>Leaderboard</h2>
+        <p>Top students by XP this term. Earn more by completing assignments and challenges.</p>
+      </div>
+      <div class="g2">
+        <div class="c">
+          <div class="c-hd"><div><div class="c-title">Class Ranking</div><div class="c-sub" id="lbClassLabel">Class 9-A</div></div></div>
+          <div id="lbList"></div>
+        </div>
+        <div class="c">
+          <div class="c-hd"><div><div class="c-title">Your Badges</div><div class="c-sub">Earned achievements</div></div></div>
+          <div id="badgesList" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:8px 0"></div>
+        </div>
+      </div>
+    </div><!-- /leaderboard -->
+
+    <!-- ===== MESSAGES ===== -->
+    <div class="view-panel" id="panel-messages">
+      <div class="page-hd">
+        <h2>Messages</h2>
+        <p>Chat directly with your teachers.</p>
+      </div>
+      <div class="msg-layout c">
+        <div class="msg-contacts" id="contactList"></div>
+        <div class="msg-chat">
+          <div class="chat-hd" id="chatHeader">Select a teacher</div>
+          <div class="chat-msgs" id="chatMsgs"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="chatIn" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()">
+            <button class="btn btn-primary btn-sm" onclick="sendMsg()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /messages -->
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="view-panel" id="panel-settings">
+      <div class="page-hd"><h2>Settings</h2><p>Manage your student account preferences.</p></div>
+
+      <div class="c mb">
+        <div class="c-hd"><div><div class="c-title">Profile</div></div></div>
+        <div class="settings-grid" style="padding:8px 0">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" id="stgName" placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="stgEmail" type="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Student ID</label>
+            <input class="form-input" id="stgId" placeholder="e.g. STU-2025-001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Class</label>
+            <select class="form-select" id="stgClass">
+              <option value="9A">Grade 9 — Section A</option>
+              <option value="9B">Grade 9 — Section B</option>
+              <option value="10A">Grade 10 — Section A</option>
+              <option value="10B">Grade 10 — Section B</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="c mb">
+        <div class="c-hd"><div><div class="c-title">Notifications</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:8px 0">
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfAssign" checked style="accent-color:var(--purple)"><span style="font-size:13px">Assignment due reminders</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfGrades" checked style="accent-color:var(--purple)"><span style="font-size:13px">New grade posted</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfMsg" checked style="accent-color:var(--purple)"><span style="font-size:13px">New messages from teachers</span></label>
+          <label style="display:flex;align-items:center;gap:12px;cursor:pointer"><input type="checkbox" id="ntfXP" checked style="accent-color:var(--purple)"><span style="font-size:13px">XP earned &amp; level-ups</span></label>
+        </div>
+      </div>
+
+      <div class="c mb">
+        <div class="c-hd"><div><div class="c-title">Security</div></div></div>
+        <div class="settings-grid" style="padding:8px 0">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input class="form-input" id="stgPwOld" type="password" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input class="form-input" id="stgPwNew" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="savePassword()">Update Password</button>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+    </div><!-- /settings -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── Session ──────────────────────────────────────────────────────────────────
+const _sess = JSON.parse(localStorage.getItem('ms_session') || '{}');
+const uname = _sess.name || 'Student';
+document.getElementById('greetName').textContent = uname.split(' ')[0];
+document.getElementById('sidebarName').textContent = uname;
+document.getElementById('sidebarInitial').textContent = uname[0]?.toUpperCase() || 'S';
+
+function logout() { localStorage.removeItem('ms_session'); window.location.href = 'login.html'; }
+
+function toast(msg, color) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:${color || '#facc15'};font-family:monospace;font-weight:700;padding:12px 24px;border-radius:10px;z-index:9999;border:1px solid rgba(250,204,21,.3);pointer-events:none`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ── View Router ───────────────────────────────────────────────────────────────
+const VIEW_TITLES = {
+  overview: 'Student Dashboard', courses: 'My Courses', assignments: 'Assignments',
+  schedule: 'Schedule', grades: 'Grades', attendance: 'Attendance',
+  practice: 'Practice & Games', leaderboard: 'Leaderboard',
+  messages: 'Messages', settings: 'Settings'
+};
+
+function showView(name) {
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  document.getElementById('topbarTitle').textContent = VIEW_TITLES[name] || 'Dashboard';
+  if (name === 'courses') renderCoursesPanel();
+  if (name === 'assignments') renderAssignments('all');
+  if (name === 'schedule') renderSchedule();
+  if (name === 'grades') renderGradesPanel();
+  if (name === 'attendance') renderAttPanel();
+  if (name === 'practice') renderPractice();
+  if (name === 'leaderboard') renderLeaderboard();
+  if (name === 'messages') renderMessages();
+  if (name === 'settings') loadSettings();
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+const SUBJECTS = [
+  { name: 'Mathematics', teacher: 'Mr. Martinez', color: '#a855f7', icon: '🧮' },
+  { name: 'Science',     teacher: 'Ms. Singh',    color: '#06b6d4', icon: '🔬' },
+  { name: 'English',     teacher: 'Mrs. Johnson', color: '#10b981', icon: '📖' },
+  { name: 'History',     teacher: 'Mr. Lee',      color: '#f59e0b', icon: '🏛️' },
+  { name: 'Physics',     teacher: 'Dr. Okafor',   color: '#3b82f6', icon: '⚛️' },
+  { name: 'Art',         teacher: 'Ms. Rivera',   color: '#ec4899', icon: '🎨' }
+];
+
+function getGrades() {
+  const stored = localStorage.getItem('ms_student_grades');
+  if (stored) return JSON.parse(stored);
+  const grades = SUBJECTS.map((s, i) => {
+    const seed = (s.name.charCodeAt(0) + i * 13) % 38;
+    const t1 = 62 + seed + (i % 2) * 5;
+    const t2 = 65 + ((seed * 2) % 28);
+    const mid = 60 + ((seed + 7) % 33);
+    const fin = 67 + ((seed * 3) % 26);
+    const avg = Math.round((t1 + t2 + mid + fin) / 4);
+    return { subject: s.name, teacher: s.teacher, t1, t2, midterm: mid, final: fin, avg };
+  });
+  localStorage.setItem('ms_student_grades', JSON.stringify(grades));
+  return grades;
+}
+
+function gradeLabel(avg) {
+  if (avg >= 95) return 'A+'; if (avg >= 90) return 'A'; if (avg >= 85) return 'A-';
+  if (avg >= 80) return 'B+'; if (avg >= 75) return 'B'; if (avg >= 70) return 'B-';
+  if (avg >= 65) return 'C+'; if (avg >= 60) return 'C'; if (avg >= 55) return 'D'; return 'F';
+}
+function gradePill(g) {
+  const map = { 'A+': 'pill-green', A: 'pill-green', 'A-': 'pill-green', 'B+': 'pill-cyan', B: 'pill-cyan', 'B-': 'pill-cyan', 'C+': 'pill-amber', C: 'pill-amber', D: 'pill-amber', F: 'pill-red' };
+  return `<span class="pill ${map[g] || 'pill-blue'}">${g}</span>`;
+}
+
+// ── Assignments ───────────────────────────────────────────────────────────────
+function getAssignments() {
+  const stored = localStorage.getItem('ms_student_assignments');
+  if (stored) return JSON.parse(stored);
+  const init = [
+    { id: 'a1', title: 'Algebra Problem Set', subject: 'Mathematics', dueDate: 'Mar 12, 2026', status: 'pending', points: 50 },
+    { id: 'a2', title: 'Lab Report — Titration', subject: 'Science', dueDate: 'Mar 11, 2026', status: 'overdue', points: 30 },
+    { id: 'a3', title: 'Essay: The Great Gatsby', subject: 'English', dueDate: 'Mar 15, 2026', status: 'pending', points: 60 },
+    { id: 'a4', title: 'WWI Timeline Project', subject: 'History', dueDate: 'Mar 8, 2026', status: 'submitted', points: 40 },
+    { id: 'a5', title: 'Force & Motion Quiz', subject: 'Physics', dueDate: 'Mar 14, 2026', status: 'pending', points: 25 },
+    { id: 'a6', title: 'Watercolor Portfolio', subject: 'Art', dueDate: 'Mar 20, 2026', status: 'pending', points: 80 }
+  ];
+  localStorage.setItem('ms_student_assignments', JSON.stringify(init));
+  return init;
+}
+function saveAssignments(a) { localStorage.setItem('ms_student_assignments', JSON.stringify(a)); }
+
+function submitAssignment(id) {
+  const assigns = getAssignments();
+  const a = assigns.find(x => x.id === id);
+  if (!a) return;
+  a.status = 'submitted';
+  saveAssignments(assigns);
+  toast('✅ Assignment submitted!', '#10b981');
+  renderAssignments(currentFilter);
+  updateAssignBadge();
+}
+
+let currentFilter = 'all';
+function filterAssign(f) {
+  currentFilter = f;
+  document.querySelectorAll('[id^="af-"]').forEach(b => b.className = 'btn btn-ghost btn-sm');
+  const active = document.getElementById('af-' + f);
+  if (active) active.className = 'btn btn-primary btn-sm';
+  renderAssignments(f);
+}
+
+function renderAssignments(filter) {
+  const assigns = getAssignments();
+  const filtered = filter === 'all' ? assigns : assigns.filter(a => a.status === filter);
+  const statusMap = {
+    pending: { icon: '📝', bg: 'rgba(168,85,247,.12)', pill: 'pill-purple' },
+    submitted: { icon: '✅', bg: 'rgba(16,185,129,.12)', pill: 'pill-green' },
+    overdue: { icon: '⚠️', bg: 'rgba(244,63,94,.12)', pill: 'pill-red' }
+  };
+  const subj = SUBJECTS.reduce((m, s) => { m[s.name] = s.color; return m; }, {});
+
+  document.getElementById('assignmentsList').innerHTML = filtered.length
+    ? filtered.map(a => {
+        const st = statusMap[a.status] || statusMap.pending;
+        const btn = a.status === 'pending' || a.status === 'overdue'
+          ? `<button class="btn-submit" onclick="submitAssignment('${a.id}')">Submit</button>`
+          : `<button class="btn-submit" disabled>Submitted</button>`;
+        return `<div class="assign-row">
+          <div class="assign-icon" style="background:${st.bg}">${st.icon}</div>
+          <div class="assign-info">
+            <div class="assign-title">${a.title}</div>
+            <div class="assign-meta" style="color:${subj[a.subject]||'var(--muted)'}">
+              ${a.subject} · Due: ${a.dueDate} · ${a.points} pts
+            </div>
+          </div>
+          <div class="assign-right">
+            <span class="pill ${st.pill}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+            ${btn}
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="text-align:center;color:var(--muted);padding:24px;font-size:13px">No assignments found.</div>';
+}
+
+function updateAssignBadge() {
+  const pending = getAssignments().filter(a => a.status === 'pending' || a.status === 'overdue').length;
+  const badge = document.getElementById('assignBadge');
+  badge.textContent = pending;
+  badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+}
+
+// ── Attendance ────────────────────────────────────────────────────────────────
+function getAttendanceData() {
+  const stored = localStorage.getItem('ms_student_attendance');
+  if (stored) return JSON.parse(stored);
+  const today = new Date();
+  const data = {};
+  for (let i = 1; i <= 45; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    const ds = d.toISOString().slice(0, 10);
+    const r = (d.getDate() * 5 + i * 7) % 100;
+    data[ds] = r < 1 ? 'absent' : r < 5 ? 'late' : 'present';
+  }
+  localStorage.setItem('ms_student_attendance', JSON.stringify(data));
+  return data;
+}
+
+function renderAttPanel() {
+  const data = getAttendanceData();
+  let p = 0, ab = 0, lt = 0;
+  Object.values(data).forEach(s => { if (s === 'present') p++; else if (s === 'absent') ab++; else lt++; });
+  const tot = p + ab + lt;
+  document.getElementById('attPresent').textContent = p;
+  document.getElementById('attAbsent').textContent = ab;
+  document.getElementById('attLate').textContent = lt;
+  const pct = tot > 0 ? Math.round(p / tot * 100) : 0;
+  document.getElementById('attPct').textContent = pct + '%';
+  document.getElementById('attRateBadge').textContent = pct + '% Present';
+
+  const cal = document.getElementById('calGrid'); cal.innerHTML = '';
+  const today = new Date();
+  const start = new Date(today); start.setDate(today.getDate() - 34); start.setDate(start.getDate() - start.getDay());
+  for (let i = 0; i < 35; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const ds = d.toISOString().slice(0, 10);
+    const isWk = d.getDay() === 0 || d.getDay() === 6;
+    const el = document.createElement('div'); el.className = 'cal-day'; el.textContent = d.getDate(); el.title = ds;
+    if (isWk) el.classList.add('empty');
+    else if (d > today) el.style.opacity = '.3';
+    else el.classList.add(data[ds] || 'present');
+    if (ds === today.toISOString().slice(0, 10)) el.classList.add('today');
+    cal.appendChild(el);
+  }
+  document.getElementById('attCalSub').textContent = `Present: ${p} · Absent: ${ab} · Late: ${lt}`;
+}
+
+// ── Timetable ─────────────────────────────────────────────────────────────────
+const TT_COLORS = { Mathematics: '#a855f7', Science: '#06b6d4', English: '#10b981', History: '#f59e0b', Physics: '#3b82f6', Art: '#ec4899', PE: '#10b981', Music: '#f43f5e' };
+const TT_DATA = {
+  '08:00': { Mon: ['Mathematics','101'], Tue: ['English','204'], Wed: ['Science','Lab 2'], Thu: ['Mathematics','101'], Fri: ['Art','Art Room'] },
+  '09:15': { Mon: ['Science','Lab 2'], Tue: ['History','305'], Wed: ['Mathematics','101'], Thu: ['English','204'], Fri: ['Physics','Lab 1'] },
+  '10:30': { Mon: ['English','204'], Tue: ['Physics','Lab 1'], Wed: ['History','305'], Thu: ['Science','Lab 2'], Fri: ['Mathematics','101'] },
+  'BREAK': null,
+  '13:00': { Mon: ['History','305'], Tue: ['Mathematics','101'], Wed: ['Art','Art Room'], Thu: ['Physics','Lab 1'], Fri: ['English','204'] },
+  '14:15': { Mon: ['Physics','Lab 1'], Tue: ['PE','Gym'], Wed: ['English','204'], Thu: ['Art','Art Room'], Fri: ['History','305'] },
+  '15:30': { Mon: ['Music','Hall'], Tue: ['Art','Art Room'], Wed: ['PE','Gym'], Thu: ['Music','Hall'], Fri: ['PE','Gym'] }
+};
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+function renderSchedule() {
+  const grid = document.getElementById('ttGrid'); grid.innerHTML = '';
+  grid.innerHTML += '<div class="tt-period"></div>' + DAYS.map(d => `<div class="tt-hd">${d}</div>`).join('');
+  Object.entries(TT_DATA).forEach(([period, dayMap]) => {
+    if (period === 'BREAK') { grid.innerHTML += `<div class="tt-break" style="grid-column:1/-1">☕ Lunch Break — 11:30–13:00</div>`; return; }
+    grid.innerHTML += `<div class="tt-period">${period}</div>`;
+    DAYS.forEach(d => {
+      if (dayMap && dayMap[d]) {
+        const [sub, room] = dayMap[d];
+        const col = TT_COLORS[sub] || '#666';
+        grid.innerHTML += `<div class="tt-cell" style="background:${col}1a;border-left:3px solid ${col}"><div class="tt-sub" style="color:${col}">${sub}</div><div class="tt-room">${room}</div></div>`;
+      } else { grid.innerHTML += '<div class="tt-cell empty"></div>'; }
+    });
+  });
+  document.getElementById('ttLegend').innerHTML = Object.entries(TT_COLORS).map(([s, c]) =>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>${s}</div>`
+  ).join('');
+}
+
+// ── Grades ────────────────────────────────────────────────────────────────────
+function renderGradesPanel() {
+  const grades = getGrades();
+  document.getElementById('gradesBody').innerHTML = grades.map(g => {
+    const gl = gradeLabel(g.avg);
+    const subj = SUBJECTS.find(s => s.name === g.subject);
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="background:rgba(128,128,128,.15);color:${subj?.color||'#ccc'}">${g.subject[0]}</div>${g.subject}
+      </div></td>
+      <td style="color:var(--muted)">${g.teacher}</td>
+      <td>${g.t1}</td><td>${g.t2}</td><td>${g.midterm}</td><td>${g.final}</td>
+      <td style="font-weight:700">${g.avg}%</td>
+      <td>${gradePill(gl)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('gradesBars').innerHTML = grades.map(g => {
+    const col = g.avg >= 80 ? '#10b981' : g.avg >= 65 ? '#f59e0b' : '#f43f5e';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:110px;font-size:13px;font-weight:500">${g.subject}</div>
+      <div style="flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${g.avg}%;background:${col};border-radius:4px;transition:width .5s"></div>
+      </div>
+      <div style="width:40px;text-align:right;font-size:12px;font-weight:600;color:${col}">${g.avg}%</div>
+    </div>`;
+  }).join('');
+
+  const avg = Math.round(grades.reduce((s, g) => s + g.avg, 0) / grades.length);
+  const best = grades.reduce((a, b) => a.avg > b.avg ? a : b);
+  const worst = grades.reduce((a, b) => a.avg < b.avg ? a : b);
+  document.getElementById('gradesSummary').innerHTML = [
+    { label: 'Overall Avg', val: avg + '%', color: avg >= 75 ? 'var(--green)' : 'var(--amber)' },
+    { label: 'Overall Grade', val: gradeLabel(avg), color: 'var(--cyan)' },
+    { label: 'Best Subject', val: best.subject, color: 'var(--green)' },
+    { label: 'Needs Work', val: worst.subject, color: 'var(--amber)' },
+    { label: 'GPA', val: (avg / 100 * 4).toFixed(1), color: 'var(--purple)' },
+    { label: 'Subjects', val: grades.length, color: 'var(--muted)' }
+  ].map(i => `<div style="text-align:center;padding:10px;background:rgba(255,255,255,.04);border-radius:10px">
+    <div style="font-size:20px;font-weight:800;color:${i.color}">${i.val}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">${i.label}</div>
+  </div>`).join('');
+}
+
+// ── Courses Panel ─────────────────────────────────────────────────────────────
+function renderCoursesPanel() {
+  const grades = getGrades();
+  const links = {
+    Mathematics: 'school/math-league.html',
+    Science: 'school/foundations/index.html',
+    English: 'school/index.html',
+    History: 'school/index.html',
+    Physics: 'school/foundations/index.html',
+    Art: 'school/index.html'
+  };
+  document.getElementById('courseCardGrid').innerHTML = SUBJECTS.map((s, i) => {
+    const g = grades.find(x => x.subject === s.name) || { avg: 75 };
+    const gl = gradeLabel(g.avg);
+    const statusTxt = g.avg >= 75 ? 'On Track' : 'Needs Work';
+    const statusCls = g.avg >= 75 ? 'pill-green' : 'pill-amber';
+    return `<a class="course-card" href="${links[s.name] || 'school/index.html'}">
+      <div class="cc-icon" style="background:${s.color}1a;color:${s.color}">${s.icon}</div>
+      <div class="cc-title">${s.name}</div>
+      <div class="cc-teacher">${s.teacher}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;color:var(--muted)">Average</span>
+        <span style="font-size:13px;font-weight:700;color:${s.color}">${g.avg}% · ${gl}</span>
+      </div>
+      <div class="prog"><div class="prog-fill" style="width:${g.avg}%;background:${s.color}"></div></div>
+      <div style="margin-top:8px;text-align:right"><span class="pill ${statusCls}">${statusTxt}</span></div>
+    </a>`;
+  }).join('');
+}
+
+// ── Practice & XP ─────────────────────────────────────────────────────────────
+function getXP() {
+  return parseInt(localStorage.getItem('ms_student_xp') || '2840');
+}
+function addXP(amount) {
+  const xp = getXP() + amount;
+  localStorage.setItem('ms_student_xp', xp);
+  toast('⚡ +' + amount + ' XP earned!', '#a855f7');
+  renderXPBar();
+  return xp;
+}
+function renderXPBar() {
+  const xp = getXP();
+  const level = Math.floor(xp / 500) + 1;
+  const levelXP = (level - 1) * 500;
+  const nextXP = level * 500;
+  const pct = Math.round((xp - levelXP) / (nextXP - levelXP) * 100);
+  document.getElementById('statXP').textContent = xp.toLocaleString();
+  document.getElementById('xpLvLabel').textContent = 'Level ' + level;
+  document.getElementById('xpNextLabel').textContent = 'Level ' + (level + 1);
+  document.getElementById('xpFill').style.width = pct + '%';
+}
+
+function renderPractice() {
+  const xp = getXP();
+  const level = Math.floor(xp / 500) + 1;
+  const levelXP = (level - 1) * 500;
+  const nextXP = level * 500;
+  const pct = Math.round((xp - levelXP) / (nextXP - levelXP) * 100);
+  document.getElementById('xpProgressSection').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+      <div style="font-size:36px">⚡</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-weight:700">Level ${level}</span>
+          <span style="color:var(--muted);font-size:13px">${xp.toLocaleString()} XP</span>
+        </div>
+        <div style="height:10px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#a855f7,#3b82f6);border-radius:6px;transition:width .6s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--muted)">
+          <span>${xp - levelXP} / ${nextXP - levelXP} XP to Level ${level + 1}</span>
+          <span>${pct}%</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+      ${[
+        { icon: '🎯', label: 'Daily Challenge', xp: 50, action: 'openDailyChallenge()' },
+        { icon: '📝', label: 'Submit Assignment', xp: 30, action: "showView('assignments')" },
+        { icon: '🔬', label: 'Visit Foundations', xp: 20, action: "window.location.href='school/foundations/index.html'" },
+        { icon: '🧮', label: 'Play Math League', xp: 40, action: "window.location.href='school/math-league.html'" }
+      ].map(a => `<div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">${a.icon}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">${a.label}</div><div style="font-size:11px;color:var(--purple)">+${a.xp} XP</div></div>
+        <button onclick="${a.action}" style="padding:5px 10px;background:linear-gradient(135deg,#a855f7,#3b82f6);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">Go</button>
+      </div>`).join('')}
+    </div>`;
+}
+
+function openDailyChallenge() {
+  const challenges = [
+    { q: 'What is 17 × 8?', a: '136' },
+    { q: 'What is the square root of 144?', a: '12' },
+    { q: 'What is 15% of 200?', a: '30' },
+    { q: 'What is the sum of angles in a triangle?', a: '180' }
+  ];
+  const c = challenges[Math.floor(Math.random() * challenges.length)];
+  const ans = prompt('🎯 Daily Challenge:\n\n' + c.q);
+  if (ans !== null) {
+    if (ans.trim() === c.a) {
+      addXP(50);
+      toast('🎉 Correct! +50 XP', '#a855f7');
+    } else {
+      toast('❌ Incorrect. Answer: ' + c.a, '#f43f5e');
+    }
+  }
+}
+
+// ── Leaderboard ────────────────────────────────────────────────────────────────
+const LB_NAMES = ['Jordan Kim', 'Alex Rivera', 'Maya Patel', 'Sam Chen', uname, 'Chris Torres', 'Riley Moore', 'Taylor Davis', 'Jamie Wu', 'Casey Brown'];
+function renderLeaderboard() {
+  const myXP = getXP();
+  const seed = 1337;
+  const entries = LB_NAMES.map((name, i) => {
+    const isMe = name === uname;
+    const xp = isMe ? myXP : 1500 + ((name.charCodeAt(0) * 31 + i * 173) % 2200);
+    return { name, xp, isMe };
+  }).sort((a, b) => b.xp - a.xp);
+
+  const colors = ['linear-gradient(135deg,#a855f7,#3b82f6)', 'linear-gradient(135deg,#06b6d4,#10b981)', 'linear-gradient(135deg,#f59e0b,#f43f5e)'];
+  document.getElementById('lbList').innerHTML = entries.map((e, i) => {
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+    return `<div class="lb-row ${e.isMe ? 'you' : ''}">
+      <div class="lb-rank ${rankClass}">${rankIcon}</div>
+      <div class="lb-avatar" style="background:${colors[i % colors.length]}">${e.name[0]}</div>
+      <div class="lb-info"><div class="lb-name">${e.name}${e.isMe ? ' <span style="color:var(--purple);font-size:11px">(You)</span>' : ''}</div></div>
+      <div class="lb-xp">⚡ ${e.xp.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+
+  const badges = [
+    { icon: '🏆', label: 'Top Scorer', earned: true },
+    { icon: '🔥', label: '7-Day Streak', earned: true },
+    { icon: '⚡', label: 'XP Champion', earned: true },
+    { icon: '📚', label: 'Bookworm', earned: false },
+    { icon: '🧮', label: 'Math Wizard', earned: false },
+    { icon: '🌟', label: 'Star Student', earned: false }
+  ];
+  document.getElementById('badgesList').innerHTML = badges.map(b => `
+    <div style="text-align:center;padding:12px;background:rgba(255,255,255,.04);border-radius:10px;opacity:${b.earned ? 1 : .3}">
+      <div style="font-size:28px">${b.icon}</div>
+      <div style="font-size:11px;font-weight:600;margin-top:6px;color:${b.earned ? 'var(--text)' : 'var(--muted)'}">${b.label}</div>
+    </div>`).join('');
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+const TEACHERS = [
+  { id: 't1', name: 'Mr. Martinez', subject: 'Mathematics', avatarBg: 'linear-gradient(135deg,#a855f7,#3b82f6)' },
+  { id: 't2', name: 'Ms. Singh',    subject: 'Science',     avatarBg: 'linear-gradient(135deg,#06b6d4,#10b981)' },
+  { id: 't3', name: 'Mrs. Johnson', subject: 'English',     avatarBg: 'linear-gradient(135deg,#f59e0b,#f43f5e)' }
+];
+function getMessages() {
+  const stored = localStorage.getItem('ms_student_messages');
+  if (stored) return JSON.parse(stored);
+  const init = {
+    t1: [
+      { from: 'in', text: 'Hi! Do you have office hours this week?', time: '2 days ago' },
+      { from: 'out', text: 'Yes — Thursday 3–5 PM. Feel free to drop by!', time: '2 days ago' },
+      { from: 'in', text: "Perfect, I'll come for the algebra problem set. Thank you!", time: 'Yesterday' },
+      { from: 'out', text: "Great, bring your notebook. We'll go through it together.", time: 'Yesterday' }
+    ],
+    t2: [{ from: 'out', text: 'Is the lab report due tomorrow?', time: '1 day ago' }],
+    t3: []
+  };
+  localStorage.setItem('ms_student_messages', JSON.stringify(init));
+  return init;
+}
+function saveMessages(m) { localStorage.setItem('ms_student_messages', JSON.stringify(m)); }
+
+let activeContactId = 't1';
+function renderMessages() {
+  const msgs = getMessages();
+  document.getElementById('contactList').innerHTML = TEACHERS.map(t => {
+    const last = msgs[t.id]?.at(-1);
+    return `<div class="contact-item ${t.id === activeContactId ? 'active' : ''}" onclick="openContact('${t.id}')" id="contact-${t.id}">
+      <div class="avatar" style="background:${t.avatarBg}">${t.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ct-name">${t.name}</div>
+        <div class="ct-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${last ? last.text.slice(0,30) + (last.text.length > 30 ? '…':'') : t.subject}</div>
+      </div>
+    </div>`;
+  }).join('');
+  openContact(activeContactId, true);
+}
+function openContact(id, skipRender) {
+  activeContactId = id;
+  if (!skipRender) {
+    document.querySelectorAll('.contact-item').forEach(c => c.classList.remove('active'));
+    const el = document.getElementById('contact-' + id);
+    if (el) el.classList.add('active');
+  }
+  const teacher = TEACHERS.find(t => t.id === id);
+  const msgs = getMessages();
+  const thread = msgs[id] || [];
+  document.getElementById('chatHeader').innerHTML = teacher
+    ? `<div class="avatar" style="background:${teacher.avatarBg};width:30px;height:30px;font-size:12px">${teacher.name[0]}</div>${teacher.name} — ${teacher.subject}`
+    : 'Chat';
+  document.getElementById('chatMsgs').innerHTML = thread.length
+    ? thread.map(m => `<div class="msg ${m.from}"><div>${m.text}</div><div class="msg-time">${m.time||''}</div></div>`).join('')
+    : '<div style="text-align:center;color:var(--muted);font-size:13px;margin:20px 0">No messages yet.</div>';
+  document.getElementById('chatMsgs').scrollTop = 99999;
+}
+function sendMsg() {
+  const inp = document.getElementById('chatIn');
+  const text = inp.value.trim();
+  if (!text) return;
+  const msgs = getMessages();
+  if (!msgs[activeContactId]) msgs[activeContactId] = [];
+  msgs[activeContactId].push({ from: 'in', text, time: 'Just now' });
+  saveMessages(msgs);
+  inp.value = '';
+  openContact(activeContactId, true);
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('ms_student_settings') || '{}');
+  document.getElementById('stgName').value = s.name || uname;
+  document.getElementById('stgEmail').value = s.email || _sess.email || '';
+  document.getElementById('stgId').value = s.studentId || 'STU-2025-001';
+  document.getElementById('stgClass').value = s.class || '9A';
+  document.getElementById('ntfAssign').checked = s.ntfAssign !== false;
+  document.getElementById('ntfGrades').checked = s.ntfGrades !== false;
+  document.getElementById('ntfMsg').checked = s.ntfMsg !== false;
+  document.getElementById('ntfXP').checked = s.ntfXP !== false;
+}
+function saveSettings() {
+  const s = {
+    name: document.getElementById('stgName').value,
+    email: document.getElementById('stgEmail').value,
+    studentId: document.getElementById('stgId').value,
+    class: document.getElementById('stgClass').value,
+    ntfAssign: document.getElementById('ntfAssign').checked,
+    ntfGrades: document.getElementById('ntfGrades').checked,
+    ntfMsg: document.getElementById('ntfMsg').checked,
+    ntfXP: document.getElementById('ntfXP').checked
+  };
+  localStorage.setItem('ms_student_settings', JSON.stringify(s));
+  document.getElementById('sidebarName').textContent = s.name;
+  document.getElementById('sidebarInitial').textContent = s.name[0]?.toUpperCase() || 'S';
+  toast('✅ Settings saved!', '#10b981');
+}
+function savePassword() {
+  const old = document.getElementById('stgPwOld').value;
+  const nw = document.getElementById('stgPwNew').value;
+  if (!old || !nw) { toast('⚠️ Enter both fields', '#f59e0b'); return; }
+  if (nw.length < 6) { toast('⚠️ Password too short', '#f59e0b'); return; }
+  toast('✅ Password updated!', '#10b981');
+  document.getElementById('stgPwOld').value = '';
+  document.getElementById('stgPwNew').value = '';
+}
+
+// ── Misc ──────────────────────────────────────────────────────────────────────
+function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('.notif-wrap')) document.getElementById('notifPanel').classList.remove('open');
+});
+
+// ── Overview Init ─────────────────────────────────────────────────────────────
+function renderOverview() {
+  document.getElementById('todayDateStr').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const grades = getGrades();
+  const avg = Math.round(grades.reduce((s, g) => s + g.avg, 0) / grades.length);
+  document.getElementById('statAvg').textContent = avg + '%';
+  document.getElementById('avgProg').style.width = avg + '%';
+
+  const attData = getAttendanceData();
+  const days = Object.values(attData);
+  const prs = days.filter(s => s === 'present').length;
+  const pct = days.length ? Math.round(prs / days.length * 100) : 0;
+  document.getElementById('statAtt').textContent = pct + '%';
+  document.getElementById('streakBadge').textContent = '🔥 ' + (pct >= 90 ? '7' : '3') + '-day streak';
+
+  renderXPBar();
+
+  // Overview courses table
+  const colMap = { Mathematics: 'var(--purple)', Science: 'var(--cyan)', English: 'var(--green)', History: 'var(--amber)', Physics: 'var(--blue)', Art: '#ec4899' };
+  document.getElementById('overviewCoursesBody').innerHTML = grades.map(g => {
+    const col = colMap[g.subject] || 'var(--text)';
+    const progCol = g.avg >= 75 ? '#a855f7' : '#f59e0b';
+    const statusTxt = g.avg >= 75 ? 'On Track' : 'Needs Work';
+    const statusCls = g.avg >= 75 ? 'pill-green' : 'pill-amber';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar" style="background:rgba(128,128,128,.15);color:${col}">${g.subject[0]}</div>${g.subject}
+      </div></td>
+      <td style="font-weight:600">${g.avg}%</td>
+      <td style="min-width:100px"><div class="prog"><div class="prog-fill" style="width:${g.avg}%;background:${progCol}"></div></div></td>
+      <td><span class="pill ${statusCls}">${statusTxt}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Today's schedule
+  const today = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const todayDay = dayNames[today.getDay()];
+  const items = Object.entries(TT_DATA).filter(([p, d]) => p !== 'BREAK' && d && d[todayDay]);
+  document.getElementById('todayScheduleList').innerHTML = items.length
+    ? items.map(([period, dayMap]) => {
+        const [sub, room] = dayMap[todayDay];
+        const col = TT_COLORS[sub] || '#666';
+        return `<div class="sched-item">
+          <div class="sched-time">${period}</div>
+          <div class="sched-line" style="background:${col}"></div>
+          <div class="sched-info"><div class="sched-sub">${sub}</div><div class="sched-room">${room}</div></div>
+        </div>`;
+      }).join('')
+    : '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No classes today</div>';
+
+  // Due soon
+  const assigns = getAssignments().filter(a => a.status !== 'submitted').slice(0, 3);
+  const subColors = { Mathematics: '#a855f7', Science: '#06b6d4', English: '#10b981', History: '#f59e0b', Physics: '#3b82f6', Art: '#ec4899' };
+  document.getElementById('dueSoonList').innerHTML = assigns.length
+    ? assigns.map(a => {
+        const st = a.status === 'overdue' ? { icon: '⚠️', bg: 'rgba(244,63,94,.12)', pill: 'pill-red' } : { icon: '📝', bg: 'rgba(168,85,247,.12)', pill: 'pill-purple' };
+        return `<div class="assign-row">
+          <div class="assign-icon" style="background:${st.bg}">${st.icon}</div>
+          <div class="assign-info">
+            <div class="assign-title">${a.title}</div>
+            <div class="assign-meta" style="color:${subColors[a.subject]||'var(--muted)'}">${a.subject} · Due: ${a.dueDate} · ${a.points} pts</div>
+          </div>
+          <div class="assign-right">
+            <span class="pill ${st.pill}">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+            <button class="btn-submit" onclick="submitAssignment('${a.id}')">Submit</button>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="text-align:center;color:var(--green);padding:20px;font-size:13px">✅ All caught up! No pending assignments.</div>';
+
+  updateAssignBadge();
+}
+
+renderOverview();
+</script>
+</body>
+</html>
