@@ -17,6 +17,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .user-role{font-size:.72rem;color:#fbbf24;margin-top:1px;}
 .user-sub{font-size:.68rem;color:var(--muted);margin-top:2px;}
 .nav-section{padding:16px 12px 6px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;}
+body.light{--bg:#f4f4f8;--bg2:#fff;--card:#fff;--card2:#f9f9fc;--border:rgba(0,0,0,.1);--text:#0f0f1a;--muted:#666880;}
+[id^="sec-"]{scroll-margin-top:80px;}
 .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;margin:2px 8px;border-radius:10px;cursor:pointer;transition:.2s;font-size:.88rem;color:var(--muted);text-decoration:none;position:relative;}
 .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);}
 .nav-item.active{background:rgba(245,158,11,.1);color:var(--text);}
@@ -199,24 +201,24 @@ tr:hover td{background:rgba(255,255,255,.02);}
   <nav style="flex:1;overflow-y:auto;padding-bottom:12px;">
     <div class="nav-section">Overview</div>
     <a class="nav-item active" href="#"><span class="ico">🏠</span> Dashboard</a>
-    <a class="nav-item" href="#"><span class="ico">📊</span> Analytics</a>
-    <a class="nav-item" href="#"><span class="ico">📈</span> Reports</a>
+    <a class="nav-item" href="#sec-analytics"><span class="ico">📊</span> Analytics</a>
+    <a class="nav-item" href="#sec-analytics"><span class="ico">📈</span> Reports</a>
     <div class="nav-section">People</div>
-    <a class="nav-item" href="#"><span class="ico">🎓</span> Students <span class="nav-badge nb-yellow">1,240</span></a>
-    <a class="nav-item" href="#"><span class="ico">👩‍🏫</span> Teachers <span class="nav-badge nb-green">48</span></a>
-    <a class="nav-item" href="#"><span class="ico">👪</span> Parents</a>
-    <a class="nav-item" href="#"><span class="ico">👥</span> Staff</a>
+    <a class="nav-item" href="#sec-users"><span class="ico">🎓</span> Students <span class="nav-badge nb-yellow">1,240</span></a>
+    <a class="nav-item" href="#sec-users"><span class="ico">👩‍🏫</span> Teachers <span class="nav-badge nb-green">48</span></a>
+    <a class="nav-item" href="#sec-users"><span class="ico">👪</span> Parents</a>
+    <a class="nav-item" href="#sec-users"><span class="ico">👥</span> Staff</a>
     <div class="nav-section">Academic</div>
     <a class="nav-item" href="#"><span class="ico">📚</span> Classes & Sections</a>
-    <a class="nav-item" href="#"><span class="ico">📋</span> Subjects</a>
-    <a class="nav-item" href="#"><span class="ico">🗓️</span> Timetable</a>
+    <a class="nav-item" href="#sec-analytics"><span class="ico">📋</span> Subjects</a>
+    <a class="nav-item" href="#sec-analytics"><span class="ico">🗓️</span> Timetable</a>
     <a class="nav-item" href="#"><span class="ico">🏆</span> Exams & Results</a>
     <div class="nav-section">Finance</div>
     <a class="nav-item" href="#"><span class="ico">💰</span> Fees & Invoices <span class="nav-badge nb-red">12</span></a>
-    <a class="nav-item" href="#"><span class="ico">💳</span> Payments</a>
-    <a class="nav-item" href="#"><span class="ico">📉</span> Expenses</a>
+    <a class="nav-item" href="#sec-users"><span class="ico">💳</span> Payments</a>
+    <a class="nav-item" href="#sec-analytics"><span class="ico">📉</span> Expenses</a>
     <div class="nav-section">System</div>
-    <a class="nav-item" href="#"><span class="ico">🤖</span> AI Management</a>
+    <a class="nav-item" href="#sec-users"><span class="ico">🤖</span> AI Management</a>
     <a class="nav-item" href="#"><span class="ico">⚙️</span> Settings</a>
     <a class="nav-item" href="#"><span class="ico">🔒</span> Security</a>
     <a class="nav-item" href="#"><span class="ico">📢</span> Announcements</a>
@@ -277,7 +279,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
 
     <!-- Charts Row -->
-    <div class="grid-3">
+    <div class="grid-3" id="sec-analytics">
       <!-- Enrollment Chart -->
       <div class="card">
         <div class="card-header"><span class="card-title">Monthly Enrollment</span><span class="card-link">2026</span></div>
@@ -333,7 +335,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
 
     <!-- Users Table + Activity -->
-    <div class="grid-3-1">
+    <div class="grid-3-1" id="sec-users">
       <div class="card">
         <div class="card-header">
           <span class="card-title">User Management</span>

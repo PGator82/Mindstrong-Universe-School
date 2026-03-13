@@ -25,6 +25,8 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
+body.light { --bg:#f4f4f8; --bg2:#ffffff; --card:#ffffff; --card2:#f9f9fc; --border:rgba(0,0,0,.1); --text:#0f0f1a; --muted:#666880; }
+[id^="sec-"] { scroll-margin-top: 80px; }
 
 /* ── SIDEBAR ── */
 .sidebar {
@@ -446,20 +448,20 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
   <nav style="flex:1;overflow-y:auto;padding-bottom:12px;">
     <div class="nav-section">Main</div>
     <a class="nav-item active" href="#"><span class="ico">🏠</span> Dashboard</a>
-    <a class="nav-item" href="#"><span class="ico">📚</span> My Courses <span class="nav-badge">5</span></a>
-    <a class="nav-item" href="#"><span class="ico">🤖</span> AI Teachers</a>
-    <a class="nav-item" href="#"><span class="ico">📝</span> Assignments <span class="nav-badge yellow">3</span></a>
-    <a class="nav-item" href="#"><span class="ico">📅</span> Schedule</a>
-    <a class="nav-item" href="#"><span class="ico">📊</span> Progress</a>
+    <a class="nav-item" href="#sec-courses"><span class="ico">📚</span> My Courses <span class="nav-badge">5</span></a>
+    <a class="nav-item" href="#sec-ai"><span class="ico">🤖</span> AI Teachers</a>
+    <a class="nav-item" href="#sec-assignments"><span class="ico">📝</span> Assignments <span class="nav-badge yellow">3</span></a>
+    <a class="nav-item" href="#sec-schedule"><span class="ico">📅</span> Schedule</a>
+    <a class="nav-item" href="#sec-courses"><span class="ico">📊</span> Progress</a>
 
     <div class="nav-section">Learning</div>
-    <a class="nav-item" href="#"><span class="ico">🧪</span> Practice Tests</a>
-    <a class="nav-item" href="#"><span class="ico">🏆</span> Leaderboard</a>
-    <a class="nav-item" href="#"><span class="ico">🎯</span> Goals</a>
-    <a class="nav-item" href="#"><span class="ico">📖</span> Library</a>
+    <a class="nav-item" href="#sec-stats"><span class="ico">🧪</span> Practice Tests</a>
+    <a class="nav-item" href="#sec-leaderboard"><span class="ico">🏆</span> Leaderboard</a>
+    <a class="nav-item" href="#sec-stats"><span class="ico">🎯</span> Goals</a>
+    <a class="nav-item" href="#sec-courses"><span class="ico">📖</span> Library</a>
 
     <div class="nav-section">Account</div>
-    <a class="nav-item" href="#"><span class="ico">💬</span> Messages <span class="nav-badge green">2</span></a>
+    <a class="nav-item" href="#sec-ai"><span class="ico">💬</span> Messages <span class="nav-badge green">2</span></a>
     <a class="nav-item" href="#"><span class="ico">⚙️</span> Settings</a>
     <a class="nav-item" href="login.html"><span class="ico">🚪</span> Sign Out</a>
   </nav>
@@ -484,7 +486,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
     </div>
     <div class="topbar-right">
       <div class="icon-btn" onclick="toggleNotif()">🔔<div class="notif-dot"></div></div>
-      <div class="icon-btn">🌙</div>
+      <div class="icon-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">🌙</div>
       <div class="topbar-avatar">👦</div>
     </div>
   </div>
@@ -499,7 +501,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
     </div>
 
     <!-- Stats -->
-    <div class="stats-row">
+    <div class="stats-row" id="sec-stats">
       <div class="stat-card">
         <div class="stat-top">
           <div class="stat-icon si-p">📚</div>
@@ -535,7 +537,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
     </div>
 
     <!-- Row 1: Weekly Activity + Course Progress -->
-    <div class="grid-2">
+    <div class="grid-2" id="sec-courses">
       <div class="card">
         <div class="card-header">
           <span class="card-title">Weekly Activity</span>
@@ -607,7 +609,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
     </div>
 
     <!-- Row 2: AI Chat + Schedule -->
-    <div class="grid-3-1">
+    <div class="grid-3-1" id="sec-ai">
       <div class="card">
         <div class="card-header">
           <span class="card-title">Ask an AI Teacher</span>
@@ -632,7 +634,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="sec-schedule">
         <div class="card-header">
           <span class="card-title">Today's Schedule</span>
           <a class="card-link" href="#">Full</a>
@@ -686,7 +688,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
     </div>
 
     <!-- Row 3: Assignments + Leaderboard + Badges -->
-    <div class="grid-2">
+    <div class="grid-2" id="sec-assignments">
       <div class="card">
         <div class="card-header">
           <span class="card-title">Assignments</span>
@@ -736,7 +738,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 
       <div style="display:flex;flex-direction:column;gap:20px;">
         <!-- Leaderboard -->
-        <div class="card">
+        <div class="card" id="sec-leaderboard">
           <div class="card-header">
             <span class="card-title">Class Leaderboard</span>
             <a class="card-link" href="#">Full</a>
@@ -779,7 +781,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
         </div>
 
         <!-- Badges -->
-        <div class="card">
+        <div class="card" id="sec-achievements">
           <div class="card-header">
             <span class="card-title">Achievements</span>
             <a class="card-link" href="#">12 / 30</a>
@@ -999,6 +1001,38 @@ async function loadData() {
 }
 
 document.addEventListener('DOMContentLoaded', loadData);
+
+// ── Theme toggle ──
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const btn = document.getElementById('theme-btn');
+  btn.textContent = document.body.classList.contains('light') ? '🌑' : '🌙';
+  localStorage.setItem('ms_theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if (localStorage.getItem('ms_theme') === 'light') {
+  document.body.classList.add('light');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = '🌑';
+}
+
+// ── Active nav highlight on scroll ──
+const navLinks = document.querySelectorAll('.nav-item[href^="#sec-"]');
+const sections = Array.from(navLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = '#' + s.id; });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === current);
+  });
+}, { passive: true });
+
+// ── Search filter ──
+document.querySelector('.search-wrap input').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.course-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
 
 // ── Bar chart animate on load ──
 document.querySelectorAll('.bar').forEach(bar => {

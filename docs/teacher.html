@@ -18,6 +18,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .user-role{font-size:.72rem;color:#f472b6;margin-top:1px;}
 .user-sub{font-size:.68rem;color:var(--muted);margin-top:2px;}
 .nav-section{padding:16px 12px 6px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;}
+body.light{--bg:#f4f4f8;--bg2:#fff;--card:#fff;--card2:#f9f9fc;--border:rgba(0,0,0,.1);--text:#0f0f1a;--muted:#666880;}
+[id^="sec-"]{scroll-margin-top:80px;}
 .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;margin:2px 8px;border-radius:10px;cursor:pointer;transition:.2s;font-size:.88rem;color:var(--muted);text-decoration:none;position:relative;}
 .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);}
 .nav-item.active{background:rgba(236,72,153,.12);color:var(--text);}
@@ -191,19 +193,19 @@ tr:hover td{background:rgba(255,255,255,.02);}
   <nav style="flex:1;overflow-y:auto;padding-bottom:12px;">
     <div class="nav-section">Teaching</div>
     <a class="nav-item active" href="#"><span class="ico">🏠</span> Dashboard</a>
-    <a class="nav-item" href="#"><span class="ico">👥</span> My Classes</a>
-    <a class="nav-item" href="#"><span class="ico">🎓</span> Students <span class="nav-badge">112</span></a>
-    <a class="nav-item" href="#"><span class="ico">📝</span> Assignments <span class="nav-badge red">6</span></a>
-    <a class="nav-item" href="#"><span class="ico">✅</span> Attendance</a>
-    <a class="nav-item" href="#"><span class="ico">📊</span> Gradebook</a>
-    <a class="nav-item" href="#"><span class="ico">📅</span> Schedule</a>
+    <a class="nav-item" href="#sec-classes"><span class="ico">👥</span> My Classes</a>
+    <a class="nav-item" href="#sec-students"><span class="ico">🎓</span> Students <span class="nav-badge">112</span></a>
+    <a class="nav-item" href="#" onclick="openModal('assign-modal');return false"><span class="ico">📝</span> Assignments <span class="nav-badge red">6</span></a>
+    <a class="nav-item" href="#" onclick="openModal('attendance-modal');return false"><span class="ico">✅</span> Attendance</a>
+    <a class="nav-item" href="#sec-students"><span class="ico">📊</span> Gradebook</a>
+    <a class="nav-item" href="#sec-classes"><span class="ico">📅</span> Schedule</a>
     <div class="nav-section">Tools</div>
-    <a class="nav-item" href="#"><span class="ico">🤖</span> AI Assistant</a>
-    <a class="nav-item" href="#"><span class="ico">📋</span> Lesson Planner</a>
-    <a class="nav-item" href="#"><span class="ico">📈</span> Reports</a>
-    <a class="nav-item" href="#"><span class="ico">📚</span> Resources</a>
+    <a class="nav-item" href="#sec-students"><span class="ico">🤖</span> AI Assistant</a>
+    <a class="nav-item" href="#sec-students"><span class="ico">📋</span> Lesson Planner</a>
+    <a class="nav-item" href="#sec-students"><span class="ico">📈</span> Reports</a>
+    <a class="nav-item" href="#sec-classes"><span class="ico">📚</span> Resources</a>
     <div class="nav-section">Account</div>
-    <a class="nav-item" href="#"><span class="ico">💬</span> Messages <span class="nav-badge">3</span></a>
+    <a class="nav-item" href="#sec-students"><span class="ico">💬</span> Messages <span class="nav-badge">3</span></a>
     <a class="nav-item" href="#"><span class="ico">⚙️</span> Settings</a>
     <a class="nav-item" href="login.html"><span class="ico">🚪</span> Sign Out</a>
   </nav>
@@ -253,7 +255,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
 
     <!-- My Classes + Schedule -->
-    <div class="grid-3-1">
+    <div class="grid-3-1" id="sec-classes">
       <div class="card">
         <div class="card-header">
           <span class="card-title">My Classes</span>
@@ -323,7 +325,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     </div>
 
     <!-- Student Table + Attendance -->
-    <div class="grid-3-1">
+    <div class="grid-3-1" id="sec-students">
       <div class="card">
         <div class="card-header">
           <span class="card-title">Students — Advanced Algebra</span>
