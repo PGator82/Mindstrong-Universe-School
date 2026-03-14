@@ -320,12 +320,12 @@ INSERT INTO `frontend_general_settings` (`frontend_general_settings_id`, `type`,
 (2, 'terms_conditions', ''),
 (3, 'privacy_policy', ''),
 (4, 'social_links', '[{\"facebook\":\"http:\\/\\/facebook.com\",\"twitter\":\"http:\\/\\/twitter.com\",\"linkedin\":\"http:\\/\\/linkedin.com\",\"google\":\"http:\\/\\/google.com\",\"youtube\":\"http:\\/\\/youtube.com\",\"instagram\":\"http:\\/\\/instagram.com\"}]'),
-(5, 'school_title', 'Chenab College Jhang'),
+(5, 'school_title', 'Mindstrong Universe School'),
 (6, 'school_logo', ''),
 (7, 'school_location', ''),
 (8, 'address', ''),
 (9, 'phone', ''),
-(10, 'email', 'info@chenab.edu.pk'),
+(10, 'email', 'info@mindstronguniverse.org'),
 (11, 'fax', ''),
 (12, 'header_logo', 'header_22.jpg'),
 (13, 'footer_logo', 'footer_22.jpg'),
@@ -649,7 +649,7 @@ CREATE TABLE `settings` (
 --
 
 INSERT INTO `settings` (`settings_id`, `type`, `description`) VALUES
-(1, 'system_name', 'Chenab College JHang'),
+(1, 'system_name', 'Mindstrong Universe School'),
 (2, 'system_title', 'I-Soft School Management System'),
 (3, 'address', 'Address'),
 (4, 'phone', '+923006519990'),
@@ -759,6 +759,264 @@ CREATE TABLE `transport` (
   `description` longtext COLLATE utf8_unicode_ci,
   `route_fare` longtext COLLATE utf8_unicode_ci
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Mindstrong v2 authentication redesign (replaces weak per-table password storage)
+--
+
+CREATE TABLE `auth_account` (
+  `auth_account_id` int(11) NOT NULL,
+  `user_type` enum('admin','student','teacher','parent') NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `password_algo` varchar(50) NOT NULL DEFAULT 'bcrypt',
+  `must_reset_password` tinyint(1) NOT NULL DEFAULT '0',
+  `status` enum('active','disabled','pending') NOT NULL DEFAULT 'active',
+  `last_login_at` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `auth_session` (
+  `auth_session_id` int(11) NOT NULL,
+  `auth_account_id` int(11) NOT NULL,
+  `session_token_hash` varchar(255) NOT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `expires_at` int(11) NOT NULL,
+  `revoked_at` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Mindstrong frontend settings redesign
+--
+
+CREATE TABLE `mindstrong_frontend_settings` (
+  `mindstrong_frontend_settings_id` int(11) NOT NULL,
+  `setting_group` varchar(100) NOT NULL,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` longtext,
+  `value_type` enum('string','number','boolean','json','markdown') NOT NULL DEFAULT 'string',
+  `is_public` tinyint(1) NOT NULL DEFAULT '1',
+  `updated_by_admin_id` int(11) DEFAULT NULL,
+  `updated_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Mindstrong messaging redesign
+--
+
+CREATE TABLE `conversation_thread` (
+  `conversation_thread_id` int(11) NOT NULL,
+  `thread_type` enum('direct','group','course') NOT NULL DEFAULT 'direct',
+  `title` varchar(255) DEFAULT NULL,
+  `created_by_user_type` enum('admin','student','teacher','parent') NOT NULL,
+  `created_by_user_id` int(11) NOT NULL,
+  `last_message_at` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `conversation_message` (
+  `conversation_message_id` int(11) NOT NULL,
+  `conversation_thread_id` int(11) NOT NULL,
+  `sender_user_type` enum('admin','student','teacher','parent','system','ai_tutor') NOT NULL,
+  `sender_user_id` int(11) DEFAULT NULL,
+  `message_text` longtext,
+  `attachment_url` varchar(255) DEFAULT NULL,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Mindstrong LMS/gamification and AI tutor tables
+--
+
+CREATE TABLE `courses` (
+  `course_id` int(11) NOT NULL,
+  `course_code` varchar(100) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` longtext,
+  `class_id` int(11) DEFAULT NULL,
+  `subject_id` int(11) DEFAULT NULL,
+  `teacher_id` int(11) DEFAULT NULL,
+  `status` enum('draft','published','archived') NOT NULL DEFAULT 'draft',
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `modules` (
+  `module_id` int(11) NOT NULL,
+  `course_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` longtext,
+  `sort_order` int(11) NOT NULL DEFAULT '0',
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `lessons` (
+  `lesson_id` int(11) NOT NULL,
+  `module_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content_type` enum('text','video','quiz','assignment','link') NOT NULL DEFAULT 'text',
+  `content` longtext,
+  `duration_minutes` int(11) DEFAULT NULL,
+  `xp_reward` int(11) NOT NULL DEFAULT '0',
+  `sort_order` int(11) NOT NULL DEFAULT '0',
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `lesson_progress` (
+  `lesson_progress_id` int(11) NOT NULL,
+  `lesson_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `status` enum('not_started','in_progress','completed') NOT NULL DEFAULT 'not_started',
+  `progress_percent` int(11) NOT NULL DEFAULT '0',
+  `started_at` int(11) DEFAULT NULL,
+  `completed_at` int(11) DEFAULT NULL,
+  `updated_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `course_progress` (
+  `course_progress_id` int(11) NOT NULL,
+  `course_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `status` enum('not_started','in_progress','completed') NOT NULL DEFAULT 'not_started',
+  `progress_percent` int(11) NOT NULL DEFAULT '0',
+  `last_lesson_id` int(11) DEFAULT NULL,
+  `updated_at` int(11) DEFAULT NULL,
+  `completed_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `badges` (
+  `badge_id` int(11) NOT NULL,
+  `badge_code` varchar(100) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` longtext,
+  `icon` varchar(255) DEFAULT NULL,
+  `xp_value` int(11) NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `student_badges` (
+  `student_badge_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `badge_id` int(11) NOT NULL,
+  `awarded_by_user_type` enum('admin','teacher','system','ai_tutor') NOT NULL DEFAULT 'system',
+  `awarded_by_user_id` int(11) DEFAULT NULL,
+  `awarded_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `xp_log` (
+  `xp_log_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `source_type` enum('lesson','quiz','badge','manual','ai_tutor','streak','challenge','quest','battle') NOT NULL,
+  `source_id` int(11) DEFAULT NULL,
+  `xp_delta` int(11) NOT NULL,
+  `running_total_xp` int(11) NOT NULL DEFAULT '0',
+  `reason` varchar(255) DEFAULT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `leaderboard` (
+  `leaderboard_id` int(11) NOT NULL,
+  `season_id` int(11) DEFAULT NULL,
+  `leaderboard_scope` enum('global','class','course','season') NOT NULL DEFAULT 'global',
+  `scope_id` int(11) DEFAULT NULL,
+  `student_id` int(11) NOT NULL,
+  `total_xp` int(11) NOT NULL DEFAULT '0',
+  `wins` int(11) NOT NULL DEFAULT '0',
+  `current_streak` int(11) NOT NULL DEFAULT '0',
+  `rank_position` int(11) NOT NULL DEFAULT '0',
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `ai_tutor_logs` (
+  `ai_tutor_log_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `course_id` int(11) DEFAULT NULL,
+  `lesson_id` int(11) DEFAULT NULL,
+  `prompt` longtext,
+  `response` longtext,
+  `model` varchar(100) DEFAULT NULL,
+  `token_usage` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+CREATE TABLE `game_season` (
+  `game_season_id` int(11) NOT NULL,
+  `season_code` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `start_at` int(11) NOT NULL,
+  `end_at` int(11) NOT NULL,
+  `status` enum('draft','active','completed') NOT NULL DEFAULT 'draft'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `daily_challenge` (
+  `daily_challenge_id` int(11) NOT NULL,
+  `challenge_code` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` longtext,
+  `challenge_type` enum('lesson_complete','quiz_score','xp_gain','streak_keep') NOT NULL,
+  `target_value` int(11) NOT NULL DEFAULT '1',
+  `xp_reward` int(11) NOT NULL DEFAULT '0',
+  `badge_id` int(11) DEFAULT NULL,
+  `active_date` date NOT NULL,
+  `season_id` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `student_daily_challenge` (
+  `student_daily_challenge_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `daily_challenge_id` int(11) NOT NULL,
+  `progress_value` int(11) NOT NULL DEFAULT '0',
+  `is_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `completed_at` int(11) DEFAULT NULL,
+  `claimed_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `student_streak` (
+  `student_streak_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `current_streak_days` int(11) NOT NULL DEFAULT '0',
+  `best_streak_days` int(11) NOT NULL DEFAULT '0',
+  `last_activity_date` date DEFAULT NULL,
+  `freeze_tokens` int(11) NOT NULL DEFAULT '0',
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `pvp_match` (
+  `pvp_match_id` int(11) NOT NULL,
+  `season_id` int(11) DEFAULT NULL,
+  `match_mode` enum('duel','team') NOT NULL DEFAULT 'duel',
+  `course_id` int(11) DEFAULT NULL,
+  `started_at` int(11) NOT NULL,
+  `ended_at` int(11) DEFAULT NULL,
+  `status` enum('queued','running','completed','cancelled') NOT NULL DEFAULT 'queued'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `pvp_match_player` (
+  `pvp_match_player_id` int(11) NOT NULL,
+  `pvp_match_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `team_no` int(11) NOT NULL DEFAULT '1',
+  `score` int(11) NOT NULL DEFAULT '0',
+  `result` enum('win','loss','draw','pending') NOT NULL DEFAULT 'pending',
+  `xp_earned` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Indexes for dumped tables
@@ -1005,6 +1263,181 @@ ALTER TABLE `teacher`
 ALTER TABLE `transport`
   ADD PRIMARY KEY (`transport_id`);
 
+
+--
+-- Indexes for table `auth_account`
+--
+ALTER TABLE `auth_account`
+  ADD PRIMARY KEY (`auth_account_id`),
+  ADD UNIQUE KEY `uniq_auth_user` (`user_type`,`user_id`),
+  ADD UNIQUE KEY `uniq_auth_email` (`email`);
+
+--
+-- Indexes for table `auth_session`
+--
+ALTER TABLE `auth_session`
+  ADD PRIMARY KEY (`auth_session_id`),
+  ADD KEY `auth_session_account_idx` (`auth_account_id`),
+  ADD KEY `auth_session_expires_idx` (`expires_at`);
+
+--
+-- Indexes for table `mindstrong_frontend_settings`
+--
+ALTER TABLE `mindstrong_frontend_settings`
+  ADD PRIMARY KEY (`mindstrong_frontend_settings_id`),
+  ADD UNIQUE KEY `uniq_frontend_setting` (`setting_group`,`setting_key`);
+
+--
+-- Indexes for table `conversation_thread`
+--
+ALTER TABLE `conversation_thread`
+  ADD PRIMARY KEY (`conversation_thread_id`);
+
+--
+-- Indexes for table `conversation_message`
+--
+ALTER TABLE `conversation_message`
+  ADD PRIMARY KEY (`conversation_message_id`),
+  ADD KEY `conversation_message_thread_idx` (`conversation_thread_id`),
+  ADD KEY `conversation_message_created_idx` (`created_at`);
+
+--
+-- Indexes for table `courses`
+--
+ALTER TABLE `courses`
+  ADD PRIMARY KEY (`course_id`),
+  ADD UNIQUE KEY `uniq_course_code` (`course_code`),
+  ADD KEY `courses_class_idx` (`class_id`),
+  ADD KEY `courses_subject_idx` (`subject_id`),
+  ADD KEY `courses_teacher_idx` (`teacher_id`);
+
+--
+-- Indexes for table `modules`
+--
+ALTER TABLE `modules`
+  ADD PRIMARY KEY (`module_id`),
+  ADD KEY `modules_course_idx` (`course_id`);
+
+--
+-- Indexes for table `lessons`
+--
+ALTER TABLE `lessons`
+  ADD PRIMARY KEY (`lesson_id`),
+  ADD KEY `lessons_module_idx` (`module_id`);
+
+--
+-- Indexes for table `lesson_progress`
+--
+ALTER TABLE `lesson_progress`
+  ADD PRIMARY KEY (`lesson_progress_id`),
+  ADD UNIQUE KEY `uniq_lesson_student` (`lesson_id`,`student_id`),
+  ADD KEY `lesson_progress_student_idx` (`student_id`);
+
+--
+-- Indexes for table `course_progress`
+--
+ALTER TABLE `course_progress`
+  ADD PRIMARY KEY (`course_progress_id`),
+  ADD UNIQUE KEY `uniq_course_student` (`course_id`,`student_id`),
+  ADD KEY `course_progress_student_idx` (`student_id`);
+
+--
+-- Indexes for table `badges`
+--
+ALTER TABLE `badges`
+  ADD PRIMARY KEY (`badge_id`),
+  ADD UNIQUE KEY `uniq_badge_code` (`badge_code`);
+
+--
+-- Indexes for table `student_badges`
+--
+ALTER TABLE `student_badges`
+  ADD PRIMARY KEY (`student_badge_id`),
+  ADD KEY `student_badges_student_idx` (`student_id`),
+  ADD KEY `student_badges_badge_idx` (`badge_id`);
+
+--
+-- Indexes for table `xp_log`
+--
+ALTER TABLE `xp_log`
+  ADD PRIMARY KEY (`xp_log_id`),
+  ADD KEY `xp_log_student_idx` (`student_id`),
+  ADD KEY `xp_log_created_idx` (`created_at`),
+  ADD KEY `xp_log_student_created_idx` (`student_id`,`created_at`);
+
+--
+-- Indexes for table `leaderboard`
+--
+ALTER TABLE `leaderboard`
+  ADD PRIMARY KEY (`leaderboard_id`),
+  ADD UNIQUE KEY `uniq_leaderboard_scope_student` (`season_id`,`leaderboard_scope`,`scope_id`,`student_id`),
+  ADD KEY `leaderboard_scope_idx` (`leaderboard_scope`,`scope_id`),
+  ADD KEY `leaderboard_student_idx` (`student_id`),
+  ADD KEY `leaderboard_rank_idx` (`season_id`,`leaderboard_scope`,`scope_id`,`rank_position`);
+
+--
+-- Indexes for table `ai_tutor_logs`
+--
+ALTER TABLE `ai_tutor_logs`
+  ADD PRIMARY KEY (`ai_tutor_log_id`),
+  ADD KEY `ai_tutor_logs_student_idx` (`student_id`),
+  ADD KEY `ai_tutor_logs_course_idx` (`course_id`),
+  ADD KEY `ai_tutor_logs_lesson_idx` (`lesson_id`),
+  ADD KEY `ai_tutor_logs_created_idx` (`created_at`);
+
+
+--
+-- Indexes for table `game_season`
+--
+ALTER TABLE `game_season`
+  ADD PRIMARY KEY (`game_season_id`),
+  ADD UNIQUE KEY `uniq_game_season_code` (`season_code`),
+  ADD KEY `game_season_status_idx` (`status`);
+
+--
+-- Indexes for table `daily_challenge`
+--
+ALTER TABLE `daily_challenge`
+  ADD PRIMARY KEY (`daily_challenge_id`),
+  ADD UNIQUE KEY `uniq_daily_challenge_code` (`challenge_code`),
+  ADD KEY `daily_challenge_date_idx` (`active_date`),
+  ADD KEY `daily_challenge_season_idx` (`season_id`);
+
+--
+-- Indexes for table `student_daily_challenge`
+--
+ALTER TABLE `student_daily_challenge`
+  ADD PRIMARY KEY (`student_daily_challenge_id`),
+  ADD UNIQUE KEY `uniq_student_daily_challenge` (`student_id`,`daily_challenge_id`),
+  ADD KEY `student_daily_challenge_challenge_idx` (`daily_challenge_id`),
+  ADD KEY `student_daily_challenge_completed_idx` (`is_completed`);
+
+--
+-- Indexes for table `student_streak`
+--
+ALTER TABLE `student_streak`
+  ADD PRIMARY KEY (`student_streak_id`),
+  ADD UNIQUE KEY `uniq_student_streak_student` (`student_id`),
+  ADD KEY `student_streak_activity_idx` (`last_activity_date`);
+
+--
+-- Indexes for table `pvp_match`
+--
+ALTER TABLE `pvp_match`
+  ADD PRIMARY KEY (`pvp_match_id`),
+  ADD KEY `pvp_match_status_idx` (`status`),
+  ADD KEY `pvp_match_season_idx` (`season_id`),
+  ADD KEY `pvp_match_course_idx` (`course_id`);
+
+--
+-- Indexes for table `pvp_match_player`
+--
+ALTER TABLE `pvp_match_player`
+  ADD PRIMARY KEY (`pvp_match_player_id`),
+  ADD UNIQUE KEY `uniq_pvp_match_player` (`pvp_match_id`,`student_id`),
+  ADD KEY `pvp_match_player_student_idx` (`student_id`),
+  ADD KEY `pvp_match_player_result_idx` (`result`);
+
 --
 -- AUTO_INCREMENT for dumped tables
 --
@@ -1242,6 +1675,134 @@ ALTER TABLE `teacher`
 --
 ALTER TABLE `transport`
   MODIFY `transport_id` int(11) NOT NULL AUTO_INCREMENT;
+
+
+--
+-- AUTO_INCREMENT for table `auth_account`
+--
+ALTER TABLE `auth_account`
+  MODIFY `auth_account_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `auth_session`
+--
+ALTER TABLE `auth_session`
+  MODIFY `auth_session_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `mindstrong_frontend_settings`
+--
+ALTER TABLE `mindstrong_frontend_settings`
+  MODIFY `mindstrong_frontend_settings_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `conversation_thread`
+--
+ALTER TABLE `conversation_thread`
+  MODIFY `conversation_thread_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `conversation_message`
+--
+ALTER TABLE `conversation_message`
+  MODIFY `conversation_message_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `courses`
+--
+ALTER TABLE `courses`
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `modules`
+--
+ALTER TABLE `modules`
+  MODIFY `module_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `lessons`
+--
+ALTER TABLE `lessons`
+  MODIFY `lesson_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `lesson_progress`
+--
+ALTER TABLE `lesson_progress`
+  MODIFY `lesson_progress_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `course_progress`
+--
+ALTER TABLE `course_progress`
+  MODIFY `course_progress_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `badges`
+--
+ALTER TABLE `badges`
+  MODIFY `badge_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `student_badges`
+--
+ALTER TABLE `student_badges`
+  MODIFY `student_badge_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `xp_log`
+--
+ALTER TABLE `xp_log`
+  MODIFY `xp_log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `leaderboard`
+--
+ALTER TABLE `leaderboard`
+  MODIFY `leaderboard_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ai_tutor_logs`
+--
+ALTER TABLE `ai_tutor_logs`
+  MODIFY `ai_tutor_log_id` int(11) NOT NULL AUTO_INCREMENT;
+
+
+--
+-- AUTO_INCREMENT for table `game_season`
+--
+ALTER TABLE `game_season`
+  MODIFY `game_season_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `daily_challenge`
+--
+ALTER TABLE `daily_challenge`
+  MODIFY `daily_challenge_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `student_daily_challenge`
+--
+ALTER TABLE `student_daily_challenge`
+  MODIFY `student_daily_challenge_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `student_streak`
+--
+ALTER TABLE `student_streak`
+  MODIFY `student_streak_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pvp_match`
+--
+ALTER TABLE `pvp_match`
+  MODIFY `pvp_match_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `pvp_match_player`
+--
+ALTER TABLE `pvp_match_player`
+  MODIFY `pvp_match_player_id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
