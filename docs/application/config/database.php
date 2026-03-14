@@ -62,12 +62,30 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
+// Parse MYSQL_URL if individual vars not set (Railway injects this automatically)
+$_mysql_url = getenv('MYSQL_URL') ?: getenv('DATABASE_URL') ?: '';
+if ($_mysql_url) {
+    $_u = parse_url($_mysql_url);
+    $_db_host = $_u['host'] ?? 'localhost';
+    $_db_user = $_u['user'] ?? 'root';
+    $_db_pass = $_u['pass'] ?? '';
+    $_db_name = ltrim($_u['path'] ?? '/railway', '/');
+    $_db_port = $_u['port'] ?? 3306;
+} else {
+    $_db_host = getenv('MYSQLHOST') ?: 'mysql.railway.internal';
+    $_db_user = getenv('MYSQLUSER') ?: 'root';
+    $_db_pass = getenv('MYSQLPASSWORD') ?: 'wCvyDaEpslAwuYNASxvbgvwRAoBUUOpz';
+    $_db_name = getenv('MYSQLDATABASE') ?: 'railway';
+    $_db_port = getenv('MYSQLPORT') ?: 3306;
+}
+
 $db['default'] = array(
-	'dsn'	=> getenv('DB_URL') ?: '',
-	'hostname' => getenv('MYSQLHOST') ?: getenv('DB_HOST') ?: 'localhost',
-	'username' => getenv('MYSQLUSER') ?: getenv('DB_USER') ?: 'mindstro_db',
-	'password' => getenv('MYSQLPASSWORD') ?: getenv('DB_PASS') ?: '',
-	'database' => getenv('MYSQLDATABASE') ?: getenv('DB_NAME') ?: 'mindstro_db',
+	'dsn'	=> '',
+	'hostname' => $_db_host,
+	'username' => $_db_user,
+	'password' => $_db_pass,
+	'database' => $_db_name,
+	'port'     => $_db_port,
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
