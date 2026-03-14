@@ -1,6 +1,6 @@
 <hr>
 <div class="row">
-    <div class="col-md-2">
+    <div class="col-md-2 backend-dashboard-nav">
         <a href="<?php echo site_url('admin/dashboard'); ?>" class="btn btn-primary btn-block">
             <?php echo get_phrase('dashboard'); ?>
         </a>
@@ -60,6 +60,7 @@
                     <div class="num" data-start="0" data-end="<?php echo $number_of_student_in_current_session; ?>" data-postfix="" data-duration="1500" data-delay="0">0</div>
                     <h3><?php echo get_phrase('student');?></h3>
                     <p>Total students</p>
+                    <a href="<?php echo site_url('admin/student_information'); ?>" class="btn btn-default btn-xs">View</a>
                 </div>
 
                 <div class="tile-stats tile-green">
@@ -67,6 +68,7 @@
                     <div class="num" data-start="0" data-end="<?php echo $this->db->count_all('teacher');?>" data-postfix="" data-duration="800" data-delay="0">0</div>
                     <h3><?php echo get_phrase('teacher');?></h3>
                     <p>Total teachers</p>
+                    <a href="<?php echo site_url('admin/teacher'); ?>" class="btn btn-default btn-xs">View</a>
                 </div>
 
                 <div class="tile-stats tile-aqua">
@@ -74,6 +76,7 @@
                     <div class="num" data-start="0" data-end="<?php echo $this->db->count_all('parent');?>" data-postfix="" data-duration="500" data-delay="0">0</div>
                     <h3><?php echo get_phrase('parent');?></h3>
                     <p>Total parents</p>
+                    <a href="<?php echo site_url('admin/parent'); ?>" class="btn btn-default btn-xs">View</a>
                 </div>
 
                 <div class="tile-stats tile-blue">
@@ -85,6 +88,7 @@
                     <div class="num" data-start="0" data-end="<?php echo $present_today;?>" data-postfix="" data-duration="500" data-delay="0">0</div>
                     <h3><?php echo get_phrase('attendance');?></h3>
                     <p>Total present student today</p>
+                    <a href="<?php echo site_url('admin/manage_attendance'); ?>" class="btn btn-default btn-xs">View</a>
                 </div>
             </div>
         </div>
