@@ -11,11 +11,11 @@ if (!isset($_GET['key']) || $_GET['key'] !== $secret) {
 
 if (isset($_GET['info'])) { phpinfo(); die(); }
 
-$host    = getenv('MYSQLHOST')     ?: 'mysql.railway.internal';
-$port    = (int)(getenv('MYSQLPORT') ?: 3306);
-$user    = getenv('MYSQLUSER')     ?: 'root';
-$pass    = getenv('MYSQLPASSWORD') ?: '';
-$db      = getenv('MYSQLDATABASE') ?: 'railway';
+$host    = 'mysql.railway.internal';
+$port    = 3306;
+$user    = 'root';
+$pass    = 'wCvyDaEpslAwuYNASxvbgvwRAoBUUOpz';
+$db      = 'railway';
 $sqlFile = __DIR__ . '/dbimport.sql';
 
 echo "Host: $host | Port: $port | User: $user | DB: $db<br>";
