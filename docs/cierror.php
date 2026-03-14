@@ -1,31 +1,35 @@
 <?php
+// Block CI from intercepting this file
+define('BASEPATH', 'blocked');
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Simulate what index.php does to catch the real error
-$system_path = __DIR__ . '/system';
-$application_folder = __DIR__ . '/application';
-
-echo "<h3>Paths</h3>";
-echo "system exists: " . (is_dir($system_path) ? 'YES' : 'NO') . "<br>";
-echo "application exists: " . (is_dir($application_folder) ? 'YES' : 'NO') . "<br>";
-echo "DB config exists: " . (file_exists($application_folder . '/config/database.php') ? 'YES' : 'NO') . "<br>";
-echo "Login controller: " . (file_exists($application_folder . '/controllers/Login.php') ? 'YES' : 'NO') . "<br>";
+echo "<h3>File Checks</h3>";
+echo "system dir: " . (is_dir(__DIR__.'/system') ? 'YES' : 'NO') . "<br>";
+echo "application dir: " . (is_dir(__DIR__.'/application') ? 'YES' : 'NO') . "<br>";
+echo "database.php: " . (file_exists(__DIR__.'/application/config/database.php') ? 'YES' : 'NO') . "<br>";
+echo "Login.php: " . (file_exists(__DIR__.'/application/controllers/Login.php') ? 'YES' : 'NO') . "<br>";
 
 echo "<h3>Env Vars</h3>";
-echo "MYSQLHOST: " . (getenv('MYSQLHOST') ?: 'NOT SET') . "<br>";
-echo "MYSQLUSER: " . (getenv('MYSQLUSER') ?: 'NOT SET') . "<br>";
-echo "MYSQLPASSWORD: " . (getenv('MYSQLPASSWORD') ? '***SET***' : 'NOT SET') . "<br>";
-echo "MYSQLDATABASE: " . (getenv('MYSQLDATABASE') ?: 'NOT SET') . "<br>";
+echo "MYSQLHOST: " . (getenv('MYSQLHOST') ?: '<b>NOT SET</b>') . "<br>";
+echo "MYSQLPORT: " . (getenv('MYSQLPORT') ?: '<b>NOT SET</b>') . "<br>";
+echo "MYSQLUSER: " . (getenv('MYSQLUSER') ?: '<b>NOT SET</b>') . "<br>";
+echo "MYSQLPASSWORD: " . (getenv('MYSQLPASSWORD') ? '***SET***' : '<b>NOT SET</b>') . "<br>";
+echo "MYSQLDATABASE: " . (getenv('MYSQLDATABASE') ?: '<b>NOT SET</b>') . "<br>";
 
-echo "<h3>Boot CI</h3>";
-try {
-    define('ENVIRONMENT', 'development');
-    ob_start();
-    require_once $system_path . '/core/CodeIgniter.php';
-    $out = ob_get_clean();
-    echo "CI output: " . htmlspecialchars($out);
-} catch (Throwable $e) {
-    echo "Error: " . $e->getMessage() . " in " . $e->getFile() . " line " . $e->getLine();
-}
+echo "<h3>Test DB Connection</h3>";
+$h = getenv('MYSQLHOST') ?: 'mysql.railway.internal';
+$p = getenv('MYSQLPORT') ?: 3306;
+$u = getenv('MYSQLUSER') ?: 'root';
+$pw = getenv('MYSQLPASSWORD') ?: '';
+$db = getenv('MYSQLDATABASE') ?: 'railway';
+
+$conn = mysqli_init();
+mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+$ok = mysqli_real_connect($conn, $h, $u, $pw, $db, (int)$p);
+echo $ok ? "DB Connected OK<br>" : "DB FAILED: ".mysqli_connect_error()."<br>";
+
+echo "<h3>PHP</h3>";
+echo "Version: ".PHP_VERSION."<br>";
+echo "Done.";
 ?>
