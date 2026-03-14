@@ -38,31 +38,29 @@ http {
     index index.php index.html;
     charset utf-8;
 
+    # Block sensitive directories and files
+    location ~ ^/(application|system|School) { return 403; }
+    location ~* \.(sql|log|env)$ { return 403; }
+
+    # Static assets — serve directly with cache
     location ~* \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ {
       try_files \$uri =404;
       expires 7d;
     }
 
-    location ~ ^/(application|system|School) {
-      return 403;
-    }
-
-    location ~* \.(sql|log|env)$ {
-      return 403;
-    }
-
-    # Root goes to home page
+    # Root → serve home.html directly (no redirect)
     location = / {
-      return 302 /home.html;
+      try_files /home.html =404;
     }
 
-    # API routes go through CodeIgniter
-    location /api/ {
-      try_files \$uri \$uri/ /index.php?\$request_uri;
+    # Static HTML pages — serve directly
+    location ~* \.html$ {
+      try_files \$uri =404;
     }
 
+    # Everything else → CodeIgniter (api/login, login/validate_login, admin/*, etc.)
     location / {
-      try_files \$uri \$uri/ =404;
+      try_files \$uri \$uri/ /index.php?\$request_uri;
     }
 
     location ~ \.php$ {
