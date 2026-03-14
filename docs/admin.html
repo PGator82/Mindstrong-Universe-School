@@ -183,6 +183,21 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 @media(max-width:1100px){.stats-row,.quick-actions{grid-template-columns:repeat(2,1fr);}.grid-2,.grid-3,.grid-3-1{grid-template-columns:1fr;}}
 @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}.main{margin-left:0}.hamburger-btn{display:block}}
+
+.backend-connect-note{margin-bottom:18px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:rgba(37,99,235,.12);font-size:.83rem;color:var(--text);}
+.backend-buttons{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:20px;}
+.backend-buttons a{display:flex;align-items:center;justify-content:center;padding:11px 12px;border-radius:10px;text-decoration:none;font-size:.82rem;font-weight:700;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);transition:.2s;}
+.backend-buttons a:hover{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.4);transform:translateY(-1px);}
+
+.backend-menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px;}
+.backend-menu-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;}
+.backend-menu-card h4{font-size:.82rem;margin-bottom:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:.06em;}
+.backend-menu-card a{display:block;text-decoration:none;color:var(--text);font-size:.8rem;padding:7px 8px;border-radius:8px;border:1px solid transparent;}
+.backend-menu-card a:hover{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35);}
+.backend-session-line{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;font-size:.82rem;color:var(--muted);}
+.backend-session-line b{color:var(--text);} 
+
+
 </style>
 </head>
 <body>
@@ -200,29 +215,29 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
   <nav style="flex:1;overflow-y:auto;padding-bottom:12px;">
     <div class="nav-section">Overview</div>
-    <a class="nav-item active" href="#"><span class="ico">🏠</span> Dashboard</a>
+    <a class="nav-item active" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/dashboard"><span class="ico">🏠</span> Dashboard</a>
     <a class="nav-item" href="#sec-analytics"><span class="ico">📊</span> Analytics</a>
     <a class="nav-item" href="#sec-analytics"><span class="ico">📈</span> Reports</a>
     <div class="nav-section">People</div>
-    <a class="nav-item" href="#sec-users"><span class="ico">🎓</span> Students <span class="nav-badge nb-yellow">1,240</span></a>
-    <a class="nav-item" href="#sec-users"><span class="ico">👩‍🏫</span> Teachers <span class="nav-badge nb-green">48</span></a>
-    <a class="nav-item" href="#sec-users"><span class="ico">👪</span> Parents</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_information"><span class="ico">🎓</span> Students <span class="nav-badge nb-yellow">1,240</span></a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/teacher"><span class="ico">👩‍🏫</span> Teachers <span class="nav-badge nb-green">48</span></a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/parent"><span class="ico">👪</span> Parents</a>
     <a class="nav-item" href="#sec-users"><span class="ico">👥</span> Staff</a>
     <div class="nav-section">Academic</div>
-    <a class="nav-item" href="#"><span class="ico">📚</span> Classes & Sections</a>
-    <a class="nav-item" href="#sec-analytics"><span class="ico">📋</span> Subjects</a>
-    <a class="nav-item" href="#sec-analytics"><span class="ico">🗓️</span> Timetable</a>
-    <a class="nav-item" href="#"><span class="ico">🏆</span> Exams & Results</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/classes"><span class="ico">📚</span> Classes & Sections</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/subject"><span class="ico">📋</span> Subjects</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/class_routine_add"><span class="ico">🗓️</span> Timetable</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/exam"><span class="ico">🏆</span> Exams & Results</a>
     <div class="nav-section">Finance</div>
-    <a class="nav-item" href="#"><span class="ico">💰</span> Fees & Invoices <span class="nav-badge nb-red">12</span></a>
-    <a class="nav-item" href="#sec-users"><span class="ico">💳</span> Payments</a>
-    <a class="nav-item" href="#sec-analytics"><span class="ico">📉</span> Expenses</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/invoice"><span class="ico">💰</span> Fees & Invoices <span class="nav-badge nb-red">12</span></a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/income"><span class="ico">💳</span> Payments</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/expense"><span class="ico">📉</span> Expenses</a>
     <div class="nav-section">System</div>
-    <a class="nav-item" href="#sec-users"><span class="ico">🤖</span> AI Management</a>
-    <a class="nav-item" href="#"><span class="ico">⚙️</span> Settings</a>
-    <a class="nav-item" href="#"><span class="ico">🔒</span> Security</a>
-    <a class="nav-item" href="#"><span class="ico">📢</span> Announcements</a>
-    <a class="nav-item" href="login.html"><span class="ico">🚪</span> Sign Out</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/exam"><span class="ico">🤖</span> AI Management</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/system_settings"><span class="ico">⚙️</span> Settings</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_profile"><span class="ico">🔒</span> Security</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/noticeboard"><span class="ico">📢</span> Announcements</a>
+    <a class="nav-item" href="https://mindstrong-universe-school-production.up.railway.app/index.php/login/logout"><span class="ico">🚪</span> Sign Out</a>
   </nav>
 </aside>
 
@@ -250,12 +265,117 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <p>System is running normally. Last backup: Today 3:00 AM &nbsp;|&nbsp; 12 unpaid invoices require attention.</p>
     </div>
 
+    <div class="backend-connect-note">
+      Backend-connected actions (login required): if not logged in, Railway will first send you to login and then to the admin dashboard.
+    </div>
+    <div class="backend-buttons">
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/dashboard">Admin Dashboard</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_add">Add Student</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_information">Manage Students</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/teacher">Manage Teachers</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/parent">Manage Parents</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/classes">Manage Classes</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_attendance">Attendance</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/noticeboard">Noticeboard</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/frontend_pages">Frontend Pages</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_profile">Account Settings</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/exam">Game Engine: Quests / Exams</a>
+      <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/system_settings">Game Engine Settings</a>
+    </div>
+
+
+    <div class="backend-session-line">
+      <span><b>Session :</b> 2025-2026</span>
+      <span><b>Website :</b> MindStrong Corp</span>
+      <span><b>User :</b> admin</span>
+    </div>
+
+    <div class="backend-menu-grid">
+      <div class="backend-menu-card">
+        <h4>Admin Home</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/dashboard">Admin Home</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Manage Students</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_add">Admit Student</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_bulk_add">Admit Bulk Student</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_information">Student Information</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_promotion">Student Promotion</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Manage Users</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/admin">Admin</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/teacher">Teacher</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/parent">Parents</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/librarian">Librarian</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/accountant">Accountant</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Academic & Classes</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/classes">Manage Classes</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/section">Manage Sections</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/academic_syllabus">Academic Syllabus</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/study_material">Study Material</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/subject">Subject</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Class Routine & Attendance</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/class_routine_add">Add Class Routine</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_attendance">Daily Atendance</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/attendance_report">Attendance Report</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Exam</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/exam">Exam List</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/grade">Exam Grades</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/marks_manage">Manage Marks</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/exam_marks_sms">Send Marks By Sms</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/tabulation_sheet">Tabulation Sheet</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/question_paper">Question Paper</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Online Exam</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/create_online_exam">Create Online Exam</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_online_exam">Manage Online Exam</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Accounting</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_payment">Create Student Payment</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/income">Student Payments</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/expense">Expense</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/expense_category">Expense Category</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Manage Office</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/book">Library</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/transport">Transport</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/dormitory">Dormitory</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/noticeboard">Noticeboard</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/message">Message</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Settings</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/system_settings">General Settings</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/frontend_pages">School Website</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/sms_settings">Sms Settings</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_language">Language Settings</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/payment_settings">Payment Settings</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/smtp_settings">SMTP Settings</a>
+      </div>
+      <div class="backend-menu-card">
+        <h4>Profile</h4>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_profile">Edit Profile</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/manage_profile">Change Password</a>
+        <a href="https://mindstrong-universe-school-production.up.railway.app/index.php/login/logout">Log Out</a>
+      </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="quick-actions">
-      <div class="qa-btn" onclick="openModal('add-user-modal')"><div class="qa-icon">➕</div><div class="qa-label">Add User</div></div>
-      <div class="qa-btn"><div class="qa-icon">📢</div><div class="qa-label">Announcement</div></div>
-      <div class="qa-btn"><div class="qa-icon">📊</div><div class="qa-label">Generate Report</div></div>
-      <div class="qa-btn"><div class="qa-icon">💰</div><div class="qa-label">View Invoices</div></div>
+      <a class="qa-btn" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/student_add"><div class="qa-icon">➕</div><div class="qa-label">Add Student</div></a>
+      <a class="qa-btn" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/noticeboard"><div class="qa-icon">📢</div><div class="qa-label">Noticeboard</div></a>
+      <a class="qa-btn" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/frontend_pages"><div class="qa-icon">📊</div><div class="qa-label">Frontend Pages</div></a>
+      <a class="qa-btn" href="https://mindstrong-universe-school-production.up.railway.app/index.php/admin/invoice"><div class="qa-icon">💰</div><div class="qa-label">View Invoices</div></a>
     </div>
 
     <!-- Stats -->
@@ -528,7 +648,7 @@ document.querySelectorAll('.bc-bar,.spark-bar').forEach(b=>{const h=b.style.heig
 async function loadData() {
   try {
     const res = await fetch('/api/admin/stats', { credentials: 'include' });
-    if (res.status === 401) { window.location.href = 'login.html'; return; }
+    if (res.status === 401) { window.location.href = 'https://mindstrong-universe-school-production.up.railway.app/index.php/login'; return; }
     if (!res.ok) return;
     const d = await res.json();
 
