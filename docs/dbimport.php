@@ -8,55 +8,54 @@ if (!isset($_GET['key']) || $_GET['key'] !== $secret) {
     die('Forbidden');
 }
 
-$host     = getenv('MYSQLHOST')     ?: 'mysql.railway.internal';
-$port     = getenv('MYSQLPORT')     ?: 3306;
-$user     = getenv('MYSQLUSER')     ?: 'root';
-$pass     = getenv('MYSQLPASSWORD') ?: '';
-$db       = getenv('MYSQLDATABASE') ?: 'railway';
+// Show loaded extensions for debugging
+if (isset($_GET['info'])) {
+    phpinfo();
+    die();
+}
 
-$sqlFile  = __DIR__ . '/dbimport.sql';
+$host    = getenv('MYSQLHOST')     ?: 'mysql.railway.internal';
+$port    = (int)(getenv('MYSQLPORT')     ?: 3306);
+$user    = getenv('MYSQLUSER')     ?: 'root';
+$pass    = getenv('MYSQLPASSWORD') ?: '';
+$db      = getenv('MYSQLDATABASE') ?: 'railway';
+$sqlFile = __DIR__ . '/dbimport.sql';
+
+echo "<h2>Debug Info</h2>";
+echo "<p>Host: $host | Port: $port | User: $user | DB: $db</p>";
+echo "<p>mysqli loaded: " . (extension_loaded('mysqli') ? 'YES' : 'NO') . "</p>";
+echo "<p>pdo_mysql loaded: " . (extension_loaded('pdo_mysql') ? 'YES' : 'NO') . "</p>";
+echo "<p>SQL file exists: " . (file_exists($sqlFile) ? 'YES' : 'NO') . "</p>";
 
 if (!file_exists($sqlFile)) {
-    die('SQL file not found at: ' . $sqlFile);
+    die('<p>SQL file not found.</p>');
 }
 
-try {
-    $pdo = new PDO(
-        "mysql:host=$host;port=$port;dbname=$db;charset=utf8",
-        $user, $pass,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-
-    $sql = file_get_contents($sqlFile);
-
-    // Split by semicolons, skip empty/comment lines
-    $statements = array_filter(
-        array_map('trim', explode(';', $sql)),
-        fn($s) => strlen($s) > 0 && !preg_match('/^(--|\/\*|#)/', $s)
-    );
-
-    $ok = 0; $fail = 0; $errors = [];
-    foreach ($statements as $stmt) {
-        try {
-            $pdo->exec($stmt);
-            $ok++;
-        } catch (PDOException $e) {
-            $fail++;
-            if (count($errors) < 10) {
-                $errors[] = substr($stmt, 0, 80) . ' → ' . $e->getMessage();
-            }
-        }
-    }
-
-    echo "<h2>Import Complete</h2>";
-    echo "<p>✅ Success: $ok statements</p>";
-    echo "<p>⚠️ Failed: $fail statements</p>";
-    if ($errors) {
-        echo "<pre>" . implode("\n", $errors) . "</pre>";
-    }
-    echo "<p><strong>Delete this file and dbimport.sql from your repo now.</strong></p>";
-
-} catch (PDOException $e) {
-    echo "<h2>Connection Failed</h2><pre>" . $e->getMessage() . "</pre>";
+if (!extension_loaded('mysqli')) {
+    die('<p>mysqli extension not available. Check extensions above.</p>');
 }
+
+$conn = new mysqli($host, $user, $pass, $db, $port);
+
+if ($conn->connect_error) {
+    die("<p>Connection failed: " . $conn->connect_error . "</p>");
+}
+
+echo "<p>✅ Connected to MySQL successfully!</p>";
+
+$sql = file_get_contents($sqlFile);
+$conn->multi_query($sql);
+
+$ok = 0; $fail = 0;
+do {
+    $ok++;
+    if ($conn->errno) { $fail++; }
+} while ($conn->next_result());
+
+echo "<h2>Import Complete</h2>";
+echo "<p>✅ Statements run: $ok</p>";
+echo "<p>⚠️ Errors: $fail</p>";
+echo "<p><strong>Done! Delete this file and dbimport.sql from your repo now.</strong></p>";
+
+$conn->close();
 ?>
