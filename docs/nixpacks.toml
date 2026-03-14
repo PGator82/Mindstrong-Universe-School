@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["nginx", "gettext"]
+
+[start]
+cmd = "bash /app/start.sh"

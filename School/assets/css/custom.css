@@ -376,4 +376,67 @@ label{
 /* Dashboard nav spacing helper */
 .backend-dashboard-nav .btn {
     margin-bottom: 8px;
+/* Mindstrong Supa Admin inspired dashboard styles */
+.mindstrong-admin-dashboard .panel.panel-primary {
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.mindstrong-admin-dashboard .panel-primary > .panel-heading {
+    background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+}
+
+.mindstrong-admin-dashboard .calendar-env,
+.mindstrong-admin-dashboard #notice_calendar {
+    background: #fff;
+}
+
+.mindstrong-tile-link {
+    display: block;
+    text-decoration: none !important;
+}
+
+.mindstrong-admin-dashboard .tile-stats {
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.mindstrong-admin-dashboard .tile-stats .num,
+.mindstrong-admin-dashboard .tile-stats h3,
+.mindstrong-admin-dashboard .tile-stats p {
+    color: #fff;
+}
+
+.mindstrong-admin-dashboard .tile-stats:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.24);
+}
+
+.mindstrong-quick-actions .panel {
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.mindstrong-quick-actions .panel-heading {
+    background: linear-gradient(135deg, #0f172a 0%, #7c3aed 100%);
+}
+
+.mindstrong-quick-actions .panel-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mindstrong-quick-actions .btn {
+    border-radius: 10px;
+    border: 0;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
+}
+
+.mindstrong-quick-actions .btn:hover {
+    transform: translateY(-1px);
 }
