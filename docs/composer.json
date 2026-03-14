@@ -1,0 +1,12 @@
+{
+  "name": "mindstrong/universe",
+  "description": "MindStrong Universe School Platform",
+  "require": {
+    "php": "^8.2"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
+  }
+}
