@@ -1,0 +1,19 @@
+{
+  "name": "mindstrong/universe",
+  "description": "MindStrong Universe School Platform",
+  "require": {
+    "php": "^8.2",
+    "ext-mysqli": "*",
+    "ext-pdo_mysql": "*",
+    "ext-mbstring": "*",
+    "ext-gd": "*",
+    "ext-curl": "*",
+    "ext-zip": "*",
+    "ext-xml": "*"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
+  }
+}

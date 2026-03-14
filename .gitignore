@@ -1,0 +1,14 @@
+# SQL dumps with real data (contain API keys / raw data)
+School/myschool.sql
+School/uploads/install.sql
+
+# Logs
+docs/application/logs/*.php
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large zip files
+*.zip

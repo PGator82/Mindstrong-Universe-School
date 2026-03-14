@@ -80,6 +80,7 @@ class Api extends CI_Controller {
 
         // Role config: table, id field, session key, redirect — matches Login.php exactly
         $role_map = [
+            'superadmin' => ['table' => 'admin', 'id_field' => 'admin_id', 'sess_key' => 'admin_login', 'redirect' => 'superadmin.html'],
             'admin'   => ['table' => 'admin',   'id_field' => 'admin_id',   'sess_key' => 'admin_login',   'redirect' => 'admin.html'],
             'teacher' => ['table' => 'teacher',  'id_field' => 'teacher_id', 'sess_key' => 'teacher_login', 'redirect' => 'teacher.html'],
             'student' => ['table' => 'student',  'id_field' => 'student_id', 'sess_key' => 'student_login', 'redirect' => 'dashboard.html'],
