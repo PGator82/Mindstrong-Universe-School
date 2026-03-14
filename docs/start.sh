@@ -51,8 +51,18 @@ http {
       return 403;
     }
 
-    location / {
+    # Root goes to home page
+    location = / {
+      return 302 /home.html;
+    }
+
+    # API routes go through CodeIgniter
+    location /api/ {
       try_files \$uri \$uri/ /index.php?\$request_uri;
+    }
+
+    location / {
+      try_files \$uri \$uri/ =404;
     }
 
     location ~ \.php$ {
