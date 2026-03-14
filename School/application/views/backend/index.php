@@ -1,13 +1,28 @@
 <?php
-	$system_name        =	$this->db->get_where('settings' , array('type'=>'system_name'))->row()->description;
-	//$system_title       =	$this->db->get_where('settings' , array('type'=>'system_title'))->row()->description;
-	$text_align         =	$this->db->get_where('settings' , array('type'=>'text_align'))->row()->description;
-	$account_type       =	$this->session->userdata('login_type');
-	$account_type_id	=	$this->session->userdata('login_user_id');
-	$skin_colour        =   $this->db->get_where('settings' , array('type'=>'skin_colour'))->row()->description;
-	$active_sms_service =   $this->db->get_where('settings' , array('type'=>'active_sms_service'))->row()->description;
-	$running_year 		=   $this->db->get_where('settings' , array('type'=>'running_year'))->row()->description;
+	if (!function_exists('mindstrong_setting_value')) {
+		function mindstrong_setting_value($ci, $type, $default = '')
+		{
+			$query = $ci->db->get_where('settings', array('type' => $type));
+			if (is_object($query)) {
+				$row = $query->row();
+				if ($row && isset($row->description) && $row->description !== NULL) {
+					return $row->description;
+				}
+			}
+			return $default;
+		}
+	}
+
+	$system_name        = mindstrong_setting_value($this, 'system_name', 'Mindstrong Universe School');
+	//$system_title       = mindstrong_setting_value($this, 'system_title', 'School Management System');
+	$text_align         = mindstrong_setting_value($this, 'text_align', 'left-to-right');
+	$account_type       = $this->session->userdata('login_type');
+	$account_type_id	= $this->session->userdata('login_user_id');
+	$skin_colour        = mindstrong_setting_value($this, 'skin_colour', '');
+	$active_sms_service = mindstrong_setting_value($this, 'active_sms_service', 'disabled');
+	$running_year 		= mindstrong_setting_value($this, 'running_year', date('Y').'-'.(date('Y')+1));
 	?>
+
 <!DOCTYPE html>
 <html lang="en" dir="<?php if ($text_align == 'right-to-left') echo 'rtl';?>">
 <head>

@@ -62,16 +62,41 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
+if (!function_exists('mindstrong_env')) {
+	/**
+	 * Read environment variable with fallback.
+	 *
+	 * Supports Railway style MYSQL* variables and local defaults.
+	 */
+	function mindstrong_env($key, $default = '')
+	{
+		$value = getenv($key);
+
+		if ($value === FALSE || $value === '') {
+			return $default;
+		}
+
+		return $value;
+	}
+}
+
+$db_host = mindstrong_env('DB_HOST', mindstrong_env('MYSQLHOST', 'localhost'));
+$db_user = mindstrong_env('DB_USER', mindstrong_env('MYSQLUSER', 'root'));
+$db_pass = mindstrong_env('DB_PASS', mindstrong_env('MYSQLPASSWORD', ''));
+$db_name = mindstrong_env('DB_NAME', mindstrong_env('MYSQLDATABASE', 'myschool'));
+$db_port = (int) mindstrong_env('DB_PORT', mindstrong_env('MYSQLPORT', 3306));
+
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'myschool',
+	'hostname' => $db_host,
+	'username' => $db_user,
+	'password' => $db_pass,
+	'database' => $db_name,
 	'dbdriver' => 'mysqli',
+	'port' => $db_port,
 	'dbprefix' => '',
 	'pconnect' => FALSE,
-	'db_debug' => TRUE,
+	'db_debug' => (ENVIRONMENT !== 'production'),
 	'cache_on' => FALSE,
 	'cachedir' => '',
 	'char_set' => 'utf8',
