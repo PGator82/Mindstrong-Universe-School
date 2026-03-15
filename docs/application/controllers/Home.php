@@ -17,14 +17,13 @@ class Home extends CI_Controller {
     parent::__construct();
     $this->load->database();
     $this->load->library('session');
-    $this->theme = $this->frontend_model->get_frontend_general_settings('theme');
+    // theme only needed for sub-pages; skip in constructor to prevent crash
+    $this->theme = 'ultimate';
   }
 
-  // default function
+  // default function — send to static home.html
   public function index() {
-    $page_data['page_name']  = 'home';
-    $page_data['page_title'] = get_phrase('home');
-    $this->load->view('frontend/'.$this->theme.'/index', $page_data);
+    redirect(base_url('home.html'), 'refresh');
   }
 
   // noticeboard

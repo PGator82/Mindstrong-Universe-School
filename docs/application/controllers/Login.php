@@ -25,28 +25,9 @@ class Login extends CI_Controller {
         $this->output->set_header("Expires: Mon, 26 Jul 2010 05:00:00 GMT");
     }
 
-    //Default function, redirects to logged in user area
+    //Default function — always send to login.html (nginx handles /login redirect)
     public function index() {
-
-        if ($this->session->userdata('admin_login') == 1)
-            redirect(site_url('admin/dashboard'), 'refresh');
-
-        if ($this->session->userdata('teacher_login') == 1)
-            redirect(site_url('teacher/dashboard'), 'refresh');
-
-        if ($this->session->userdata('student_login') == 1)
-            redirect(site_url('student/dashboard'), 'refresh');
-
-        if ($this->session->userdata('parent_login') == 1)
-            redirect(site_url('parents/dashboard'), 'refresh');
-
-        if ($this->session->userdata('librarian_login') == 1)
-            redirect(site_url('librarian/dashboard'), 'refresh');
-
-        if ($this->session->userdata('accountant_login') == 1)
-            redirect(site_url('accountant/dashboard'), 'refresh');
-
-        $this->load->view('backend/login');
+        redirect(base_url('login.html'), 'refresh');
     }
 
     //Validating login from ajax request
