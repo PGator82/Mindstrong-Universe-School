@@ -7,9 +7,11 @@
 <link rel="stylesheet" href="<?php echo base_url('assets/css/neon-forms.css');?>">
 <link rel="stylesheet" href="<?php echo base_url('assets/css/custom.css');?>">
 <?php
-    $skin_colour = $this->db->get_where('settings' , array(
-        'type' => 'skin_colour'
-    ))->row()->description;
+    if (!isset($skin_colour)) {
+        $skin_query = $this->db->get_where('settings', array('type' => 'skin_colour'));
+        $skin_row = is_object($skin_query) ? $skin_query->row() : NULL;
+        $skin_colour = ($skin_row && isset($skin_row->description)) ? $skin_row->description : '';
+    }
     if ($skin_colour != ''):?>
     <link rel="stylesheet" href="<?php echo base_url('assets/css/skins/' . $skin_colour . '.css');?>">
 
