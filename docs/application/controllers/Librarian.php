@@ -28,7 +28,7 @@ class Librarian extends CI_Controller
     public function index()
     {
         if ($this->session->userdata('librarian_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($this->session->userdata('librarian_login') == 1)
             redirect(site_url('librarian/dashboard'), 'refresh');
     }
@@ -180,7 +180,7 @@ class Librarian extends CI_Controller
     function manage_profile($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('librarian_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'update_profile_info') {
             $data['name']  = html_escape($this->input->post('name'));
@@ -228,7 +228,7 @@ class Librarian extends CI_Controller
 
     function get_books() {
         if ($this->session->userdata('librarian_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'book_id',

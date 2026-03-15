@@ -31,7 +31,7 @@ class Teacher extends CI_Controller
     public function index()
     {
         if ($this->session->userdata('teacher_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($this->session->userdata('teacher_login') == 1)
             redirect(site_url('teacher/dashboard'), 'refresh');
     }
@@ -395,7 +395,7 @@ else{
     function manage_profile($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('teacher_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'update_profile_info') {
             $data['name']        = html_escape($this->input->post('name'));
             $data['email']       = html_escape($this->input->post('email'));
@@ -844,7 +844,7 @@ else{
 
     function get_teachers() {
         if ($this->session->userdata('teacher_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'teacher_id',
@@ -900,7 +900,7 @@ else{
 
     function get_books() {
         if ($this->session->userdata('teacher_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'book_id',

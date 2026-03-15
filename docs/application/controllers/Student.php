@@ -34,7 +34,7 @@ class Student extends CI_Controller
     public function index()
     {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($this->session->userdata('student_login') == 1)
             redirect(site_url('student/dashboard'), 'refresh');
     }
@@ -460,7 +460,7 @@ class Student extends CI_Controller
     function manage_profile($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'update_profile_info') {
             $data['name']     = html_escape($this->input->post('name'));
             $data['email']    = html_escape($this->input->post('email'));
@@ -616,7 +616,7 @@ class Student extends CI_Controller
 
  function get_teachers() {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'teacher_id',
@@ -672,7 +672,7 @@ class Student extends CI_Controller
 
     function get_books() {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'book_id',
@@ -734,7 +734,7 @@ class Student extends CI_Controller
 
     function online_exam($param1 = '', $param2 = '') {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == '') {
             $page_data['data'] = 'active';
             $page_data['exams'] = $this->crud_model->available_exams($this->session->userdata('login_user_id'));
@@ -747,7 +747,7 @@ class Student extends CI_Controller
 
     function online_exam_result($param1 = '', $param2 = '') {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == '') {
             $page_data['data'] = 'result';
             $page_data['exams'] = $this->crud_model->available_exams($this->session->userdata('login_user_id'));
@@ -760,7 +760,7 @@ class Student extends CI_Controller
 
     function take_online_exam($online_exam_code) {
         if ($this->session->userdata('student_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $online_exam_id = $this->db->get_where('online_exam', array('code' => $online_exam_code))->row()->online_exam_id;
         $student_id = $this->session->userdata('login_user_id');
         // check if the student has already taken the exam

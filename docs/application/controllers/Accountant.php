@@ -31,7 +31,7 @@ class Accountant extends CI_Controller
     public function index()
     {
         if ($this->session->userdata('accountant_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($this->session->userdata('accountant_login') == 1)
             redirect(site_url('accountant/dashboard'), 'refresh');
     }
@@ -188,7 +188,7 @@ class Accountant extends CI_Controller
     /**********ACCOUNTING********************/
     function income($param1 = 'invoices', $param2 = '', $param3 = '') {
         if ($this->session->userdata('accountant_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $page_data['page_name'] = 'income';
         $page_data['inner'] = $param1;
@@ -198,7 +198,7 @@ class Accountant extends CI_Controller
 
     function get_invoices() {
         if ($this->session->userdata('accountant_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'invoice_id',
@@ -271,7 +271,7 @@ class Accountant extends CI_Controller
 
     function get_payments() {
         if ($this->session->userdata('accountant_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'payment_id',
@@ -434,7 +434,7 @@ class Accountant extends CI_Controller
     function manage_profile($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('accountant_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'update_profile_info') {
             $data['name']  = html_escape($this->input->post('name'));
@@ -481,7 +481,7 @@ class Accountant extends CI_Controller
 
     function get_expenses() {
         if ($this->session->userdata('accountant_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'payment_id',

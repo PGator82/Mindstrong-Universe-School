@@ -27,7 +27,7 @@ class Admin extends CI_Controller
     public function index()
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($this->session->userdata('admin_login') == 1)
             redirect(site_url('admin/dashboard'), 'refresh');
     }
@@ -36,7 +36,7 @@ class Admin extends CI_Controller
     function dashboard()
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['page_name']  = 'dashboard';
         $page_data['page_title'] = get_phrase('admin_dashboard');
         $this->load->view('backend/index', $page_data);
@@ -45,7 +45,7 @@ class Admin extends CI_Controller
     /***MANAGE ADMIN***/
     function admin($param1 = "", $param2 = "") {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
             if ($param1 == 'create') {
                 $data['name']       = html_escape($this->input->post('name'));
@@ -103,7 +103,7 @@ class Admin extends CI_Controller
 	function student_add()
 	{
 		if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
 		$page_data['page_name']  = 'student_add';
 		$page_data['page_title'] = get_phrase('add_student');
@@ -113,7 +113,7 @@ class Admin extends CI_Controller
 	function student_bulk_add()
 	{
 		if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 		$page_data['page_name']  = 'student_bulk_add';
 		$page_data['page_title'] = get_phrase('add_bulk_student');
 		$this->load->view('backend/index', $page_data);
@@ -122,7 +122,7 @@ class Admin extends CI_Controller
   function student_profile($student_id)
   {
     if ($this->session->userdata('admin_login') != 1) {
-      redirect(site_url('login'), 'refresh');
+      redirect(base_url('login.html'), 'refresh');
     }
     $page_data['page_name']  = 'student_profile';
 		$page_data['page_title'] = get_phrase('student_profile');
@@ -139,7 +139,7 @@ class Admin extends CI_Controller
 	function student_information($class_id = '')
 	{
 		if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
 		$page_data['page_name']  	= 'student_information';
 		$page_data['page_title'] 	= get_phrase('student_information'). " - ".get_phrase('class')." : ".
@@ -150,7 +150,7 @@ class Admin extends CI_Controller
 
     function get_students($class_id, $running_year) {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'id',
@@ -205,7 +205,7 @@ class Admin extends CI_Controller
 
     function student_marksheet($student_id = '') {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $class_id     = $this->db->get_where('enroll' , array(
             'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
         ))->row()->class_id;
@@ -220,7 +220,7 @@ class Admin extends CI_Controller
 
     function student_marksheet_print_view($student_id , $exam_id) {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $class_id     = $this->db->get_where('enroll' , array(
             'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
@@ -236,7 +236,7 @@ class Admin extends CI_Controller
     function student($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $running_year = $this->db->get_where('settings' , array(
             'type' => 'running_year'
@@ -380,7 +380,7 @@ class Admin extends CI_Controller
     function student_promotion($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if($param1 == 'promote') {
             $running_year  =   $this->input->post('running_year');
@@ -421,7 +421,7 @@ class Admin extends CI_Controller
     function parent($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']        			= html_escape($this->input->post('name'));
             $data['email']       			= html_escape($this->input->post('email'));
@@ -493,7 +493,7 @@ class Admin extends CI_Controller
 
     function get_parents() {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'parent_id',
@@ -555,7 +555,7 @@ class Admin extends CI_Controller
     function teacher($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']     = html_escape($this->input->post('name'));
             $data['email']    = html_escape($this->input->post('email'));
@@ -688,7 +688,7 @@ class Admin extends CI_Controller
 
     function get_teachers() {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'teacher_id',
@@ -751,7 +751,7 @@ class Admin extends CI_Controller
     function subject($param1 = '', $param2 = '' , $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']       = html_escape($this->input->post('name'));
             $data['class_id']   = $this->input->post('class_id');
@@ -797,7 +797,7 @@ class Admin extends CI_Controller
     function classes($param1 = '', $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']         = html_escape($this->input->post('name'));
             $data['teacher_id']   = $this->input->post('teacher_id');
@@ -858,7 +858,7 @@ class Admin extends CI_Controller
     function academic_syllabus($class_id = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         // detect the first class
         if ($class_id == '')
             $class_id           =   $this->db->get('class')->first_row()->class_id;
@@ -933,7 +933,7 @@ class Admin extends CI_Controller
     function section($class_id = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         // detect the first class
         if ($class_id == '')
             $class_id           =   $this->db->get('class')->first_row()->class_id;
@@ -947,7 +947,7 @@ class Admin extends CI_Controller
     function sections($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']       =   html_escape($this->input->post('name'));
             $data['class_id']   =   $this->input->post('class_id');
@@ -1064,7 +1064,7 @@ class Admin extends CI_Controller
     function exam($param1 = '', $param2 = '' , $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']    = html_escape($this->input->post('name'));
             $data['date']    = html_escape($this->input->post('date'));
@@ -1114,7 +1114,7 @@ class Admin extends CI_Controller
     function exam_marks_sms($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'send_sms') {
 
@@ -1172,7 +1172,7 @@ class Admin extends CI_Controller
     function marks_manage()
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['page_name']  =   'marks_manage';
         $page_data['page_title'] = get_phrase('manage_exam_marks');
         $this->load->view('backend/index', $page_data);
@@ -1181,7 +1181,7 @@ class Admin extends CI_Controller
     function marks_manage_view($exam_id = '' , $class_id = '' , $section_id = '' , $subject_id = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['exam_id']    =   $exam_id;
         $page_data['class_id']   =   $class_id;
         $page_data['subject_id'] =   $subject_id;
@@ -1194,7 +1194,7 @@ class Admin extends CI_Controller
     function marks_selector()
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $data['exam_id']    = $this->input->post('exam_id');
         $data['class_id']   = $this->input->post('class_id');
@@ -1264,7 +1264,7 @@ class Admin extends CI_Controller
     // TABULATION SHEET
     function tabulation_sheet($class_id = '' , $exam_id = '') {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($this->input->post('operation') == 'selection') {
             $page_data['exam_id']    = html_escape($this->input->post('exam_id'));
@@ -1290,7 +1290,7 @@ class Admin extends CI_Controller
 
     function tabulation_sheet_print_view($class_id , $exam_id) {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['class_id'] = $class_id;
         $page_data['exam_id']  = $exam_id;
         $this->load->view('backend/admin/tabulation_sheet_print_view' , $page_data);
@@ -1301,7 +1301,7 @@ class Admin extends CI_Controller
     function grade($param1 = '', $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']        = html_escape($this->input->post('name'));
             $data['grade_point'] = html_escape($this->input->post('grade_point'));
@@ -1352,7 +1352,7 @@ class Admin extends CI_Controller
     function class_routine($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
 
             if($this->input->post('class_id') != null){
@@ -1496,7 +1496,7 @@ class Admin extends CI_Controller
     function class_routine_add()
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['page_name']  = 'class_routine_add';
         $page_data['page_title'] = get_phrase('add_class_routine');
         $this->load->view('backend/index', $page_data);
@@ -1505,7 +1505,7 @@ class Admin extends CI_Controller
     function class_routine_view($class_id)
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['page_name']  = 'class_routine_view';
         $page_data['class_id']  =   $class_id;
         $page_data['page_title'] = get_phrase('class_routine');
@@ -1515,7 +1515,7 @@ class Admin extends CI_Controller
     function class_routine_print_view($class_id , $section_id)
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['class_id']   =   $class_id;
         $page_data['section_id'] =   $section_id;
         $this->load->view('backend/admin/class_routine_print_view' , $page_data);
@@ -1537,7 +1537,7 @@ class Admin extends CI_Controller
     function manage_attendance()
     {
         if($this->session->userdata('admin_login')!=1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $page_data['page_name']  =  'manage_attendance';
         $page_data['page_title'] =  get_phrase('manage_attendance_of_class');
@@ -1547,7 +1547,7 @@ class Admin extends CI_Controller
     function manage_attendance_view($class_id = '' , $section_id = '' , $timestamp = '')
     {
         if($this->session->userdata('admin_login')!=1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $class_name = $this->db->get_where('class' , array(
             'class_id' => $class_id
@@ -1755,7 +1755,7 @@ class Admin extends CI_Controller
     function invoice($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'create') {
             $data['student_id']         = $this->input->post('student_id');
@@ -1882,7 +1882,7 @@ class Admin extends CI_Controller
 
     function income($param1 = 'invoices', $param2 = '', $param3 = '') {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $page_data['page_name'] = 'income';
         $page_data['inner'] = $param1;
@@ -1892,7 +1892,7 @@ class Admin extends CI_Controller
 
     function get_invoices() {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'invoice_id',
@@ -1965,7 +1965,7 @@ class Admin extends CI_Controller
 
     function get_payments() {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'payment_id',
@@ -2039,7 +2039,7 @@ class Admin extends CI_Controller
     function student_payment($param1 = '' , $param2 = '' , $param3 = '') {
 
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $page_data['page_name']  = 'student_payment';
         $page_data['page_title'] = get_phrase('create_student_payment');
         $this->load->view('backend/index', $page_data);
@@ -2048,7 +2048,7 @@ class Admin extends CI_Controller
     function expense($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['title']               =   html_escape($this->input->post('title'));
             $data['expense_category_id'] =   $this->input->post('expense_category_id');
@@ -2099,7 +2099,7 @@ class Admin extends CI_Controller
 
     function get_expenses() {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'payment_id',
@@ -2167,7 +2167,7 @@ class Admin extends CI_Controller
     function expense_category($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']   =   html_escape($this->input->post('name'));
             $this->db->insert('expense_category' , $data);
@@ -2197,7 +2197,7 @@ class Admin extends CI_Controller
     function book($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']        = html_escape($this->input->post('name'));
             $data['class_id']    = $this->input->post('class_id');
@@ -2277,7 +2277,7 @@ class Admin extends CI_Controller
 
     function get_books() {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $columns = array(
             0 => 'book_id',
@@ -2401,7 +2401,7 @@ class Admin extends CI_Controller
     function dormitory($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'create') {
             $data['name']           = html_escape($this->input->post('name'));
             $data['number_of_room'] = html_escape($this->input->post('number_of_room'));
@@ -2448,7 +2448,7 @@ class Admin extends CI_Controller
     function noticeboard($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'create') {
             $data['notice_title']     = html_escape($this->input->post('notice_title'));
@@ -2561,7 +2561,7 @@ class Admin extends CI_Controller
 
     function noticeboard_edit($notice_id) {
       if ($this->session->userdata('admin_login') != 1)
-          redirect(site_url('login'), 'refresh');
+          redirect(base_url('login.html'), 'refresh');
 
       $page_data['page_name']  = 'noticeboard_edit';
       $page_data['notice_id'] = $notice_id;
@@ -2576,7 +2576,7 @@ class Admin extends CI_Controller
 
     function message($param1 = 'message_home', $param2 = '', $param3 = '') {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $max_size = 2097152;
         if ($param1 == 'send_new') {
             if (!file_exists('uploads/private_messaging_attached_file/')) {
@@ -2634,7 +2634,7 @@ class Admin extends CI_Controller
 
     function group_message($param1 = "group_message_home", $param2 = ""){
       if ($this->session->userdata('admin_login') != 1)
-          redirect(site_url('login'), 'refresh');
+          redirect(base_url('login.html'), 'refresh');
       $max_size = 2097152;
       if ($param1 == "create_group") {
         $this->crud_model->create_group();
@@ -2674,7 +2674,7 @@ class Admin extends CI_Controller
     function system_settings($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'do_update') {
 
@@ -2780,7 +2780,7 @@ class Admin extends CI_Controller
     //Payment settings
     function payment_settings($param1 = ""){
       if ($this->session->userdata('admin_login') != 1)
-          redirect(site_url('login'), 'refresh');
+          redirect(base_url('login.html'), 'refresh');
 
       if ($param1 == 'update_stripe_keys') {
             $this->crud_model->update_stripe_keys();
@@ -2806,7 +2806,7 @@ class Admin extends CI_Controller
 
     function smtp_settings($param1 = '', $param2 = ''){
         if ($this->session->userdata('admin_login') != 1) {
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         }
 
         if($param1 == 'update'){
@@ -2824,7 +2824,7 @@ class Admin extends CI_Controller
     // FRONTEND
     function frontend_pages($param1 = '', $param2 = '', $param3 = '') {
       if ($this->session->userdata('admin_login') != 1) {
-        redirect(site_url('login'), 'refresh');
+        redirect(base_url('login.html'), 'refresh');
       }
       if ($param1 == 'events') {
         $page_data['page_content']  = 'frontend_events';
@@ -2944,7 +2944,7 @@ class Admin extends CI_Controller
 
     function frontend_themes() {
       if ($this->session->userdata('admin_login') != 1) {
-        redirect(site_url('login'), 'refresh');
+        redirect(base_url('login.html'), 'refresh');
       }
       $page_data['page_name'] = 'frontend_themes';
       $page_data['page_title']  = get_phrase('themes');
@@ -2973,7 +2973,7 @@ class Admin extends CI_Controller
 	function update( $task = '', $purchase_code = '' ) {
 
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         // Create update directory.
         $dir    = 'update';
@@ -3023,7 +3023,7 @@ class Admin extends CI_Controller
     function sms_settings($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'clickatell') {
 
             $data['description'] = html_escape($this->input->post('clickatell_user'));
@@ -3191,7 +3191,7 @@ class Admin extends CI_Controller
     // Language Functions
     public function manage_language($param1 = '', $param2 = '', $param3 = ''){
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'add_language') {
             saveDefaultJSONFile($this->input->post('language'));
@@ -3259,7 +3259,7 @@ class Admin extends CI_Controller
     function manage_profile($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         if ($param1 == 'update_profile_info') {
             $data['name']  = html_escape($this->input->post('name'));
             $data['email'] = html_escape($this->input->post('email'));
@@ -3309,7 +3309,7 @@ class Admin extends CI_Controller
     function question_paper($param1 = "", $param2 = "")
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $data['page_name']  = 'question_paper';
         $data['page_title'] = get_phrase('question_paper');
@@ -3320,7 +3320,7 @@ class Admin extends CI_Controller
     function librarian($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'create') {
             $data['name']       = html_escape($this->input->post('name'));
@@ -3371,7 +3371,7 @@ class Admin extends CI_Controller
     function accountant($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($param1 == 'create') {
             $data['name']       = html_escape($this->input->post('name'));
@@ -3426,7 +3426,7 @@ class Admin extends CI_Controller
     function generate_bulk_student_csv($class_id = '', $section_id = '')
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $data['class_id']   = $class_id;
         $data['section_id'] = $section_id;
@@ -3441,7 +3441,7 @@ class Admin extends CI_Controller
     function bulk_student_add_using_csv($param1 = '') {
 
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
        if ($param1 == 'import') {
           if ($this->input->post('class_id') != '' && $this->input->post('section_id') != '') {
@@ -3517,7 +3517,7 @@ class Admin extends CI_Controller
     function study_material($task = "", $document_id = "")
     {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($task == "create")
         {
@@ -3548,7 +3548,7 @@ class Admin extends CI_Controller
     //new code
     function print_id($id){
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $data['id'] = $id;
         $this->load->view('backend/admin/print_id', $data);
     }
@@ -3563,7 +3563,7 @@ class Admin extends CI_Controller
     // Details of searched student
     function student_details($param1 = ""){
       if ($this->session->userdata('admin_login') != 1)
-          redirect(site_url('login'), 'refresh');
+          redirect(base_url('login.html'), 'refresh');
 
       $student_identifier = html_escape($this->input->post('student_identifier'));
       $query_by_code = $this->db->get_where('student', array('student_code' => $student_identifier));
@@ -3591,7 +3591,7 @@ class Admin extends CI_Controller
     // online exam
     function manage_online_exam($param1 = "", $param2 = ""){
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $running_year = get_settings('running_year');
 
@@ -3644,7 +3644,7 @@ class Admin extends CI_Controller
 
     function online_exam_questions_print_view($online_exam_id, $answers) {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         $page_data['online_exam_id'] = $online_exam_id;
         $page_data['answers'] = $answers;
@@ -3678,7 +3678,7 @@ class Admin extends CI_Controller
 
     function manage_online_exam_question($online_exam_id = "", $task = "", $type = ""){
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
 
         if ($task == 'add') {
             if ($type == 'multiple_choice') {
@@ -3701,7 +3701,7 @@ class Admin extends CI_Controller
 
     function update_online_exam_question($question_id = "", $task = "", $online_exam_id = "") {
         if ($this->session->userdata('admin_login') != 1)
-            redirect(site_url('login'), 'refresh');
+            redirect(base_url('login.html'), 'refresh');
         $online_exam_id = $this->db->get_where('question_bank', array('question_bank_id' => $question_id))->row()->online_exam_id;
         $type = $this->db->get_where('question_bank', array('question_bank_id' => $question_id))->row()->type;
         if ($task == "update") {
