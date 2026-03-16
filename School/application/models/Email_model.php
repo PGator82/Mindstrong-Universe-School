@@ -9,7 +9,8 @@ class Email_model extends CI_Model {
 
 	function account_opening_email($account_type = '' , $email = '', $password = '')
 	{
-		$system_name	=	$this->db->get_where('settings' , array('type' => 'system_name'))->row()->description;
+		$sn_row = $this->db->get_where('settings' , array('type' => 'system_name'))->row();
+		$system_name = $sn_row ? $sn_row->description : 'MindStrong Universe';
 
 		$email_msg		=	"Welcome to ".$system_name."<br />";
 		$email_msg		.=	"Your account type : ".$account_type."<br />";

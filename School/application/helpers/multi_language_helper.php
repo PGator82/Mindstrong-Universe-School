@@ -20,7 +20,8 @@ if ( ! function_exists('get_phrase'))
 	function get_phrase($phrase = '') {
 		$CI	=&	get_instance();
 		$CI->load->database();
-		$language_code = $CI->db->get_where('settings' , array('type' => 'language'))->row()->description;
+		$lang_row = $CI->db->get_where('settings', array('type' => 'language'))->row();
+		$language_code = $lang_row ? $lang_row->description : 'english';
 		$key = strtolower(preg_replace('/\s+/', '_', $phrase));
 
 		$langArray = openJSONFile($language_code);

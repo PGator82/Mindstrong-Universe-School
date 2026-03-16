@@ -104,7 +104,7 @@ class Crud_model extends CI_Model {
     //////////EXAMS/////////////
     function get_exams() {
         $query = $this->db->get_where('exam' , array(
-            'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+            'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ));
         return $query->result_array();
     }
@@ -273,7 +273,7 @@ class Crud_model extends CI_Model {
         $student_id = $this->session->userdata('student_id');
         $class_id   = $this->db->get_where('enroll', array(
             'student_id' => $student_id,
-                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
             ))->row()->class_id;
         $this->db->order_by("timestamp", "desc");
         return $this->db->get_where('document', array('class_id' => $class_id))->result_array();
@@ -524,8 +524,8 @@ class Crud_model extends CI_Model {
 
     function get_settings($type)
     {
-        $des = $this->db->get_where('settings', array('type' => $type))->row()->description;
-        return $des;
+        $row = $this->db->get_where('settings', array('type' => $type))->row();
+        return $row ? $row->description : '';
     }
 
     function update_payumoney_keys(){
@@ -606,7 +606,7 @@ class Crud_model extends CI_Model {
         $data['time_start'] = html_escape($this->input->post('time_start'));
         $data['time_end'] = html_escape($this->input->post('time_end'));
         $data['duration'] = strtotime(date('Y-m-d', $data['exam_date']).' '.$data['time_end']) - strtotime(date('Y-m-d', $data['exam_date']).' '.$data['time_start']);
-        $data['running_year'] = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+        $data['running_year'] = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         /*print_r($data);
         echo '<br/>';

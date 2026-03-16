@@ -137,34 +137,19 @@ if ( ! function_exists('duplication_of_class_routine_on_edit')){
 if ( ! function_exists('code_validation_insert')){
     function code_validation_insert($student_code){
         $ci=& get_instance();
-        $num_rows = 0;
-
         $num_rows = $ci->db->get_where('student',array('student_code'=>$student_code))->num_rows();
-        if($num_rows == 0){
-            return true;
-        }
-        else if($num_rows > 1){
-            return false;
-        }
+        return ($num_rows == 0); // true = unique (ok), false = already taken
     }
 }
 
 //student id duplication in update
-
 if ( ! function_exists('code_validation_update')){
     function code_validation_update($student_code,$student_id){
         $ci=& get_instance();
-        $num_rows = 0;
         $ci->db->where('student_id !=', $student_id);
         $ci->db->where('student_code', $student_code);
         $num_rows = $ci->db->get('student')->num_rows();
-        if($num_rows == 0){
-            return true;
-        }
-        else if($num_rows > 1){
-            return false;
-        }
-
+        return ($num_rows == 0); // true = unique (ok), false = already taken
     }
 }
 
