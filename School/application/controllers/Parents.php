@@ -137,7 +137,7 @@ class Parents extends CI_Controller
         if ($this->session->userdata('parent_login') != 1)
             redirect('login', 'refresh');
         $class_id     = $this->db->get_where('enroll' , array(
-            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type'=>'running_year'))->row()->description
+            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type'=>'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $class_name   = $this->db->get_where('class' , array('class_id' => $class_id))->row()->name;
 
@@ -509,7 +509,7 @@ class Parents extends CI_Controller
   function attendance_report_selector($student_id = "")
   {
       if($student_id != ""){
-        $running_year 		=   $this->db->get_where('settings' , array('type'=>'running_year'))->row()->description;
+        $running_year 		=   $this->db->get_where('settings' , array('type'=>'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         $sessional_year_array = explode("-", $running_year);
         $sessional_year = $sessional_year_array[0];
         $array = array(

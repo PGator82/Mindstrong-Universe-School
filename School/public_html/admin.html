@@ -172,6 +172,7 @@
     </div>
     <div class="form-row"><label>Phone</label><input id="uf-phone" placeholder="+1 (555) 000-0000"></div>
     <div class="form-row"><label>Class / Department</label><input id="uf-class" placeholder="e.g. Class 9-A or Mathematics Dept."></div>
+    <div class="form-row" id="uf-pw-row" style="display:none"><label>Password</label><input id="uf-password" type="password" placeholder="Set login password"></div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('userModal')">Cancel</button>
       <button class="btn-save" onclick="saveUser()">Save User</button>
@@ -898,9 +899,10 @@ function renderOverview(){
 function openAddUser(){
   document.getElementById('userModalTitle').textContent='Add User';
   document.getElementById('editUserId').value='';
-  ['uf-first','uf-last','uf-email','uf-phone','uf-class'].forEach(id=>document.getElementById(id).value='');
+  ['uf-first','uf-last','uf-email','uf-phone','uf-class','uf-password'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('uf-role').value='student';
   document.getElementById('uf-status').value='1';
+  document.getElementById('uf-pw-row').style.display='flex';
   openModal('userModal');
 }
 
@@ -918,10 +920,11 @@ function openEditUser(id){
   document.getElementById('uf-status').value=u.active?'1':'0';
   document.getElementById('uf-phone').value=u.phone||'';
   document.getElementById('uf-class').value=u.dept||'';
+  document.getElementById('uf-pw-row').style.display='none';
   openModal('userModal');
 }
 
-function saveUser(){
+async function saveUser(){
   const first=document.getElementById('uf-first').value.trim();
   const last=document.getElementById('uf-last').value.trim();
   if(!first){toast('First name is required','#f43f5e');return}
@@ -930,6 +933,7 @@ function saveUser(){
   const active=document.getElementById('uf-status').value==='1';
   const phone=document.getElementById('uf-phone').value.trim();
   const dept=document.getElementById('uf-class').value.trim();
+  const password=document.getElementById('uf-password').value;
   const name=[first,last].filter(Boolean).join(' ');
   let users=getUsers();
   const editId=parseInt(document.getElementById('editUserId').value)||0;
@@ -937,15 +941,33 @@ function saveUser(){
     const idx=users.findIndex(u=>u.id===editId);
     if(idx>-1) users[idx]={...users[idx],name,email,role,active,phone,dept};
     toast('User updated ✓','#10b981');
+    saveUsers(users);closeModal('userModal');loadUsers();renderOverview();
   } else {
-    const newId=Math.max(...users.map(u=>u.id),999)+1;
-    users.push({id:newId,name,email,role,active,phone,dept,joined:new Date().toISOString().slice(0,10)});
-    toast('User added ✓','#10b981');
+    if(role==='student'){
+      if(!email){toast('Email is required','#f43f5e');return}
+      if(!password){toast('Password is required for new student','#f43f5e');return}
+      const API=(()=>{const p=window.location.pathname.replace(/\/public_html\/[^/]*$/,'');return p+'/index.php/api';})();
+      const btn=document.querySelector('#userModal .btn-save');
+      btn.disabled=true;btn.textContent='Saving…';
+      try{
+        const fd=new FormData();
+        fd.append('name',name);fd.append('email',email);fd.append('password',password);fd.append('phone',phone);
+        const res=await fetch(API+'/admin/create_student',{method:'POST',body:fd,credentials:'include'});
+        const d=await res.json();
+        if(!res.ok){toast(d.error||'Failed to create student','#f43f5e');btn.disabled=false;btn.textContent='Save User';return}
+        const newId=d.student_id||Math.max(...users.map(u=>u.id),999)+1;
+        users.push({id:newId,name,email,role,active,phone,dept,joined:new Date().toISOString().slice(0,10)});
+        saveUsers(users);toast('Student created & saved to database ✓','#10b981');
+        closeModal('userModal');loadUsers();renderOverview();
+      }catch(err){toast('Server error: '+err.message,'#f43f5e');}
+      finally{btn.disabled=false;btn.textContent='Save User';}
+    } else {
+      const newId=Math.max(...users.map(u=>u.id),999)+1;
+      users.push({id:newId,name,email,role,active,phone,dept,joined:new Date().toISOString().slice(0,10)});
+      toast('User added ✓','#10b981');
+      saveUsers(users);closeModal('userModal');loadUsers();renderOverview();
+    }
   }
-  saveUsers(users);
-  closeModal('userModal');
-  loadUsers();
-  renderOverview();
 }
 
 function removeUser(id){

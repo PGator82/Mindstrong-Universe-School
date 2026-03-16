@@ -64,7 +64,7 @@ class Accountant extends CI_Controller
             $data['due']                = $data['amount'] - $data['amount_paid'];
             $data['status']             = $this->input->post('status');
             $data['creation_timestamp'] = strtotime($this->input->post('date'));
-            $data['year']               = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data['year']               = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
             $this->db->insert('invoice', $data);
             $invoice_id = $this->db->insert_id();
@@ -79,7 +79,7 @@ class Accountant extends CI_Controller
             $data2['method']            =   $this->input->post('method');
             $data2['amount']            =   html_escape($this->input->post('amount_paid'));
             $data2['timestamp']         =   strtotime($this->input->post('date'));
-            $data2['year']              =  $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data2['year']              =  $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
             $this->db->insert('payment' , $data2);
 
@@ -100,7 +100,7 @@ class Accountant extends CI_Controller
                 $data['due']                = $data['amount'] - $data['amount_paid'];
                 $data['status']             = $this->input->post('status');
                 $data['creation_timestamp'] = strtotime($this->input->post('date'));
-                $data['year']               = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+                $data['year']               = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
                 $this->db->insert('invoice', $data);
                 $invoice_id = $this->db->insert_id();
@@ -115,7 +115,7 @@ class Accountant extends CI_Controller
                 $data2['method']            =   $this->input->post('method');
                 $data2['amount']            =   html_escape($this->input->post('amount_paid'));
                 $data2['timestamp']         =   strtotime($this->input->post('date'));
-                $data2['year']               =   $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+                $data2['year']               =   $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
                 $this->db->insert('payment' , $data2);
             }
@@ -154,7 +154,7 @@ class Accountant extends CI_Controller
             $data['method']       =   $this->input->post('method');
             $data['amount']       =   html_escape($this->input->post('amount'));
             $data['timestamp']    =   strtotime($this->input->post('timestamp'));
-            $data['year']         =   $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data['year']         =   $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
             $this->db->insert('payment' , $data);
 
             $status['status']   =   $this->input->post('status');
@@ -366,7 +366,7 @@ class Accountant extends CI_Controller
             $data['method']              =   $this->input->post('method');
             $data['amount']              =   html_escape($this->input->post('amount'));
             $data['timestamp']           =   strtotime($this->input->post('timestamp'));
-            $data['year']                =   $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data['year']                =   $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
             $this->db->insert('payment' , $data);
             $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
             redirect(site_url('accountant/expense'), 'refresh');
@@ -382,7 +382,7 @@ class Accountant extends CI_Controller
             $data['method']              =   $this->input->post('method');
             $data['amount']              =   html_escape($this->input->post('amount'));
             $data['timestamp']           =   strtotime($this->input->post('timestamp'));
-            $data['year']                =   $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data['year']                =   $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
             $this->db->where('payment_id' , $param2);
             $this->db->update('payment' , $data);
             $this->session->set_flashdata('flash_message' , get_phrase('data_updated'));

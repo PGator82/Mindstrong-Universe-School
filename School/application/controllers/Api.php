@@ -119,7 +119,7 @@ class Api extends CI_Controller {
         $this->requireSession('student_login');
         $student_id = $this->session->userdata('student_id');
 
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         // Enrolled class
         $enroll = $this->db->get_where('enroll', ['student_id' => $student_id, 'year' => $running_year])->row();
@@ -165,7 +165,7 @@ class Api extends CI_Controller {
     public function student_courses() {
         $this->requireSession('student_login');
         $student_id   = $this->session->userdata('student_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         $enroll = $this->db->get_where('enroll', ['student_id' => $student_id, 'year' => $running_year])->row();
         if (!$enroll) $this->json([]);
 
@@ -196,7 +196,7 @@ class Api extends CI_Controller {
     public function student_schedule() {
         $this->requireSession('student_login');
         $student_id   = $this->session->userdata('student_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         $enroll = $this->db->get_where('enroll', ['student_id' => $student_id, 'year' => $running_year])->row();
         if (!$enroll) $this->json([]);
 
@@ -229,7 +229,7 @@ class Api extends CI_Controller {
     public function parent_child() {
         $this->requireSession('parent_login');
         $parent_id    = $this->session->userdata('parent_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         $students = $this->db->get_where('student', ['parent_id' => $parent_id])->result_array();
         $result = [];
@@ -260,7 +260,7 @@ class Api extends CI_Controller {
         $this->requireSession('parent_login');
         $parent_id    = $this->session->userdata('parent_id');
         $student_id   = $this->input->get('student_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         if (!$student_id) {
             $child = $this->db->get_where('student', ['parent_id' => $parent_id])->row();
@@ -379,7 +379,7 @@ class Api extends CI_Controller {
         $this->requireSession('parent_login');
         $parent_id    = $this->session->userdata('parent_id');
         $student_id   = $this->input->get('student_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         if (!$student_id) {
             $child = $this->db->get_where('student', ['parent_id' => $parent_id])->row();
@@ -429,7 +429,7 @@ class Api extends CI_Controller {
     public function teacher_stats() {
         $this->requireSession('teacher_login');
         $teacher_id   = $this->session->userdata('teacher_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         // Classes taught
         $classes = $this->db->get_where('subject', ['teacher_id' => $teacher_id])->result_array();
@@ -465,7 +465,7 @@ class Api extends CI_Controller {
         $this->requireSession('teacher_login');
         $teacher_id   = $this->session->userdata('teacher_id');
         $class_id     = $this->input->get('class_id');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         if (!$class_id) {
             $sub = $this->db->get_where('subject', ['teacher_id' => $teacher_id])->row();
@@ -512,7 +512,7 @@ class Api extends CI_Controller {
 
     public function admin_stats() {
         $this->requireSession('admin_login');
-        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row()->description;
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         $total_students  = $this->db->count_all('student');
         $total_teachers  = $this->db->count_all('teacher');
@@ -561,6 +561,48 @@ class Api extends CI_Controller {
             'total' => $this->db->count_all('student'),
             'page'  => $page,
         ]);
+    }
+
+    public function admin_create_student() {
+        $this->requireSession('admin_login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+            $this->json(['error' => 'Method not allowed'], 405);
+
+        $this->load->helper('user_validation');
+
+        $name     = $this->input->post('name');
+        $email    = $this->input->post('email');
+        $password = $this->input->post('password');
+        $phone    = $this->input->post('phone');
+
+        if (!$name || !$email || !$password)
+            $this->json(['error' => 'Name, email and password are required'], 400);
+
+        if (email_validation($email) != 1)
+            $this->json(['error' => 'That email is already used by another account'], 409);
+
+        $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row();
+        $year = $running_year ? $running_year->description : date('Y');
+
+        $data = [
+            'name'     => htmlspecialchars($name),
+            'email'    => htmlspecialchars($email),
+            'password' => sha1($password),
+        ];
+        if ($phone) $data['phone'] = htmlspecialchars($phone);
+
+        $this->db->insert('student', $data);
+        $student_id = $this->db->insert_id();
+
+        // Create enrollment record so student dashboard works
+        $this->db->insert('enroll', [
+            'student_id'  => $student_id,
+            'enroll_code' => substr(md5(rand(0, 1000000)), 0, 7),
+            'year'        => $year,
+            'date_added'  => strtotime(date('Y-m-d H:i:s')),
+        ]);
+
+        $this->json(['success' => true, 'student_id' => $student_id, 'name' => $name]);
     }
 
     public function admin_activity() {

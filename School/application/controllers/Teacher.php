@@ -79,7 +79,7 @@ class Teacher extends CI_Controller
         if ($this->session->userdata('teacher_login') != 1)
             redirect('login', 'refresh');
         $class_id     = $this->db->get_where('enroll' , array(
-            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $student_name = $this->db->get_where('student' , array('student_id' => $student_id))->row()->name;
         $class_name   = $this->db->get_where('class' , array('class_id' => $class_id))->row()->name;
@@ -94,7 +94,7 @@ class Teacher extends CI_Controller
         if ($this->session->userdata('teacher_login') != 1)
             redirect('login', 'refresh');
         $class_id     = $this->db->get_where('enroll' , array(
-            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $class_name   = $this->db->get_where('class' , array('class_id' => $class_id))->row()->name;
 
@@ -155,7 +155,7 @@ class Teacher extends CI_Controller
             if ($this->input->post('teacher_id') != null) {
                 $data['teacher_id'] = $this->input->post('teacher_id');
             }
-            $data['year']       = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data['year']       = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
             if ($data['class_id'] != '') {
                 $this->db->insert('subject', $data);
                 $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
@@ -176,7 +176,7 @@ class Teacher extends CI_Controller
             else{
                 $data['teacher_id'] = null;
             }
-            $data['year']       = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+            $data['year']       = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
             if ($data['class_id'] != '') {
                $this->db->where('subject_id', $param2);
                $this->db->update('subject', $data);
@@ -201,7 +201,7 @@ class Teacher extends CI_Controller
 		 $page_data['class_id']   = $param1;
         $page_data['subjects']   = $this->db->get_where('subject' , array(
             'class_id' => $param1,'teacher_id'=>$this->session->userdata('teacher_id'),
-            'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+            'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->result_array();
         $page_data['page_name']  = 'subject';
         $page_data['page_title'] = get_phrase('manage_subject');
@@ -242,7 +242,7 @@ class Teacher extends CI_Controller
         $data['class_id']   = $this->input->post('class_id');
         $data['section_id'] = $this->input->post('section_id');
         $data['subject_id'] = $this->input->post('subject_id');
-        $data['year']       = $this->db->get_where('settings' , array('type'=>'running_year'))->row()->description;
+        $data['year']       = $this->db->get_where('settings' , array('type'=>'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         if($data['class_id'] != '' && $data['exam_id'] != ''){
         $query = $this->db->get_where('mark' , array(
                     'exam_id' => $data['exam_id'],
@@ -272,7 +272,7 @@ else{
 }
     function marks_update($exam_id = '' , $class_id = '' , $section_id = '' , $subject_id = '')
     {
-        $running_year = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+        $running_year = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         if ($class_id != '' && $exam_id != '') {
         $marks_of_students = $this->db->get_where('mark' , array(
             'exam_id' => $exam_id,
@@ -331,7 +331,7 @@ else{
         }
         $data['uploader_type']          =   $this->session->userdata('login_type');
         $data['uploader_id']            =   $this->session->userdata('login_user_id');
-        $data['year']                   =   $this->db->get_where('settings',array('type'=>'running_year'))->row()->description;
+        $data['year']                   =   $this->db->get_where('settings',array('type'=>'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         $data['timestamp']              =   strtotime(date("Y-m-d H:i:s"));
         //uploading file using codeigniter upload library
         $files = $_FILES['file_name'];
@@ -522,7 +522,7 @@ else{
 
     function attendance_update($class_id = '' , $section_id = '' , $timestamp = '')
     {
-        $running_year = $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description;
+        $running_year = $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         $active_sms_service = $this->db->get_where('settings' , array('type' => 'active_sms_service'))->row()->description;
         $attendance_of_students = $this->db->get_where('attendance' , array(
             'class_id'=>$class_id,'section_id'=>$section_id,'year'=>$running_year,'timestamp'=>$timestamp

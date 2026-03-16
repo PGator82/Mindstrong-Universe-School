@@ -81,11 +81,11 @@ class Student extends CI_Controller
         ))->row();
         $student_class_id        = $this->db->get_where('enroll' , array(
             'student_id' => $student_profile->student_id,
-                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $page_data['subjects']   = $this->db->get_where('subject', array(
             'class_id' => $student_class_id,
-                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->result_array();
         $page_data['page_name']  = 'subject';
         $page_data['page_title'] = get_phrase('manage_subject');
@@ -104,7 +104,7 @@ class Student extends CI_Controller
         }
 
         $class_id     = $this->db->get_where('enroll' , array(
-            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $student_name = $this->db->get_where('student' , array('student_id' => $student_id))->row()->name;
         $class_name   = $this->db->get_where('class' , array('class_id' => $class_id))->row()->name;
@@ -119,7 +119,7 @@ class Student extends CI_Controller
         if ($this->session->userdata('student_login') != 1)
             redirect('login', 'refresh');
         $class_id     = $this->db->get_where('enroll' , array(
-            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+            'student_id' => $student_id , 'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $class_name   = $this->db->get_where('class' , array('class_id' => $class_id))->row()->name;
 
@@ -141,7 +141,7 @@ class Student extends CI_Controller
         ))->row();
         $page_data['class_id']   = $this->db->get_where('enroll' , array(
             'student_id' => $student_profile->student_id,
-                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row()->description
+                'year' => $this->db->get_where('settings' , array('type' => 'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y')
         ))->row()->class_id;
         $page_data['student_id'] = $student_profile->student_id;
         $page_data['page_name']  = 'class_routine';
@@ -576,7 +576,7 @@ class Student extends CI_Controller
     }
 
     function attendance_report_selector(){
-        $running_year 		              = $this->db->get_where('settings' , array('type'=>'running_year'))->row()->description;
+        $running_year 		              = $this->db->get_where('settings' , array('type'=>'running_year'))->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
         $student_name                   = $this->db->get_where('student', array('student_id' => $this->session->userdata('login_user_id')))->row()->name;
         $checker = array(
           'student_id' => $this->session->userdata('login_user_id'),
