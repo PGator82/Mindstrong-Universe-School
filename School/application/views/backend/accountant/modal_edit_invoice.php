@@ -22,7 +22,7 @@ $edit_data		=	$this->db->get_where('invoice' , array('invoice_id' => $param2) )-
                                         echo $this->crud_model->get_type_name_by_id('student' , $row2['student_id']);
                                         $class_id = $this->db->get_where('enroll' , array(
                                             'student_id' => $row2['student_id'],
-                                                'year' => $this->db->get_where('settings', array('type' => 'running_year'))->row()->description
+                                                'year' => (($ryr=$this->db->get_where('settings',array('type'=>'running_year'))->row())?$ryr->description:date('Y'))
                                         ))->row()->class_id;
                                     ?> -
                                      <?php echo $this->crud_model->get_class_name($class_id);?>

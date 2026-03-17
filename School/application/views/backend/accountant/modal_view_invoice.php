@@ -31,16 +31,16 @@ foreach ($edit_data as $row):
 
             <tr>
                 <td align="left" valign="top">
-                    <?php echo $this->db->get_where('settings', array('type' => 'system_name'))->row()->description; ?><br>
-                    <?php echo $this->db->get_where('settings', array('type' => 'address'))->row()->description; ?><br>
-                    <?php echo $this->db->get_where('settings', array('type' => 'phone'))->row()->description; ?><br>            
+                    <?php $r=($t=$this->db->get_where('settings',array('type'=>'system_name'))->row())?$t->description:''; echo $r; ?><br>
+                    <?php $r=($t=$this->db->get_where('settings',array('type'=>'address'))->row())?$t->description:''; echo $r; ?><br>
+                    <?php $r=($t=$this->db->get_where('settings',array('type'=>'phone'))->row())?$t->description:''; echo $r; ?><br>            
                 </td>
                 <td align="right" valign="top">
                     <?php echo $this->db->get_where('student', array('student_id' => $row['student_id']))->row()->name; ?><br>
                     <?php 
                         $class_id = $this->db->get_where('enroll' , array(
                             'student_id' => $row['student_id'],
-                                'year' => $this->db->get_where('settings', array('type' => 'running_year'))->row()->description
+                                'year' => (($ryr=$this->db->get_where('settings',array('type'=>'running_year'))->row())?$ryr->description:date('Y'))
                         ))->row()->class_id;
                         echo get_phrase('class') . ' ' . $this->db->get_where('class', array('class_id' => $class_id))->row()->name;
                     ?><br>
