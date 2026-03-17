@@ -235,6 +235,28 @@
   /** Export all data as JSON string */
   T.export = function() { return JSON.stringify(load(), null, 2); };
 
+  /**
+   * Sync progress to Railway backend.
+   * Call after T.complete() so the server stays in sync.
+   * apiBase: e.g. 'https://mindstrong-universe-school-production.up.railway.app/index.php/api'
+   * Returns a Promise — safe to fire-and-forget (errors are swallowed silently).
+   */
+  T.syncToServer = function(apiBase) {
+    try {
+      const d = load();
+      const fd = new FormData();
+      fd.append('lessons', JSON.stringify(d.lessons));
+      fd.append('xp', String(d.xp || 0));
+      return fetch(apiBase + '/student/sync_progress', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      }).catch(function() {});
+    } catch (e) {
+      return Promise.resolve();
+    }
+  };
+
   w.MSTracker = T;
 
 })(window);

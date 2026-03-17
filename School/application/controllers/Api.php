@@ -624,4 +624,215 @@ class Api extends CI_Controller {
         $this->json($result);
     }
 
+    // ── Course Catalog ────────────────────────────────────────────────────────
+
+    /** Public — returns all active lessons from the catalog */
+    public function catalog() {
+        $catalog = $this->_course_catalog();
+        // Check admin overrides (disabled lessons stored in settings)
+        $override_row = $this->db->get_where('settings', ['type' => 'disabled_lessons'])->row();
+        $disabled = $override_row ? json_decode($override_row->description, true) : [];
+        if (!is_array($disabled)) $disabled = [];
+
+        foreach ($catalog as &$lesson) {
+            $lesson['active'] = !in_array($lesson['key'], $disabled);
+        }
+        $this->json($catalog);
+    }
+
+    /** Student — sync lesson progress from GitHub Pages localStorage */
+    public function student_sync_progress() {
+        $this->requireSession('student_login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+            $this->json(['error' => 'Method not allowed'], 405);
+
+        $student_id = $this->session->userdata('student_id');
+        $lessons_json = $this->input->post('lessons');
+        $total_xp = (int)$this->input->post('xp');
+
+        if (!$lessons_json)
+            $this->json(['error' => 'No progress data'], 400);
+
+        $lessons = json_decode($lessons_json, true);
+        if (!is_array($lessons))
+            $this->json(['error' => 'Invalid progress data'], 400);
+
+        $this->_ensure_progress_table();
+
+        foreach ($lessons as $key => $data) {
+            $completed_at = !empty($data['completedAt']) ? (int)($data['completedAt'] / 1000) : null;
+            $xp_earned    = isset($data['xpEarned']) ? (int)$data['xpEarned'] : 0;
+
+            $existing = $this->db->get_where('lesson_progress', [
+                'student_id'  => $student_id,
+                'lesson_key'  => $key,
+            ])->row();
+
+            if ($existing) {
+                // Only update if newly completed or higher XP
+                if ($completed_at && !$existing->completed_at) {
+                    $this->db->update('lesson_progress', [
+                        'completed_at' => $completed_at,
+                        'xp_earned'    => $xp_earned,
+                        'progress_json'=> json_encode($data),
+                        'updated_at'   => time(),
+                    ], ['student_id' => $student_id, 'lesson_key' => $key]);
+                }
+            } else {
+                $this->db->insert('lesson_progress', [
+                    'student_id'   => $student_id,
+                    'lesson_key'   => $key,
+                    'completed_at' => $completed_at,
+                    'xp_earned'    => $xp_earned,
+                    'progress_json'=> json_encode($data),
+                    'created_at'   => time(),
+                    'updated_at'   => time(),
+                ]);
+            }
+        }
+
+        // Update total XP on student record if higher
+        $s = $this->db->get_where('student', ['student_id' => $student_id])->row();
+        if ($s) {
+            $current_xp = isset($s->xp) ? (int)$s->xp : 0;
+            if ($total_xp > $current_xp) {
+                $this->db->update('student', ['xp' => $total_xp], ['student_id' => $student_id]);
+            }
+        }
+
+        $this->json(['success' => true, 'synced' => count($lessons)]);
+    }
+
+    /** Student — get their lesson progress from DB */
+    public function student_progress() {
+        $this->requireSession('student_login');
+        $student_id = $this->session->userdata('student_id');
+        $this->_ensure_progress_table();
+
+        $rows = $this->db->get_where('lesson_progress', ['student_id' => $student_id])->result_array();
+        $result = [];
+        foreach ($rows as $r) {
+            $result[$r['lesson_key']] = [
+                'key'          => $r['lesson_key'],
+                'completed_at' => $r['completed_at'],
+                'xp_earned'    => (int)$r['xp_earned'],
+            ];
+        }
+
+        $s = $this->db->get_where('student', ['student_id' => $student_id])->row();
+        $this->json([
+            'lessons'   => $result,
+            'total_xp'  => $s && isset($s->xp) ? (int)$s->xp : 0,
+        ]);
+    }
+
+    /** Teacher — view all students' lesson progress for their classes */
+    public function teacher_lesson_progress() {
+        $this->requireSession('teacher_login');
+        $this->_ensure_progress_table();
+
+        $rows = $this->db->query('
+            SELECT lp.student_id, s.name AS student_name, lp.lesson_key,
+                   lp.completed_at, lp.xp_earned
+            FROM lesson_progress lp
+            JOIN student s ON s.student_id = lp.student_id
+            ORDER BY s.name, lp.lesson_key
+        ')->result_array();
+
+        $this->json($rows);
+    }
+
+    /** Admin — get full catalog with active/disabled state + completion counts */
+    public function admin_catalog() {
+        $this->requireSession('admin_login');
+        $this->_ensure_progress_table();
+
+        $catalog = $this->_course_catalog();
+        $override_row = $this->db->get_where('settings', ['type' => 'disabled_lessons'])->row();
+        $disabled = $override_row ? json_decode($override_row->description, true) : [];
+        if (!is_array($disabled)) $disabled = [];
+
+        // Get completion counts per lesson
+        $counts = $this->db->query('
+            SELECT lesson_key, COUNT(*) AS completions
+            FROM lesson_progress
+            WHERE completed_at IS NOT NULL
+            GROUP BY lesson_key
+        ')->result_array();
+        $count_map = [];
+        foreach ($counts as $c) $count_map[$c['lesson_key']] = (int)$c['completions'];
+
+        foreach ($catalog as &$lesson) {
+            $lesson['active']      = !in_array($lesson['key'], $disabled);
+            $lesson['completions'] = isset($count_map[$lesson['key']]) ? $count_map[$lesson['key']] : 0;
+        }
+        $this->json($catalog);
+    }
+
+    /** Admin — toggle lessons active/inactive */
+    public function admin_catalog_save() {
+        $this->requireSession('admin_login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+            $this->json(['error' => 'Method not allowed'], 405);
+
+        $disabled_json = $this->input->post('disabled');
+        $disabled = json_decode($disabled_json, true);
+        if (!is_array($disabled)) $disabled = [];
+
+        $existing = $this->db->get_where('settings', ['type' => 'disabled_lessons'])->row();
+        if ($existing) {
+            $this->db->update('settings', ['description' => json_encode($disabled)], ['type' => 'disabled_lessons']);
+        } else {
+            $this->db->insert('settings', ['type' => 'disabled_lessons', 'description' => json_encode($disabled)]);
+        }
+
+        $this->json(['success' => true, 'disabled_count' => count($disabled)]);
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    /** Full lesson catalog with metadata and GitHub Pages URLs */
+    private function _course_catalog() {
+        $base = 'https://pgator82.github.io/Mindstrong-Universe-School/school/foundations/';
+        return [
+            // Module 1 — Number Sense
+            ['key'=>'m1-l1','module'=>'module-1','lesson_num'=>1,'title'=>'Numbers Are Stories',          'subject'=>'Number Sense','url'=>$base.'module-1/lesson-1.html','color'=>'#a855f7','icon'=>'🔢'],
+            ['key'=>'m1-l2','module'=>'module-1','lesson_num'=>2,'title'=>'Place Value Is a Volume Knob', 'subject'=>'Number Sense','url'=>$base.'module-1/lesson-2.html','color'=>'#a855f7','icon'=>'🎚️'],
+            ['key'=>'m1-l3','module'=>'module-1','lesson_num'=>3,'title'=>'Expanded Form',                'subject'=>'Number Sense','url'=>$base.'module-1/lesson-3.html','color'=>'#a855f7','icon'=>'📐'],
+            ['key'=>'m1-l4','module'=>'module-1','lesson_num'=>4,'title'=>'Compare Without Guessing',     'subject'=>'Number Sense','url'=>$base.'module-1/lesson-4.html','color'=>'#a855f7','icon'=>'⚖️'],
+            ['key'=>'m1-l5','module'=>'module-1','lesson_num'=>5,'title'=>'Rounding That Makes Sense',    'subject'=>'Number Sense','url'=>$base.'module-1/lesson-5.html','color'=>'#a855f7','icon'=>'🎯'],
+            ['key'=>'m1-l6','module'=>'module-1','lesson_num'=>6,'title'=>'Estimation as a Superpower',   'subject'=>'Number Sense','url'=>$base.'module-1/lesson-6.html','color'=>'#a855f7','icon'=>'⚡'],
+            // Geometry
+            ['key'=>'geo-angles',    'module'=>'geometry','lesson_num'=>1,'title'=>'Angles & Lines',        'subject'=>'Geometry','url'=>$base.'geometry/angles/','color'=>'#06b6d4','icon'=>'📐'],
+            ['key'=>'geo-area',      'module'=>'geometry','lesson_num'=>2,'title'=>'Area & Perimeter',       'subject'=>'Geometry','url'=>$base.'geometry/area/','color'=>'#06b6d4','icon'=>'📏'],
+            ['key'=>'geo-circles',   'module'=>'geometry','lesson_num'=>3,'title'=>'Circles',                'subject'=>'Geometry','url'=>$base.'geometry/circles/','color'=>'#06b6d4','icon'=>'⭕'],
+            ['key'=>'geo-coordinate','module'=>'geometry','lesson_num'=>4,'title'=>'Coordinate Plane',       'subject'=>'Geometry','url'=>$base.'geometry/coordinate/','color'=>'#06b6d4','icon'=>'🗺️'],
+            ['key'=>'geo-polygons',  'module'=>'geometry','lesson_num'=>5,'title'=>'Polygons',               'subject'=>'Geometry','url'=>$base.'geometry/polygons/','color'=>'#06b6d4','icon'=>'🔷'],
+            ['key'=>'geo-triangles', 'module'=>'geometry','lesson_num'=>6,'title'=>'Triangles',              'subject'=>'Geometry','url'=>$base.'geometry/triangles/','color'=>'#06b6d4','icon'=>'🔺'],
+            // Pre-Algebra
+            ['key'=>'geo-equations',  'module'=>'pre-algebra','lesson_num'=>1,'title'=>'Equations',          'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/equations/','color'=>'#10b981','icon'=>'🟰'],
+            ['key'=>'geo-expressions','module'=>'pre-algebra','lesson_num'=>2,'title'=>'Expressions',        'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/expressions/','color'=>'#10b981','icon'=>'✏️'],
+            ['key'=>'geo-percents',   'module'=>'pre-algebra','lesson_num'=>3,'title'=>'Percents',            'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/percents/','color'=>'#10b981','icon'=>'💯'],
+            ['key'=>'geo-proportions','module'=>'pre-algebra','lesson_num'=>4,'title'=>'Proportions',         'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/proportions/','color'=>'#10b981','icon'=>'⚖️'],
+            // Ratio
+            ['key'=>'geo-ratios','module'=>'ratio','lesson_num'=>1,'title'=>'Ratios',                         'subject'=>'Ratios','url'=>$base.'ratio/','color'=>'#f59e0b','icon'=>'🔀'],
+        ];
+    }
+
+    /** Auto-create lesson_progress table if it doesn't exist */
+    private function _ensure_progress_table() {
+        $this->db->query('CREATE TABLE IF NOT EXISTS lesson_progress (
+            id           INT AUTO_INCREMENT PRIMARY KEY,
+            student_id   INT NOT NULL,
+            lesson_key   VARCHAR(64) NOT NULL,
+            completed_at INT DEFAULT NULL,
+            xp_earned    INT DEFAULT 0,
+            progress_json TEXT,
+            created_at   INT NOT NULL,
+            updated_at   INT NOT NULL,
+            UNIQUE KEY uq_student_lesson (student_id, lesson_key),
+            KEY idx_lesson_key (lesson_key)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+    }
+
 }

@@ -595,6 +595,7 @@
 // ── Session ──────────────────────────────────────────────────────────────────
 const _sess = JSON.parse(localStorage.getItem('ms_session') || '{}');
 const uname = _sess.name || 'Student';
+const API = (()=>{ const p = window.location.pathname.replace(/\/public_html\/[^/]*$/, ''); return p + '/index.php/api'; })();
 document.getElementById('greetName').textContent = uname.split(' ')[0];
 document.getElementById('sidebarName').textContent = uname;
 document.getElementById('sidebarInitial').textContent = uname[0]?.toUpperCase() || 'S';
@@ -637,14 +638,30 @@ function showView(name) {
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const SUBJECTS = [
-  { name: 'Mathematics', teacher: 'Mr. Martinez', color: '#a855f7', icon: '🧮' },
-  { name: 'Science',     teacher: 'Ms. Singh',    color: '#06b6d4', icon: '🔬' },
-  { name: 'English',     teacher: 'Mrs. Johnson', color: '#10b981', icon: '📖' },
-  { name: 'History',     teacher: 'Mr. Lee',      color: '#f59e0b', icon: '🏛️' },
-  { name: 'Physics',     teacher: 'Dr. Okafor',   color: '#3b82f6', icon: '⚛️' },
-  { name: 'Art',         teacher: 'Ms. Rivera',   color: '#ec4899', icon: '🎨' }
-];
+// SUBJECTS is populated from the API catalog; fallback to empty until loaded
+let SUBJECTS = [];
+let _catalogCache = null;
+async function fetchCatalog() {
+  if (_catalogCache) return _catalogCache;
+  try {
+    const res = await fetch(API + '/catalog', { credentials: 'include' });
+    if (!res.ok) throw new Error('catalog fetch failed');
+    const data = await res.json();
+    _catalogCache = (Array.isArray(data) ? data : []).filter(l => l.active !== false);
+    return _catalogCache;
+  } catch (e) { return []; }
+}
+// Fetch student progress from server (completed lessons + XP)
+let _progressCache = null;
+async function fetchProgress() {
+  if (_progressCache) return _progressCache;
+  try {
+    const res = await fetch(API + '/student/progress', { credentials: 'include' });
+    if (!res.ok) return { lessons: {}, total_xp: 0 };
+    _progressCache = await res.json();
+    return _progressCache;
+  } catch (e) { return { lessons: {}, total_xp: 0 }; }
+}
 
 function getGrades() {
   const stored = localStorage.getItem('ms_student_grades');
@@ -872,32 +889,60 @@ function renderGradesPanel() {
 }
 
 // ── Courses Panel ─────────────────────────────────────────────────────────────
-function renderCoursesPanel() {
-  const grades = getGrades();
-  const links = {
-    Mathematics: 'school/math-league.html',
-    Science: 'school/foundations/index.html',
-    English: 'school/index.html',
-    History: 'school/index.html',
-    Physics: 'school/foundations/index.html',
-    Art: 'school/index.html'
-  };
-  document.getElementById('courseCardGrid').innerHTML = SUBJECTS.map((s, i) => {
-    const g = grades.find(x => x.subject === s.name) || { avg: 75 };
-    const gl = gradeLabel(g.avg);
-    const statusTxt = g.avg >= 75 ? 'On Track' : 'Needs Work';
-    const statusCls = g.avg >= 75 ? 'pill-green' : 'pill-amber';
-    return `<a class="course-card" href="${links[s.name] || 'school/index.html'}">
-      <div class="cc-icon" style="background:${s.color}1a;color:${s.color}">${s.icon}</div>
-      <div class="cc-title">${s.name}</div>
-      <div class="cc-teacher">${s.teacher}</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:12px;color:var(--muted)">Average</span>
-        <span style="font-size:13px;font-weight:700;color:${s.color}">${g.avg}% · ${gl}</span>
+async function renderCoursesPanel() {
+  const grid = document.getElementById('courseCardGrid');
+  grid.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted)">Loading courses…</div>';
+
+  const [catalog, progress] = await Promise.all([fetchCatalog(), fetchProgress()]);
+  const completedMap = progress.lessons || {};
+
+  if (!catalog.length) {
+    grid.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted)">No courses available yet.</div>';
+    return;
+  }
+
+  // Group by subject
+  const groups = {};
+  catalog.forEach(lesson => {
+    if (!groups[lesson.subject]) groups[lesson.subject] = [];
+    groups[lesson.subject].push(lesson);
+  });
+
+  grid.innerHTML = Object.entries(groups).map(([subject, lessons]) => {
+    const completed = lessons.filter(l => completedMap[l.key] && completedMap[l.key].completed_at).length;
+    const pct = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
+    const color = lessons[0].color || '#a855f7';
+    const icon  = lessons[0].icon  || '📚';
+    const statusTxt = pct === 100 ? 'Complete' : pct > 0 ? 'In Progress' : 'Not Started';
+    const statusCls = pct === 100 ? 'pill-green' : pct > 0 ? 'pill-cyan' : 'pill-amber';
+
+    const lessonItems = lessons.map(l => {
+      const done = completedMap[l.key] && completedMap[l.key].completed_at;
+      const xp   = done ? completedMap[l.key].xp_earned : 0;
+      return `<a class="lesson-row" href="${l.url}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text);transition:background .15s;"
+        onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''"
+      >
+        <span style="font-size:16px">${done ? '✅' : '⬜'}</span>
+        <span style="flex:1;font-size:13px">${l.title}</span>
+        ${done ? `<span style="font-size:11px;color:${color};font-weight:700">+${xp} XP</span>` : ''}
+      </a>`;
+    }).join('');
+
+    return `<div class="course-card" style="cursor:default">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div class="cc-icon" style="background:${color}1a;color:${color}">${icon}</div>
+        <div>
+          <div class="cc-title" style="margin-bottom:2px">${subject}</div>
+          <span class="pill ${statusCls}">${statusTxt}</span>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:13px;font-weight:700;color:${color}">${completed}/${lessons.length}</div>
+          <div style="font-size:11px;color:var(--muted)">lessons</div>
+        </div>
       </div>
-      <div class="prog"><div class="prog-fill" style="width:${g.avg}%;background:${s.color}"></div></div>
-      <div style="margin-top:8px;text-align:right"><span class="pill ${statusCls}">${statusTxt}</span></div>
-    </a>`;
+      <div class="prog" style="margin-bottom:12px"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div style="display:flex;flex-direction:column;gap:2px">${lessonItems}</div>
+    </div>`;
   }).join('');
 }
 

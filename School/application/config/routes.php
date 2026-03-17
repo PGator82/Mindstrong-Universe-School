@@ -71,3 +71,11 @@ $route['api/admin/stats']           = 'api/admin_stats';
 $route['api/admin/users']           = 'api/admin_users';
 $route['api/admin/activity']        = 'api/admin_activity';
 $route['api/admin/create_student']  = 'api/admin_create_student';
+
+// Course catalog & progress routes
+$route['api/catalog']                     = 'api/catalog';
+$route['api/student/progress']            = 'api/student_progress';
+$route['api/student/sync_progress']       = 'api/student_sync_progress';
+$route['api/teacher/lesson_progress']     = 'api/teacher_lesson_progress';
+$route['api/admin/catalog']               = 'api/admin_catalog';
+$route['api/admin/catalog_save']          = 'api/admin_catalog_save';

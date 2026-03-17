@@ -229,6 +229,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
     Performance
   </a>
+  <a class="nav-item" id="nav-lessons" href="#" onclick="showView('lessons');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Lesson Progress
+  </a>
   <a class="nav-item" id="nav-resources" href="#" onclick="showView('resources');return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     Resources
@@ -483,6 +487,15 @@
       </div>
     </div>
 
+    <!-- ══ LESSON PROGRESS ══ -->
+    <div id="panel-lessons" class="view-panel">
+      <div class="page-header"><h2>Lesson Progress</h2><p>See which students have completed each digital lesson</p></div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Student Completion</div><div class="card-sub" id="lpSubtitle">Loading…</div></div>
+        <div id="lessonProgressTable" style="margin-top:12px"><div style="color:var(--muted);font-size:13px">Loading…</div></div>
+      </div>
+    </div>
+
     <!-- ══ RESOURCES ══ -->
     <div id="panel-resources" class="view-panel">
       <div class="page-header"><h2>Resources</h2><p>Lesson planning tools and teaching materials</p></div>
@@ -618,6 +631,7 @@
 <script>
 /* ═══ DATA ═══ */
 const _sess = JSON.parse(localStorage.getItem('ms_session') || '{}');
+const API = (()=>{ const p = window.location.pathname.replace(/\/public_html\/[^/]*$/, ''); return p + '/index.php/api'; })();
 const SUBJECTS = ['Mathematics','Science','English','History','Physics','Chemistry'];
 const SUBJ_COLORS = ['#10b981','#3b82f6','#a855f7','#f59e0b','#06b6d4','#f43f5e'];
 const CLASS_NAMES = ['Class 9-A','Class 9-B','Class 10-A'];
@@ -723,6 +737,68 @@ function showView(name) {
   if (panel) panel.classList.add('active');
   const nav = document.getElementById('nav-'+name);
   if (nav) nav.classList.add('active');
+  if (name === 'lessons') renderLessonProgress();
+}
+
+/* ═══ LESSON PROGRESS ═══ */
+async function renderLessonProgress() {
+  const tbl = document.getElementById('lessonProgressTable');
+  tbl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
+
+  let rows;
+  try {
+    const res = await fetch(API + '/teacher/lesson_progress', { credentials: 'include' });
+    if (!res.ok) throw new Error('not ok');
+    rows = await res.json();
+  } catch(e) {
+    tbl.innerHTML = '<div style="color:#f87171;font-size:13px">Could not load progress data. Make sure you are logged in as a teacher.</div>';
+    return;
+  }
+
+  if (!rows || !rows.length) {
+    tbl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0">No lesson progress recorded yet. Students need to complete lessons on the GitHub Pages site first, then sync via their dashboard.</div>';
+    document.getElementById('lpSubtitle').textContent = '0 completions';
+    return;
+  }
+
+  // Build student → lessons map
+  const byStudent = {};
+  rows.forEach(r => {
+    if (!byStudent[r.student_id]) byStudent[r.student_id] = { name: r.student_name, lessons: [] };
+    if (r.completed_at) byStudent[r.student_id].lessons.push(r);
+  });
+
+  const completions = rows.filter(r => r.completed_at).length;
+  document.getElementById('lpSubtitle').textContent = completions + ' total completions across ' + Object.keys(byStudent).length + ' students';
+
+  const studentRows = Object.values(byStudent).sort((a,b)=>a.name.localeCompare(b.name)).map(s => {
+    const totalXp = s.lessons.reduce((sum, l) => sum + (parseInt(l.xp_earned)||0), 0);
+    const initials = s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const lessonPills = s.lessons.slice(0,5).map(l =>
+      `<span style="font-size:10px;background:rgba(16,185,129,.12);color:#10b981;padding:2px 7px;border-radius:4px;white-space:nowrap">${l.lesson_key}</span>`
+    ).join(' ') + (s.lessons.length > 5 ? `<span style="font-size:10px;color:var(--muted)">+${s.lessons.length-5} more</span>` : '');
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+      <td style="padding:10px 8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#10b981,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${initials}</div>
+          <div style="font-size:13px;font-weight:600">${s.name}</div>
+        </div>
+      </td>
+      <td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:700;color:#10b981">${s.lessons.length}</td>
+      <td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:700;color:#a855f7">${totalXp} XP</td>
+      <td style="padding:10px 8px">${lessonPills || '<span style="font-size:11px;color:var(--muted)">None yet</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  tbl.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="border-bottom:1px solid rgba(255,255,255,.1)">
+      <th style="padding:8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Student</th>
+      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Lessons Done</th>
+      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Total XP</th>
+      <th style="padding:8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Completed</th>
+    </tr></thead>
+    <tbody>${studentRows}</tbody>
+  </table>`;
 }
 
 /* ═══ TOAST ═══ */

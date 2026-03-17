@@ -270,6 +270,10 @@
   </a>
 
   <div class="nav-section">Academic</div>
+  <a class="nav-item" id="nav-catalog" href="#" onclick="showView('catalog');return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Course Catalog
+  </a>
   <a class="nav-item" id="nav-analytics" href="#" onclick="showView('analytics');return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
     Analytics
@@ -660,6 +664,25 @@
       </div>
     </div>
 
+    <!-- ══ COURSE CATALOG PANEL ══ -->
+    <div id="panel-catalog" class="view-panel">
+      <div class="page-header">
+        <h2>Course Catalog</h2>
+        <p>Enable or disable lessons available to students. Changes take effect immediately.</p>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-hd">
+          <div><div class="card-title">Manage Lessons</div><div class="card-sub" id="catalogSubtitle">Loading…</div></div>
+          <button class="btn-save" onclick="saveCatalog()" id="catalogSaveBtn" style="display:none">Save Changes</button>
+        </div>
+        <div id="catalogGrid" style="margin-top:16px"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Student Completion Stats</div><div class="card-sub">How many students have completed each lesson</div></div>
+        <div id="catalogStats" style="margin-top:12px"><div style="color:var(--muted);font-size:13px">Loading stats…</div></div>
+      </div>
+    </div>
+
     <!-- ══ SECURITY PANEL ══ -->
     <div id="panel-security" class="view-panel">
       <div class="page-header"><h2>Security</h2><p>Account security & session management</p></div>
@@ -712,6 +735,7 @@
 <script>
 /* ═══ GLOBALS ═══ */
 const _sess = JSON.parse(localStorage.getItem('ms_session') || '{}');
+const API = (()=>{ const p = window.location.pathname.replace(/\/public_html\/[^/]*$/, ''); return p + '/index.php/api'; })();
 let currentPage = 1, perPage = 10, allUsers = [], currentRole = '';
 
 /* ═══ INIT ═══ */
@@ -750,8 +774,9 @@ function showView(name, roleFilter){
   if(panel) panel.classList.add('active');
   const navEl = document.getElementById('nav-'+name) || document.getElementById('nav-'+name+'s');
   if(navEl) navEl.classList.add('active');
-  const titles = {overview:'Overview',users:'User Management',analytics:'Analytics',finance:'Finance',attendance:'Attendance',timetable:'Timetable',reports:'Reports',announcements:'Announcements',settings:'Settings',security:'Security'};
+  const titles = {overview:'Overview',users:'User Management',analytics:'Analytics',finance:'Finance',attendance:'Attendance',timetable:'Timetable',reports:'Reports',announcements:'Announcements',settings:'Settings',security:'Security',catalog:'Course Catalog'};
   document.getElementById('viewTitle').textContent = titles[name] || name;
+  if(name==='catalog') renderCatalogPanel();
   if(name==='users' && roleFilter){
     document.getElementById('roleFilter').value = roleFilter;
     currentRole = roleFilter;
@@ -762,6 +787,105 @@ function showView(name, roleFilter){
     document.getElementById('usersTitle').textContent = 'All Users';
     document.getElementById('nav-users').classList.add('active');
   }
+}
+
+/* ═══ COURSE CATALOG ═══ */
+let _adminCatalog = null;
+let _disabledLessons = new Set();
+
+async function renderCatalogPanel() {
+  document.getElementById('catalogGrid').innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0">Loading catalog…</div>';
+  document.getElementById('catalogStats').innerHTML = '<div style="color:var(--muted);font-size:13px">Loading stats…</div>';
+
+  try {
+    const res = await fetch(API + '/admin/catalog', { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to load catalog');
+    _adminCatalog = await res.json();
+  } catch(e) {
+    document.getElementById('catalogGrid').innerHTML = '<div style="color:#f87171;font-size:13px">Could not load catalog. Make sure you are logged in as admin.</div>';
+    return;
+  }
+
+  _disabledLessons = new Set(_adminCatalog.filter(l => !l.active).map(l => l.key));
+
+  // Group by subject
+  const groups = {};
+  _adminCatalog.forEach(l => { if(!groups[l.subject]) groups[l.subject] = []; groups[l.subject].push(l); });
+
+  const total = _adminCatalog.length;
+  const active = _adminCatalog.filter(l => l.active).length;
+  document.getElementById('catalogSubtitle').textContent = active + ' of ' + total + ' lessons active';
+  document.getElementById('catalogSaveBtn').style.display = '';
+
+  let html = '';
+  Object.entries(groups).forEach(([subject, lessons]) => {
+    html += `<div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">${subject}</div>`;
+    lessons.forEach(l => {
+      const checked = l.active ? 'checked' : '';
+      const color = l.color || '#a855f7';
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.07);margin-bottom:6px;background:rgba(255,255,255,.02)">
+        <span style="font-size:18px">${l.icon || '📚'}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${l.title}</div>
+          <div style="font-size:11px;color:var(--muted)">Key: ${l.key}</div>
+        </div>
+        <div style="font-size:11px;color:${color};font-weight:700">${l.completions || 0} completed</div>
+        <a href="${l.url}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;padding:3px 8px;border:1px solid rgba(244,63,94,.25);border-radius:5px">Preview</a>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--muted)">
+          <input type="checkbox" data-key="${l.key}" ${checked} onchange="toggleLesson('${l.key}',this.checked)" style="accent-color:${color};width:14px;height:14px">
+          Active
+        </label>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('catalogGrid').innerHTML = html;
+
+  // Stats table
+  const statRows = _adminCatalog.map(l =>
+    `<tr>
+      <td style="padding:6px 8px;font-size:13px">${l.icon || ''} ${l.title}</td>
+      <td style="padding:6px 8px;font-size:13px;color:var(--muted)">${l.subject}</td>
+      <td style="padding:6px 8px;text-align:center"><span class="pill ${l.active?'pill-green':'pill-amber'}" style="font-size:10px">${l.active?'Active':'Disabled'}</span></td>
+      <td style="padding:6px 8px;text-align:center;font-size:13px;font-weight:700;color:#10b981">${l.completions || 0}</td>
+    </tr>`
+  ).join('');
+  document.getElementById('catalogStats').innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="border-bottom:1px solid rgba(255,255,255,.07)">
+      <th style="padding:6px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Lesson</th>
+      <th style="padding:6px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Subject</th>
+      <th style="padding:6px 8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Status</th>
+      <th style="padding:6px 8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Completions</th>
+    </tr></thead>
+    <tbody>${statRows}</tbody>
+  </table>`;
+}
+
+function toggleLesson(key, isActive) {
+  if (isActive) { _disabledLessons.delete(key); } else { _disabledLessons.add(key); }
+  const active = (_adminCatalog ? _adminCatalog.length : 0) - _disabledLessons.size;
+  const total  = _adminCatalog ? _adminCatalog.length : 0;
+  document.getElementById('catalogSubtitle').textContent = active + ' of ' + total + ' lessons active';
+}
+
+async function saveCatalog() {
+  const btn = document.getElementById('catalogSaveBtn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+  try {
+    const fd = new FormData();
+    fd.append('disabled', JSON.stringify([..._disabledLessons]));
+    const res = await fetch(API + '/admin/catalog_save', { method: 'POST', credentials: 'include', body: fd });
+    const d = await res.json();
+    if (d.success) {
+      toast('Catalog saved — ' + (_disabledLessons.size) + ' lesson(s) disabled', '#10b981');
+    } else {
+      toast('Save failed: ' + (d.error || 'Unknown error'), '#f87171');
+    }
+  } catch(e) { toast('Network error', '#f87171'); }
+  btn.textContent = 'Save Changes';
+  btn.disabled = false;
 }
 
 /* ═══ TOAST ═══ */
@@ -946,7 +1070,6 @@ async function saveUser(){
     if(role==='student'){
       if(!email){toast('Email is required','#f43f5e');return}
       if(!password){toast('Password is required for new student','#f43f5e');return}
-      const API=(()=>{const p=window.location.pathname.replace(/\/public_html\/[^/]*$/,'');return p+'/index.php/api';})();
       const btn=document.querySelector('#userModal .btn-save');
       btn.disabled=true;btn.textContent='Saving…';
       try{
