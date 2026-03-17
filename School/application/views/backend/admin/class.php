@@ -20,6 +20,20 @@
             <!----TABLE LISTING STARTS-->
             <div class="tab-pane box active" id="list">
 				
+                <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                    <?php if($this->db->count_all('class') == 0): ?>
+                    <div class="alert alert-info" style="margin:0;padding:10px 14px;border-radius:5px;flex:1;">
+                        <strong>📚 No classes yet.</strong>
+                        Import your Foundations lessons to get started — creates Number Sense, Geometry, Pre-Algebra &amp; Ratios with all 17 lessons as subjects.
+                    </div>
+                    <?php endif; ?>
+                    <a href="<?php echo site_url('admin/setup_foundations'); ?>"
+                       class="btn btn-info btn-sm"
+                       onclick="return confirm('Import Foundations lessons as classes? Only missing entries will be added — safe to run again.');">
+                        <i class="entypo-download"></i> <?php echo ($this->db->count_all('class') == 0) ? 'Import Foundations Lessons' : 'Sync Foundations Lessons'; ?>
+                    </a>
+                </div>
+
                 <table class="table table-bordered datatable" id="">
                 	<thead>
                 		<tr>

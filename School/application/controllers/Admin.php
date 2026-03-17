@@ -854,6 +854,100 @@ class Admin extends CI_Controller
         $page_data['page_title'] = get_phrase('manage_class');
         $this->load->view('backend/index', $page_data);
     }
+
+    function setup_foundations()
+    {
+        if ($this->session->userdata('admin_login') != 1)
+            redirect(site_url('login'), 'refresh');
+
+        $base = 'https://pgator82.github.io/Mindstrong-Universe-School/school/foundations/';
+        $running_year = $this->_running_year();
+
+        $catalog = [
+            'Number Sense' => [
+                'num' => '1',
+                'lessons' => [
+                    'Numbers Are Stories',
+                    'Place Value Is a Volume Knob',
+                    'Expanded Form',
+                    'Compare Without Guessing',
+                    'Rounding That Makes Sense',
+                    'Estimation as a Superpower',
+                ],
+            ],
+            'Geometry' => [
+                'num' => '2',
+                'lessons' => [
+                    'Angles & Lines',
+                    'Area & Perimeter',
+                    'Circles',
+                    'Coordinate Plane',
+                    'Polygons',
+                    'Triangles',
+                ],
+            ],
+            'Pre-Algebra' => [
+                'num' => '3',
+                'lessons' => [
+                    'Equations',
+                    'Expressions',
+                    'Percents',
+                    'Proportions',
+                ],
+            ],
+            'Ratios' => [
+                'num' => '4',
+                'lessons' => [
+                    'Ratios',
+                ],
+            ],
+        ];
+
+        $created_classes  = 0;
+        $created_subjects = 0;
+
+        foreach ($catalog as $class_name => $data) {
+            $existing = $this->db->get_where('class', ['name' => $class_name])->row();
+            if ($existing) {
+                $class_id = $existing->class_id;
+            } else {
+                $this->db->insert('class', [
+                    'name'         => $class_name,
+                    'name_numeric' => $data['num'],
+                    'teacher_id'   => null,
+                ]);
+                $class_id = $this->db->insert_id();
+                // Create default section A
+                $this->db->insert('section', [
+                    'class_id'   => $class_id,
+                    'name'       => 'A',
+                    'teacher_id' => null,
+                ]);
+                $created_classes++;
+            }
+
+            foreach ($data['lessons'] as $lesson_title) {
+                $existing_sub = $this->db->get_where('subject', [
+                    'name'     => $lesson_title,
+                    'class_id' => $class_id,
+                ])->row();
+                if (!$existing_sub) {
+                    $this->db->insert('subject', [
+                        'name'       => $lesson_title,
+                        'class_id'   => $class_id,
+                        'teacher_id' => null,
+                        'year'       => $running_year,
+                    ]);
+                    $created_subjects++;
+                }
+            }
+        }
+
+        $msg = $created_classes . ' courses and ' . $created_subjects . ' lessons imported from Foundations.';
+        $this->session->set_flashdata('flash_message', $msg);
+        redirect(site_url('admin/classes'), 'refresh');
+    }
+
      function get_subject($class_id)
     {
         $subject = $this->db->get_where('subject' , array(
