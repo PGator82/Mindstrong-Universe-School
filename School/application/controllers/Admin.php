@@ -868,10 +868,14 @@ class Admin extends CI_Controller
     {
         if ($this->session->userdata('admin_login') != 1)
             redirect(site_url('login'), 'refresh');
-        // detect the first class
-        if ($class_id == '')
-            $class_id           =   $this->db->get('class')->first_row()->class_id;
-
+        if ($class_id == '') {
+            $first = $this->db->get('class')->first_row();
+            if (!$first) {
+                $this->session->set_flashdata('flash_message', get_phrase('please_add_class_first'));
+                redirect(site_url('admin/classes'), 'refresh');
+            }
+            $class_id = $first->class_id;
+        }
         $page_data['page_name']  = 'academic_syllabus';
         $page_data['page_title'] = get_phrase('academic_syllabus');
         $page_data['class_id']   = $class_id;
@@ -943,10 +947,14 @@ class Admin extends CI_Controller
     {
         if ($this->session->userdata('admin_login') != 1)
             redirect(site_url('login'), 'refresh');
-        // detect the first class
-        if ($class_id == '')
-            $class_id           =   $this->db->get('class')->first_row()->class_id;
-
+        if ($class_id == '') {
+            $first = $this->db->get('class')->first_row();
+            if (!$first) {
+                $this->session->set_flashdata('flash_message', get_phrase('please_add_class_first'));
+                redirect(site_url('admin/classes'), 'refresh');
+            }
+            $class_id = $first->class_id;
+        }
         $page_data['page_name']  = 'section';
         $page_data['page_title'] = get_phrase('manage_sections');
         $page_data['class_id']   = $class_id;

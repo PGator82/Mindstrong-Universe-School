@@ -952,52 +952,90 @@ setTimeout(() => {
   document.getElementById('xp-fill').style.width = '68%';
 }, 400);
 
+// ── Railway API base ──
+const RAILWAY = 'https://mindstrong-universe-school-production.up.railway.app/index.php/api';
+
 // ── Load real data from API ──
 async function loadData() {
   try {
-    const res = await fetch('/api/student/stats', { credentials: 'include' });
+    const res = await fetch(RAILWAY + '/student/stats', { credentials: 'include' });
     if (res.status === 401) { window.location.href = 'login.html'; return; }
     if (!res.ok) return;
     const d = await res.json();
 
-    // Update stat cards
     const cards = document.querySelectorAll('.stat-num');
     if (cards[0]) cards[0].textContent = d.course_count ?? cards[0].textContent;
     if (cards[1]) cards[1].textContent = (d.xp ?? 3240).toLocaleString();
     if (cards[2]) cards[2].textContent = (d.avg_score ?? 87) + '%';
 
-    // Update greeting name
     const greetEl = document.querySelector('.greeting h1 .grad-text');
     if (greetEl && d.name) greetEl.textContent = d.name.split(' ')[0];
 
-    // Update XP bar
     if (d.xp) {
       const pct = Math.min(100, Math.round((d.xp % 1600) / 1600 * 100));
       const fill = document.getElementById('xp-fill');
       if (fill) setTimeout(() => { fill.style.width = pct + '%'; }, 400);
     }
-  } catch (e) { /* silently keep demo data */ }
+  } catch (e) { /* keep demo data when offline */ }
 
-  // Load courses
+  loadLessonCatalog();
+}
+
+// ── Load lesson catalog into #sec-courses ──
+async function loadLessonCatalog() {
+  let catalog = [], progress = {};
   try {
-    const res = await fetch('/api/student/courses', { credentials: 'include' });
-    if (!res.ok) return;
-    const d = await res.json();
-    if (!d.courses || !d.courses.length) return;
-    // Update course progress bars (first card in grid-2 → second card)
-    const items = document.querySelectorAll('.course-item');
-    d.courses.forEach((c, i) => {
-      if (!items[i]) return;
-      const nameEl = items[i].querySelector('.course-name');
-      const teachEl = items[i].querySelector('.course-teacher');
-      const fillEl  = items[i].querySelector('.prog-bar-fill');
-      const pctEl   = items[i].querySelector('.course-pct');
-      if (nameEl) nameEl.textContent = c.subject;
-      if (teachEl) teachEl.textContent = c.teacher;
-      if (fillEl) fillEl.style.width = c.progress + '%';
-      if (pctEl) pctEl.textContent = c.progress + '%';
+    const [catRes, progRes] = await Promise.all([
+      fetch(RAILWAY + '/catalog', { credentials: 'include' }),
+      fetch(RAILWAY + '/student/progress', { credentials: 'include' }),
+    ]);
+    if (catRes.ok) catalog = (await catRes.json()).filter(l => l.active !== false);
+    if (progRes.ok) { const p = await progRes.json(); progress = p.lessons || {}; }
+  } catch(e) { return; } // keep hardcoded demo on error
+
+  if (!catalog.length) return;
+
+  // Replace the "Course Progress" card with the real lesson grid
+  const coursesCard = document.querySelector('#sec-courses .grid-2 .card:last-child');
+  if (!coursesCard) return;
+
+  // Group by subject
+  const groups = {};
+  catalog.forEach(l => { if (!groups[l.subject]) groups[l.subject] = []; groups[l.subject].push(l); });
+
+  const subjectColors = { 'Number Sense':'#a855f7','Geometry':'#06b6d4','Pre-Algebra':'#10b981','Ratios':'#f59e0b' };
+  const subjectIcons  = { 'Number Sense':'🔢','Geometry':'📐','Pre-Algebra':'🟰','Ratios':'🔀' };
+
+  let html = `<div class="card-header"><span class="card-title">Lesson Catalog</span><a class="card-link" href="${RAILWAY.replace('/index.php/api','')}" target="_blank">Open LMS</a></div>`;
+
+  Object.entries(groups).forEach(([subject, lessons]) => {
+    const color = subjectColors[subject] || '#a855f7';
+    const icon  = subjectIcons[subject]  || '📚';
+    const done  = lessons.filter(l => progress[l.key] && progress[l.key].completed_at).length;
+    const pct   = lessons.length ? Math.round(done / lessons.length * 100) : 0;
+
+    html += `<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:.8rem;font-weight:700">${icon} ${subject}</span>
+        <span style="font-size:.75rem;color:var(--muted)">${done}/${lessons.length} done</span>
+      </div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">`;
+
+    lessons.slice(0, 3).forEach(l => {
+      const isDone = progress[l.key] && progress[l.key].completed_at;
+      const xp = isDone ? (progress[l.key].xp_earned || 0) : 0;
+      html += `<a href="${l.url}" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:.75rem;text-decoration:none;color:var(--muted);padding:3px 0;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+        <span>${isDone ? '✅' : '⬜'}</span>
+        <span style="flex:1">${l.title}</span>
+        ${isDone ? `<span style="color:${color};font-weight:700;font-size:.7rem">+${xp}XP</span>` : ''}
+      </a>`;
     });
-  } catch (e) {}
+    if (lessons.length > 3) html += `<a href="${lessons[3].url}" target="_blank" style="font-size:.72rem;color:var(--muted);text-decoration:none">+${lessons.length-3} more lessons →</a>`;
+    html += `</div></div>`;
+  });
+
+  coursesCard.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', loadData);
