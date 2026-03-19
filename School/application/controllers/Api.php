@@ -835,4 +835,51 @@ class Api extends CI_Controller {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
     }
 
+    // ─────────────────────────────────────────────────────────
+    // ONE-TIME FOUNDATIONS IMPORT (no auth required)
+    // GET /api/seed_foundations
+    // ─────────────────────────────────────────────────────────
+    public function seed_foundations() {
+        $year = date('Y');
+        $row = $this->db->get_where('settings', ['type' => 'running_year'])->row();
+        if ($row) $year = $row->description;
+
+        $catalog = [
+            'Number Sense' => ['1', [
+                'Numbers Are Stories','Place Value Is a Volume Knob','Expanded Form',
+                'Compare Without Guessing','Rounding That Makes Sense','Estimation as a Superpower'
+            ]],
+            'Geometry' => ['2', [
+                'Angles & Lines','Perimeter & Area','Circles — π Unlocked',
+                'The Coordinate Plane','Quadrilaterals & Polygons','Triangles'
+            ]],
+            'Pre-Algebra' => ['3', [
+                'Equations','Expressions','Percents','Proportions'
+            ]],
+            'Ratios' => ['4', ['Ratios']],
+        ];
+
+        $cc = 0; $cs = 0;
+        foreach ($catalog as $cname => $info) {
+            $existing = $this->db->get_where('class', ['name' => $cname])->row();
+            if ($existing) {
+                $class_id = $existing->class_id;
+            } else {
+                $this->db->insert('class', ['name' => $cname, 'name_numeric' => $info[0], 'teacher_id' => null]);
+                $class_id = $this->db->insert_id();
+                $this->db->insert('section', ['class_id' => $class_id, 'name' => 'A', 'teacher_id' => null]);
+                $cc++;
+            }
+            foreach ($info[1] as $title) {
+                if (!$this->db->get_where('subject', ['name' => $title, 'class_id' => $class_id])->row()) {
+                    $this->db->insert('subject', ['name' => $title, 'class_id' => $class_id, 'teacher_id' => null, 'year' => $year]);
+                    $cs++;
+                }
+            }
+        }
+
+        $this->json(['ok' => true, 'classes_added' => $cc, 'lessons_added' => $cs,
+            'message' => "$cc courses and $cs lessons imported."]);
+    }
+
 }
