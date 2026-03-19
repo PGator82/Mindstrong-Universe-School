@@ -793,7 +793,7 @@ class Api extends CI_Controller {
 
     /** Full lesson catalog with metadata and GitHub Pages URLs */
     private function _course_catalog() {
-        $base = 'https://pgator82.github.io/Mindstrong-Universe-School/school/foundations/';
+        $base = 'https://pgator82.github.io/mindstrong-universe-site/school/foundations/';
         return [
             // Module 1 — Number Sense
             ['key'=>'m1-l1','module'=>'module-1','lesson_num'=>1,'title'=>'Numbers Are Stories',          'subject'=>'Number Sense','url'=>$base.'module-1/lesson-1.html','color'=>'#a855f7','icon'=>'🔢'],
@@ -803,19 +803,19 @@ class Api extends CI_Controller {
             ['key'=>'m1-l5','module'=>'module-1','lesson_num'=>5,'title'=>'Rounding That Makes Sense',    'subject'=>'Number Sense','url'=>$base.'module-1/lesson-5.html','color'=>'#a855f7','icon'=>'🎯'],
             ['key'=>'m1-l6','module'=>'module-1','lesson_num'=>6,'title'=>'Estimation as a Superpower',   'subject'=>'Number Sense','url'=>$base.'module-1/lesson-6.html','color'=>'#a855f7','icon'=>'⚡'],
             // Geometry
-            ['key'=>'geo-angles',    'module'=>'geometry','lesson_num'=>1,'title'=>'Angles & Lines',        'subject'=>'Geometry','url'=>$base.'geometry/angles/','color'=>'#06b6d4','icon'=>'📐'],
-            ['key'=>'geo-area',      'module'=>'geometry','lesson_num'=>2,'title'=>'Area & Perimeter',       'subject'=>'Geometry','url'=>$base.'geometry/area/','color'=>'#06b6d4','icon'=>'📏'],
-            ['key'=>'geo-circles',   'module'=>'geometry','lesson_num'=>3,'title'=>'Circles',                'subject'=>'Geometry','url'=>$base.'geometry/circles/','color'=>'#06b6d4','icon'=>'⭕'],
-            ['key'=>'geo-coordinate','module'=>'geometry','lesson_num'=>4,'title'=>'Coordinate Plane',       'subject'=>'Geometry','url'=>$base.'geometry/coordinate/','color'=>'#06b6d4','icon'=>'🗺️'],
-            ['key'=>'geo-polygons',  'module'=>'geometry','lesson_num'=>5,'title'=>'Polygons',               'subject'=>'Geometry','url'=>$base.'geometry/polygons/','color'=>'#06b6d4','icon'=>'🔷'],
-            ['key'=>'geo-triangles', 'module'=>'geometry','lesson_num'=>6,'title'=>'Triangles',              'subject'=>'Geometry','url'=>$base.'geometry/triangles/','color'=>'#06b6d4','icon'=>'🔺'],
+            ['key'=>'geo-angles',    'module'=>'geometry','lesson_num'=>1,'title'=>'Angles & Lines',             'subject'=>'Geometry','url'=>$base.'geometry/angles/','color'=>'#06b6d4','icon'=>'📐'],
+            ['key'=>'geo-area',      'module'=>'geometry','lesson_num'=>2,'title'=>'Perimeter & Area',            'subject'=>'Geometry','url'=>$base.'geometry/area/','color'=>'#06b6d4','icon'=>'📏'],
+            ['key'=>'geo-circles',   'module'=>'geometry','lesson_num'=>3,'title'=>'Circles — π Unlocked',        'subject'=>'Geometry','url'=>$base.'geometry/circles/','color'=>'#06b6d4','icon'=>'⭕'],
+            ['key'=>'geo-coordinate','module'=>'geometry','lesson_num'=>4,'title'=>'The Coordinate Plane',         'subject'=>'Geometry','url'=>$base.'geometry/coordinate/','color'=>'#06b6d4','icon'=>'🗺️'],
+            ['key'=>'geo-polygons',  'module'=>'geometry','lesson_num'=>5,'title'=>'Quadrilaterals & Polygons',    'subject'=>'Geometry','url'=>$base.'geometry/polygons/','color'=>'#06b6d4','icon'=>'🔷'],
+            ['key'=>'geo-triangles', 'module'=>'geometry','lesson_num'=>6,'title'=>'Triangles',                    'subject'=>'Geometry','url'=>$base.'geometry/triangles/','color'=>'#06b6d4','icon'=>'🔺'],
             // Pre-Algebra
-            ['key'=>'geo-equations',  'module'=>'pre-algebra','lesson_num'=>1,'title'=>'Equations',          'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/equations/','color'=>'#10b981','icon'=>'🟰'],
-            ['key'=>'geo-expressions','module'=>'pre-algebra','lesson_num'=>2,'title'=>'Expressions',        'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/expressions/','color'=>'#10b981','icon'=>'✏️'],
-            ['key'=>'geo-percents',   'module'=>'pre-algebra','lesson_num'=>3,'title'=>'Percents',            'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/percents/','color'=>'#10b981','icon'=>'💯'],
-            ['key'=>'geo-proportions','module'=>'pre-algebra','lesson_num'=>4,'title'=>'Proportions',         'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/proportions/','color'=>'#10b981','icon'=>'⚖️'],
+            ['key'=>'geo-equations',  'module'=>'pre-algebra','lesson_num'=>1,'title'=>'Equations',   'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/equations/','color'=>'#10b981','icon'=>'🟰'],
+            ['key'=>'geo-expressions','module'=>'pre-algebra','lesson_num'=>2,'title'=>'Expressions', 'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/expressions/','color'=>'#10b981','icon'=>'✏️'],
+            ['key'=>'geo-percents',   'module'=>'pre-algebra','lesson_num'=>3,'title'=>'Percents',     'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/percents/','color'=>'#10b981','icon'=>'💯'],
+            ['key'=>'geo-proportions','module'=>'pre-algebra','lesson_num'=>4,'title'=>'Proportions',  'subject'=>'Pre-Algebra','url'=>$base.'pre-algebra/proportions/','color'=>'#10b981','icon'=>'⚖️'],
             // Ratio
-            ['key'=>'geo-ratios','module'=>'ratio','lesson_num'=>1,'title'=>'Ratios',                         'subject'=>'Ratios','url'=>$base.'ratio/','color'=>'#f59e0b','icon'=>'🔀'],
+            ['key'=>'geo-ratios','module'=>'ratio','lesson_num'=>1,'title'=>'Ratios','subject'=>'Ratios','url'=>$base.'ratio/','color'=>'#f59e0b','icon'=>'🔀'],
         ];
     }
 

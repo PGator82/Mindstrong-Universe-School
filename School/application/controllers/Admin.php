@@ -811,7 +811,7 @@ class Admin extends CI_Controller
             $running_year = $this->_running_year();
             $catalog = [
                 'Number Sense' => ['1', ['Numbers Are Stories','Place Value Is a Volume Knob','Expanded Form','Compare Without Guessing','Rounding That Makes Sense','Estimation as a Superpower']],
-                'Geometry'     => ['2', ['Angles & Lines','Area & Perimeter','Circles','Coordinate Plane','Polygons','Triangles']],
+                'Geometry'     => ['2', ['Angles & Lines','Perimeter & Area','Circles — π Unlocked','The Coordinate Plane','Quadrilaterals & Polygons','Triangles']],
                 'Pre-Algebra'  => ['3', ['Equations','Expressions','Percents','Proportions']],
                 'Ratios'       => ['4', ['Ratios']],
             ];
@@ -908,10 +908,10 @@ class Admin extends CI_Controller
                 'num' => '2',
                 'lessons' => [
                     'Angles & Lines',
-                    'Area & Perimeter',
-                    'Circles',
-                    'Coordinate Plane',
-                    'Polygons',
+                    'Perimeter & Area',
+                    'Circles — π Unlocked',
+                    'The Coordinate Plane',
+                    'Quadrilaterals & Polygons',
                     'Triangles',
                 ],
             ],
