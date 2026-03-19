@@ -807,6 +807,35 @@ class Admin extends CI_Controller
     {
         if ($this->session->userdata('admin_login') != 1)
             redirect(site_url('login'), 'refresh');
+        if ($param1 == 'import_foundations') {
+            $running_year = $this->_running_year();
+            $catalog = [
+                'Number Sense' => ['1', ['Numbers Are Stories','Place Value Is a Volume Knob','Expanded Form','Compare Without Guessing','Rounding That Makes Sense','Estimation as a Superpower']],
+                'Geometry'     => ['2', ['Angles & Lines','Area & Perimeter','Circles','Coordinate Plane','Polygons','Triangles']],
+                'Pre-Algebra'  => ['3', ['Equations','Expressions','Percents','Proportions']],
+                'Ratios'       => ['4', ['Ratios']],
+            ];
+            $cc = 0; $cs = 0;
+            foreach ($catalog as $cname => $info) {
+                $existing = $this->db->get_where('class', ['name' => $cname])->row();
+                if ($existing) {
+                    $class_id = $existing->class_id;
+                } else {
+                    $this->db->insert('class', ['name' => $cname, 'name_numeric' => $info[0], 'teacher_id' => null]);
+                    $class_id = $this->db->insert_id();
+                    $this->db->insert('section', ['class_id' => $class_id, 'name' => 'A', 'teacher_id' => null]);
+                    $cc++;
+                }
+                foreach ($info[1] as $title) {
+                    if (!$this->db->get_where('subject', ['name' => $title, 'class_id' => $class_id])->row()) {
+                        $this->db->insert('subject', ['name' => $title, 'class_id' => $class_id, 'teacher_id' => null, 'year' => $running_year]);
+                        $cs++;
+                    }
+                }
+            }
+            $this->session->set_flashdata('flash_message', $cc.' courses and '.$cs.' lessons imported from Foundations.');
+            redirect(site_url('admin/classes'), 'refresh');
+        }
         if ($param1 == 'create') {
             $data['name']         = html_escape($this->input->post('name'));
             $data['teacher_id']   = $this->input->post('teacher_id');
