@@ -4,18 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
-// Session guard — only Super Admin can access this page
+// Session guard — only Admin/Super Admin can access this page
 (async function() {
   try {
-    const res = await fetch('/api/student/stats', { credentials: 'include' });
-    // We use admin check instead
+    const r = await fetch('/api/admin/stats', { credentials: 'include' });
+    if (r.status === 401) window.location.replace('login.html');
   } catch(e) {}
-  const r = await fetch('/api/admin/stats', { credentials: 'include' });
-  if (r.status === 401) {
-    window.location.replace('login.html');
-  }
-  const d = await r.json();
-  if (!d || d.error) window.location.replace('login.html');
 })();
 </script>
 <title>System Admin — MindStrong Universe</title>
@@ -1300,9 +1294,72 @@ function runBackup() {
 }
 
 // ══════════════════════════════════════════
+// LIVE DATA
+// ══════════════════════════════════════════
+async function loadLiveData() {
+  // Stats
+  try {
+    const res = await fetch('/api/admin/stats', { credentials: 'include' });
+    if (res.status === 401) { window.location.replace('login.html'); return; }
+    if (res.ok) {
+      const d = await res.json();
+      if (d.total_users    !== undefined) document.getElementById('stat-users').textContent    = d.total_users.toLocaleString();
+      if (d.total_students !== undefined) document.getElementById('stat-students').textContent  = d.total_students.toLocaleString();
+      if (d.revenue        !== undefined) document.getElementById('stat-revenue').textContent   = '$' + Math.round(d.revenue).toLocaleString();
+      if (d.attendance     !== undefined) document.getElementById('stat-health').textContent    = d.attendance + '%';
+    }
+  } catch(e) {}
+
+  // Live user table
+  try {
+    const res = await fetch('/api/admin/users?limit=20', { credentials: 'include' });
+    if (res.ok) {
+      const d = await res.json();
+      if (d.users && d.users.length) {
+        // Merge into store so renderUsers() picks it up
+        store.users = d.users.map((u, i) => ({
+          id: u.id || i+1, name: u.name, email: u.email || '',
+          role: 'Student', joined: 'Recently', status: 'Active', phone: ''
+        }));
+        renderUsers();
+      }
+    }
+  } catch(e) {}
+
+  // Activity feed
+  try {
+    const res = await fetch('/api/admin/activity', { credentials: 'include' });
+    if (res.ok) {
+      const d = await res.json();
+      if (d.activity && d.activity.length) {
+        const feed = document.getElementById('activity-list');
+        if (feed) feed.innerHTML = d.activity.map(a => `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center">${a.icon || '⚡'}</div>
+            <div style="flex:1;font-size:.82rem">${a.message}</div>
+            <div style="font-size:.7rem;color:var(--muted)">${a.time || 'Just now'}</div>
+          </div>`).join('');
+      }
+    }
+  } catch(e) {}
+
+  // Boss battle completions across all students
+  try {
+    const res = await fetch('/api/admin/catalog', { credentials: 'include' });
+    if (res.ok) {
+      const lessons = await res.json();
+      const totalComp = lessons.reduce((s, l) => s + (l.completions || 0), 0);
+      const el = document.querySelector('#sec-overview .stat-change.up');
+      if (el && totalComp) el.textContent = totalComp + ' battles won';
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  loadLiveData();
   renderUsers();
   renderInvoices();
   renderAnnouncements();

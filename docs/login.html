@@ -680,10 +680,11 @@ async function handleLogin(e) {
     if (res.ok && data.role) {
       // Redirect based on returned role
       const redirectMap = {
-        student: 'dashboard.html',
-        teacher: 'teacher.html',
-        parent:  'parent.html',
-        admin:   'admin.html',
+        student:    'dashboard.html',
+        teacher:    'teacher.html',
+        parent:     'parent.html',
+        admin:      'admin.html',
+        superadmin: '/admin/dashboard',
       };
       window.location.href = data.redirect || redirectMap[data.role] || 'dashboard.html';
     } else {
