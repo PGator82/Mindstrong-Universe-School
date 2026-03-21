@@ -888,6 +888,11 @@ function renderGradesPanel() {
   </div>`).join('');
 }
 
+// ── Boss Battle Launcher ──────────────────────────────────────────────────────
+function launchBattle(lessonKey) {
+  window.location.href = 'boss-battle.html?lesson=' + lessonKey;
+}
+
 // ── Courses Panel ─────────────────────────────────────────────────────────────
 async function renderCoursesPanel() {
   const grid = document.getElementById('courseCardGrid');
@@ -919,13 +924,19 @@ async function renderCoursesPanel() {
     const lessonItems = lessons.map(l => {
       const done = completedMap[l.key] && completedMap[l.key].completed_at;
       const xp   = done ? completedMap[l.key].xp_earned : 0;
-      return `<a class="lesson-row" href="${l.url}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text);transition:background .15s;"
+      const progress = JSON.parse(localStorage.getItem('ms_progress') || '{}');
+      const localDone = progress[l.key] && progress[l.key].completed;
+      const localXP   = localDone ? (progress[l.key].xp || 0) : 0;
+      const isDone    = done || localDone;
+      const showXP    = isDone ? (xp || localXP) : 0;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s;"
         onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''"
+        onclick="launchBattle('${l.key}')"
       >
-        <span style="font-size:16px">${done ? '✅' : '⬜'}</span>
+        <span style="font-size:16px">${isDone ? '✅' : '⚔️'}</span>
         <span style="flex:1;font-size:13px">${l.title}</span>
-        ${done ? `<span style="font-size:11px;color:${color};font-weight:700">+${xp} XP</span>` : ''}
-      </a>`;
+        ${isDone ? `<span style="font-size:11px;color:${color};font-weight:700">+${showXP} XP</span>` : `<span style="font-size:11px;color:var(--muted)">Boss Battle</span>`}
+      </div>`;
     }).join('');
 
     return `<div class="course-card" style="cursor:default">

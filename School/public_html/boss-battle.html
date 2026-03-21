@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boss Battle — MindStrong Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06090f;--card:#0e1420;--border:rgba(255,255,255,.08);--text:#f1f5f9;--muted:#64748b;--purple:#a855f7;--cyan:#06b6d4;--green:#10b981;--red:#f43f5e;--yellow:#f59e0b}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+
+/* ── HEADER ── */
+.top-bar{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;transition:.2s}
+.back-btn:hover{border-color:var(--purple);color:var(--purple)}
+.lesson-label{font-size:13px;font-weight:600;color:var(--muted)}
+.move-badge{background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);color:var(--purple);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700}
+
+/* ── BOSS ARENA ── */
+.arena{width:100%;max-width:720px;padding:32px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:24px}
+
+/* Boss health */
+.boss-section{width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center}
+.boss-emoji{font-size:72px;line-height:1;margin-bottom:12px;display:block;transition:transform .3s}
+.boss-name{font-size:18px;font-weight:800;margin-bottom:4px}
+.boss-tagline{font-size:13px;color:var(--muted);margin-bottom:16px}
+.hp-bar-wrap{background:rgba(255,255,255,.06);border-radius:8px;height:14px;overflow:hidden;position:relative}
+.hp-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:8px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.hp-label{font-size:11px;color:var(--muted);margin-top:6px;text-align:right}
+
+/* Situation + Question */
+.situation-card{width:100%;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:14px;padding:20px 24px}
+.situation-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--cyan);margin-bottom:8px}
+.situation-text{font-size:15px;line-height:1.6;color:var(--text)}
+
+.question-text{font-size:17px;font-weight:700;line-height:1.4;text-align:center;padding:0 8px}
+
+/* Choices */
+.choices{width:100%;display:flex;flex-direction:column;gap:10px}
+.choice{width:100%;background:var(--card);border:2px solid var(--border);border-radius:12px;padding:16px 20px;text-align:left;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;font-family:inherit;transition:all .2s;line-height:1.4}
+.choice:hover:not(:disabled){border-color:var(--purple);background:rgba(168,85,247,.08);transform:translateX(4px)}
+.choice.correct{border-color:var(--green);background:rgba(16,185,129,.12);color:var(--green)}
+.choice.wrong{border-color:var(--red);background:rgba(244,63,94,.12);color:var(--red)}
+.choice:disabled{cursor:default}
+
+/* Feedback */
+.feedback{width:100%;border-radius:12px;padding:16px 20px;font-size:14px;font-weight:600;line-height:1.5;display:none}
+.feedback.show{display:block}
+.feedback.correct-fb{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#6ee7b7}
+.feedback.wrong-fb{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);color:#fca5a5}
+.feedback-why{font-weight:400;margin-top:4px;opacity:.85}
+
+/* Next / Restart btn */
+.action-btn{padding:14px 32px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s;display:none}
+.action-btn.show{display:block}
+.action-btn.next{background:var(--green);color:#fff}
+.action-btn.next:hover{opacity:.88;transform:translateY(-2px)}
+.action-btn.restart{background:var(--red);color:#fff}
+.action-btn.restart:hover{opacity:.88}
+
+/* ── OVERLAYS ── */
+.overlay{position:fixed;inset:0;background:rgba(6,9,15,.95);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+.overlay.show{display:flex}
+
+/* Victory */
+.victory-emoji{font-size:80px;margin-bottom:16px;animation:pop .4s cubic-bezier(.17,.67,.37,1.5)}
+.victory-title{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--yellow),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.victory-sub{font-size:15px;color:var(--muted);margin-bottom:24px}
+.xp-pill{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:var(--yellow);font-size:18px;font-weight:800;padding:12px 28px;border-radius:24px;margin-bottom:32px;display:inline-block}
+.unlock-msg{font-size:14px;color:var(--cyan);margin-bottom:28px;font-weight:600}
+.vic-btn{padding:14px 36px;border-radius:12px;border:none;background:var(--purple);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin:6px}
+.vic-btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}
+
+/* Defeat */
+.defeat-emoji{font-size:80px;margin-bottom:16px;animation:shake .4s}
+.defeat-title{font-size:28px;font-weight:900;color:var(--red);margin-bottom:8px}
+.defeat-sub{font-size:15px;color:var(--muted);margin-bottom:8px}
+.defeat-count{font-size:13px;color:var(--muted);margin-bottom:28px}
+.def-btn{padding:14px 36px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+
+/* ── ANIMATIONS ── */
+@keyframes pop{0%{transform:scale(0)}80%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-12px)}40%,80%{transform:translateX(12px)}}
+@keyframes flash-red{0%,100%{background:var(--bg)}50%{background:rgba(244,63,94,.12)}}
+.arena.shake-arena{animation:flash-red .5s ease}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  <span class="lesson-label" id="lessonLabel">Loading…</span>
+  <span class="move-badge" id="moveBadge">Move 1 / 10</span>
+</div>
+
+<!-- MAIN ARENA -->
+<div class="arena" id="arena">
+
+  <!-- BOSS -->
+  <div class="boss-section">
+    <span class="boss-emoji" id="bossEmoji">👹</span>
+    <div class="boss-name" id="bossName">The Boss</div>
+    <div class="boss-tagline" id="bossTagline">Loading…</div>
+    <div class="hp-bar-wrap">
+      <div class="hp-bar" id="hpBar" style="width:100%"></div>
+    </div>
+    <div class="hp-label" id="hpLabel">10 / 10 HP</div>
+  </div>
+
+  <!-- SITUATION -->
+  <div class="situation-card">
+    <div class="situation-tag">Real Life Situation — Move <span id="moveNum">1</span></div>
+    <div class="situation-text" id="situationText">Loading…</div>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="question-text" id="questionText">Loading…</div>
+
+  <!-- CHOICES -->
+  <div class="choices" id="choices"></div>
+
+  <!-- FEEDBACK -->
+  <div class="feedback" id="feedback">
+    <div id="feedbackMain"></div>
+    <div class="feedback-why" id="feedbackWhy"></div>
+  </div>
+
+  <!-- ACTION BUTTON -->
+  <button class="action-btn next" id="nextBtn" onclick="nextMove()">Next Move →</button>
+  <button class="action-btn restart" id="restartBtn" onclick="restartBattle()">⚡ Start Over</button>
+
+</div>
+
+<!-- VICTORY OVERLAY -->
+<div class="overlay" id="victoryOverlay">
+  <div class="victory-emoji">🏆</div>
+  <div class="victory-title">BOSS DEFEATED!</div>
+  <div class="victory-sub" id="vicSub">You mastered every move with perfect understanding.</div>
+  <div class="xp-pill" id="xpEarned">+100 XP</div>
+  <div class="unlock-msg" id="unlockMsg">🔓 Next lesson unlocked!</div>
+  <div>
+    <button class="vic-btn" onclick="goToDashboard()">🏠 Back to Hub</button>
+    <button class="vic-btn ghost" onclick="window.location.reload()">↺ Battle Again</button>
+  </div>
+</div>
+
+<!-- DEFEAT OVERLAY -->
+<div class="overlay" id="defeatOverlay">
+  <div class="defeat-emoji">💀</div>
+  <div class="defeat-title">THE BOSS WINS</div>
+  <div class="defeat-sub">You must get all 10 correct to master this lesson.</div>
+  <div class="defeat-count" id="defeatCount">You made it to Move 1 before the reset.</div>
+  <div style="font-size:13px;color:var(--muted);max-width:380px;line-height:1.6;margin-bottom:24px">
+    Study where you went wrong. Every mistake is information — use it.
+  </div>
+  <button class="def-btn" onclick="restartFromOverlay()">⚡ Try Again</button>
+</div>
+
+<script src="battles.js"></script>
+<script>
+// ── STATE ──
+const params  = new URLSearchParams(location.search);
+const KEY     = params.get('lesson') || 'm1-l1';
+const BATTLE  = BATTLES[KEY];
+let currentMove = 0;
+let answered    = false;
+let bossHP      = 10;
+
+// ── BOSS EMOJIS per subject ──
+const BOSS_EMOJIS = {
+  'm1-': '👹', 'geo-': '🐉', 'alg-': '🤖', 'rat-': '🦂'
+};
+function getBossEmoji() {
+  for (const prefix in BOSS_EMOJIS) {
+    if (KEY.startsWith(prefix)) return BOSS_EMOJIS[prefix];
+  }
+  return '👾';
+}
+
+// ── INIT ──
+function init() {
+  if (!BATTLE) {
+    document.getElementById('arena').innerHTML =
+      '<div style="color:var(--red);padding:40px;text-align:center">Battle not found for lesson key: ' + KEY + '</div>';
+    return;
+  }
+  document.title = 'Boss Battle: ' + BATTLE.title;
+  document.getElementById('lessonLabel').textContent = BATTLE.title;
+  document.getElementById('bossName').textContent    = BATTLE.boss;
+  document.getElementById('bossTagline').textContent = BATTLE.bossDesc;
+  document.getElementById('bossEmoji').textContent   = getBossEmoji();
+  renderMove();
+}
+
+// ── RENDER CURRENT MOVE ──
+function renderMove() {
+  answered = false;
+  const move = BATTLE.moves[currentMove];
+  const total = BATTLE.moves.length;
+
+  document.getElementById('moveBadge').textContent   = 'Move ' + (currentMove+1) + ' / ' + total;
+  document.getElementById('moveNum').textContent     = currentMove + 1;
+  document.getElementById('situationText').textContent = move.situation;
+  document.getElementById('questionText').textContent  = move.question;
+
+  // HP bar
+  const hp = bossHP;
+  document.getElementById('hpBar').style.width = (hp / 10 * 100) + '%';
+  document.getElementById('hpLabel').textContent = hp + ' / 10 HP';
+
+  // Choices
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  move.choices.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = text;
+    btn.onclick = () => answer(i);
+    choicesEl.appendChild(btn);
+  });
+
+  // Hide feedback + action btns
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  document.getElementById('nextBtn').className = 'action-btn next';
+  document.getElementById('restartBtn').className = 'action-btn restart';
+}
+
+// ── ANSWER ──
+function answer(index) {
+  if (answered) return;
+  answered = true;
+
+  const move    = BATTLE.moves[currentMove];
+  const correct = index === move.correct;
+  const buttons = document.querySelectorAll('.choice');
+  buttons.forEach(b => b.disabled = true);
+  buttons[move.correct].classList.add('correct');
+
+  const fb = document.getElementById('feedback');
+
+  if (correct) {
+    // Hit the boss
+    bossHP--;
+    document.getElementById('bossEmoji').style.transform = 'scale(1.3)';
+    setTimeout(() => document.getElementById('bossEmoji').style.transform = 'scale(1)', 300);
+
+    fb.className = 'feedback show correct-fb';
+    document.getElementById('feedbackMain').textContent = '✅ Correct! ' + (currentMove === BATTLE.moves.length - 1 ? 'Final blow!' : 'The boss takes a hit.');
+    document.getElementById('feedbackWhy').textContent = move.why;
+
+    if (currentMove === BATTLE.moves.length - 1) {
+      // Victory
+      setTimeout(showVictory, 1200);
+    } else {
+      document.getElementById('nextBtn').className = 'action-btn next show';
+    }
+  } else {
+    // Wrong — mark selected wrong
+    buttons[index].classList.add('wrong');
+
+    fb.className = 'feedback show wrong-fb';
+    document.getElementById('feedbackMain').textContent = '❌ Wrong. You must understand WHAT and WHY — every move must be correct.';
+    document.getElementById('feedbackWhy').textContent = 'The correct answer is highlighted. Study it, then restart.';
+
+    // Flash arena
+    document.getElementById('arena').classList.add('shake-arena');
+    setTimeout(() => document.getElementById('arena').classList.remove('shake-arena'), 500);
+
+    document.getElementById('restartBtn').className = 'action-btn restart show';
+
+    // Show defeat overlay after a moment
+    setTimeout(() => showDefeat(), 2200);
+  }
+}
+
+// ── NEXT MOVE ──
+function nextMove() {
+  currentMove++;
+  renderMove();
+}
+
+// ── RESTART ──
+function restartBattle() {
+  currentMove = 0;
+  bossHP = 10;
+  document.getElementById('defeatOverlay').classList.remove('show');
+  renderMove();
+}
+function restartFromOverlay() {
+  restartBattle();
+}
+
+// ── VICTORY ──
+function showVictory() {
+  // Save to localStorage
+  const progress = JSON.parse(localStorage.getItem('ms_progress') || '{}');
+  progress[KEY] = { completed: true, xp: BATTLE.xp, timestamp: Date.now() };
+  localStorage.setItem('ms_progress', JSON.stringify(progress));
+
+  // XP total
+  const totalXP = Object.values(progress).reduce((s, v) => s + (v.xp || 0), 0);
+  localStorage.setItem('ms_total_xp', totalXP);
+
+  document.getElementById('xpEarned').textContent = '+' + BATTLE.xp + ' XP  (Total: ' + totalXP + ' XP)';
+
+  // Find next lesson
+  const catalog = JSON.parse(sessionStorage.getItem('_catalog') || 'null');
+  if (catalog) {
+    const idx = catalog.findIndex(l => l.key === KEY);
+    if (idx >= 0 && idx < catalog.length - 1) {
+      const next = catalog[idx + 1];
+      document.getElementById('unlockMsg').textContent = '🔓 Unlocked: ' + next.title;
+    }
+  }
+
+  document.getElementById('victoryOverlay').classList.add('show');
+}
+
+// ── DEFEAT ──
+function showDefeat() {
+  const moveReached = currentMove + 1;
+  document.getElementById('defeatCount').textContent =
+    'You made it to Move ' + moveReached + ' before the reset.';
+  document.getElementById('defeatOverlay').classList.add('show');
+}
+
+// ── NAV ──
+function goBack() { history.length > 1 ? history.back() : (location.href = 'dashboard.html'); }
+function goToDashboard() { location.href = 'dashboard.html'; }
+
+// ── PRELOAD CATALOG for unlock message ──
+fetch('/catalog.json').then(r=>r.json()).then(d => sessionStorage.setItem('_catalog', JSON.stringify(d))).catch(()=>{});
+
+init();
+</script>
+</body>
+</html>
