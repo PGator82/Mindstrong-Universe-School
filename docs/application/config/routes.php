@@ -53,23 +53,30 @@ $route['default_controller'] = 'home';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-// ── API Routes ──
-$route['api/login']                = 'api/login';
-$route['api/logout']               = 'api/logout';
+// JSON API routes
+$route['api/login']              = 'api/login';
+$route['api/logout']             = 'api/logout';
+$route['api/student/stats']      = 'api/student_stats';
+$route['api/student/courses']    = 'api/student_courses';
+$route['api/student/schedule']   = 'api/student_schedule';
+$route['api/parent/child']       = 'api/parent_child';
+$route['api/parent/grades']      = 'api/parent_grades';
+$route['api/parent/attendance']  = 'api/parent_attendance';
+$route['api/parent/fees']        = 'api/parent_fees';
+$route['api/parent/stats']       = 'api/parent_stats';
+$route['api/teacher/stats']      = 'api/teacher_stats';
+$route['api/teacher/students']   = 'api/teacher_students';
+$route['api/teacher/classes']    = 'api/teacher_classes';
+$route['api/admin/stats']           = 'api/admin_stats';
+$route['api/admin/users']           = 'api/admin_users';
+$route['api/admin/activity']        = 'api/admin_activity';
+$route['api/admin/create_student']  = 'api/admin_create_student';
 
-$route['api/student/stats']        = 'api/student_stats';
-$route['api/student/courses']      = 'api/student_courses';
-$route['api/student/assignments']  = 'api/student_assignments';
-$route['api/student/schedule']     = 'api/student_schedule';
-
-$route['api/parent/child']         = 'api/parent_child';
-$route['api/parent/grades']        = 'api/parent_grades';
-$route['api/parent/attendance']    = 'api/parent_attendance';
-$route['api/parent/fees']          = 'api/parent_fees';
-
-$route['api/teacher/stats']        = 'api/teacher_stats';
-$route['api/teacher/students']     = 'api/teacher_students';
-
-$route['api/admin/stats']          = 'api/admin_stats';
-$route['api/admin/users']          = 'api/admin_users';
-$route['api/admin/activity']       = 'api/admin_activity';
+// Course catalog & progress routes
+$route['api/catalog']                     = 'api/catalog';
+$route['api/student/progress']            = 'api/student_progress';
+$route['api/student/sync_progress']       = 'api/student_sync_progress';
+$route['api/teacher/lesson_progress']     = 'api/teacher_lesson_progress';
+$route['api/admin/catalog']               = 'api/admin_catalog';
+$route['api/admin/catalog_save']          = 'api/admin_catalog_save';
+$route['api/seed_foundations']            = 'api/seed_foundations';
