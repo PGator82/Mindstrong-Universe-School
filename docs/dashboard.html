@@ -952,66 +952,78 @@ setTimeout(() => {
   document.getElementById('xp-fill').style.width = '68%';
 }, 400);
 
-// ── Railway API base ──
-const RAILWAY = 'https://mindstrong-universe-school-production.up.railway.app/index.php/api';
+// ── XP Rank helper ──
+function getXPRank(xp) {
+  if (xp >= 1500) return { rank: 'Legend',     color: '#f59e0b' };
+  if (xp >= 1000) return { rank: 'Champion',   color: '#a855f7' };
+  if (xp >=  600) return { rank: 'Warrior',    color: '#ef4444' };
+  if (xp >=  300) return { rank: 'Scholar',    color: '#06b6d4' };
+  if (xp >=  100) return { rank: 'Apprentice', color: '#10b981' };
+  return                  { rank: 'Rookie',    color: '#888aaa' };
+}
 
 // ── Load real data from API ──
 async function loadData() {
   try {
-    const res = await fetch(RAILWAY + '/student/stats', { credentials: 'include' });
+    const res = await fetch('/api/student/stats', { credentials: 'include' });
     if (res.status === 401) { window.location.href = 'login.html'; return; }
-    if (!res.ok) return;
-    const d = await res.json();
-
-    const cards = document.querySelectorAll('.stat-num');
-    if (cards[0]) cards[0].textContent = d.course_count ?? cards[0].textContent;
-    if (cards[1]) cards[1].textContent = (d.xp ?? 3240).toLocaleString();
-    if (cards[2]) cards[2].textContent = (d.avg_score ?? 87) + '%';
-
-    const greetEl = document.querySelector('.greeting h1 .grad-text');
-    if (greetEl && d.name) greetEl.textContent = d.name.split(' ')[0];
-
-    if (d.xp) {
-      const pct = Math.min(100, Math.round((d.xp % 1600) / 1600 * 100));
-      const fill = document.getElementById('xp-fill');
-      if (fill) setTimeout(() => { fill.style.width = pct + '%'; }, 400);
+    if (res.ok) {
+      const d = await res.json();
+      const cards = document.querySelectorAll('.stat-num');
+      if (cards[0]) cards[0].textContent = d.course_count ?? cards[0].textContent;
+      if (cards[1]) cards[1].textContent = (d.xp ?? 0).toLocaleString();
+      if (cards[2]) cards[2].textContent = (d.avg_score ?? 0) + '%';
+      const greetEl = document.querySelector('.greeting h1 .grad-text');
+      if (greetEl && d.name) greetEl.textContent = d.name.split(' ')[0];
     }
   } catch (e) { /* keep demo data when offline */ }
 
   loadLessonCatalog();
 }
 
-// ── Load lesson catalog into #sec-courses ──
+// ── Load lesson catalog — static JSON + localStorage progress ──
 async function loadLessonCatalog() {
-  let catalog = [], progress = {};
+  let catalog = [];
   try {
-    const [catRes, progRes] = await Promise.all([
-      fetch(RAILWAY + '/catalog', { credentials: 'include' }),
-      fetch(RAILWAY + '/student/progress', { credentials: 'include' }),
-    ]);
-    if (catRes.ok) catalog = (await catRes.json()).filter(l => l.active !== false);
-    if (progRes.ok) { const p = await progRes.json(); progress = p.lessons || {}; }
-  } catch(e) { return; } // keep hardcoded demo on error
+    const res = await fetch('/catalog.json');
+    if (res.ok) catalog = (await res.json()).filter(l => l.active !== false);
+  } catch(e) {}
 
   if (!catalog.length) return;
 
-  // Replace the "Course Progress" card with the real lesson grid
+  // Progress from localStorage
+  const progress = JSON.parse(localStorage.getItem('ms_progress') || '{}');
+
+  // Update XP display from localStorage
+  const totalXP = Object.values(progress).reduce((sum, v) => sum + (v.xp || 0), 0);
+  const { rank, color: rankColor } = getXPRank(totalXP);
+  const cards = document.querySelectorAll('.stat-num');
+  if (cards[1]) cards[1].textContent = totalXP.toLocaleString();
+  const xpFill = document.getElementById('xp-fill');
+  if (xpFill) {
+    const ranks = [100,300,600,1000,1500];
+    const nextThreshold = ranks.find(r => totalXP < r) || 1500;
+    const prevThreshold = ranks[ranks.indexOf(nextThreshold) - 1] || 0;
+    const pct = Math.round((totalXP - prevThreshold) / (nextThreshold - prevThreshold) * 100);
+    setTimeout(() => { xpFill.style.width = Math.min(100, pct) + '%'; }, 400);
+  }
+
+  // Replace the courses card with live lesson grid
   const coursesCard = document.querySelector('#sec-courses .grid-2 .card:last-child');
   if (!coursesCard) return;
 
-  // Group by subject
   const groups = {};
   catalog.forEach(l => { if (!groups[l.subject]) groups[l.subject] = []; groups[l.subject].push(l); });
 
   const subjectColors = { 'Number Sense':'#a855f7','Geometry':'#06b6d4','Pre-Algebra':'#10b981','Ratios':'#f59e0b' };
   const subjectIcons  = { 'Number Sense':'🔢','Geometry':'📐','Pre-Algebra':'🟰','Ratios':'🔀' };
 
-  let html = `<div class="card-header"><span class="card-title">Lesson Catalog</span><a class="card-link" href="${RAILWAY.replace('/index.php/api','')}" target="_blank">Open LMS</a></div>`;
+  let html = `<div class="card-header"><span class="card-title">Lesson Catalog</span><span style="font-size:.75rem;padding:3px 10px;border-radius:99px;background:rgba(168,85,247,.15);color:#a855f7;font-weight:700">${rank}</span></div>`;
 
   Object.entries(groups).forEach(([subject, lessons]) => {
     const color = subjectColors[subject] || '#a855f7';
     const icon  = subjectIcons[subject]  || '📚';
-    const done  = lessons.filter(l => progress[l.key] && progress[l.key].completed_at).length;
+    const done  = lessons.filter(l => progress[l.key]).length;
     const pct   = lessons.length ? Math.round(done / lessons.length * 100) : 0;
 
     html += `<div style="margin-bottom:14px">
@@ -1022,16 +1034,15 @@ async function loadLessonCatalog() {
       <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%;background:${color}"></div></div>
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">`;
 
-    lessons.slice(0, 3).forEach(l => {
-      const isDone = progress[l.key] && progress[l.key].completed_at;
-      const xp = isDone ? (progress[l.key].xp_earned || 0) : 0;
-      html += `<a href="${l.url}" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:.75rem;text-decoration:none;color:var(--muted);padding:3px 0;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
-        <span>${isDone ? '✅' : '⬜'}</span>
+    lessons.forEach(l => {
+      const isDone = !!progress[l.key];
+      const xp = isDone ? (progress[l.key].xp || 0) : 0;
+      html += `<a href="boss-battle.html?lesson=${l.key}" style="display:flex;align-items:center;gap:8px;font-size:.75rem;text-decoration:none;color:var(--muted);padding:4px 0;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+        <span>${isDone ? '✅' : '⚔️'}</span>
         <span style="flex:1">${l.title}</span>
-        ${isDone ? `<span style="color:${color};font-weight:700;font-size:.7rem">+${xp}XP</span>` : ''}
+        ${isDone ? `<span style="color:${color};font-weight:700;font-size:.7rem">+${xp}XP</span>` : `<span style="font-size:.7rem;color:${color};opacity:.7">Fight →</span>`}
       </a>`;
     });
-    if (lessons.length > 3) html += `<a href="${lessons[3].url}" target="_blank" style="font-size:.72rem;color:var(--muted);text-decoration:none">+${lessons.length-3} more lessons →</a>`;
     html += `</div></div>`;
   });
 
