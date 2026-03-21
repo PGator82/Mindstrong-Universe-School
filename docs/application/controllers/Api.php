@@ -47,21 +47,33 @@ class Api extends CI_Controller {
 
         $credential = ['email' => $email, 'password' => sha1($password)];
 
-        // Admin / Super Admin
+        // Super Admin (own table, checked first)
+        $q = $this->db->get_where('superadmin', $credential);
+        if ($q->num_rows() > 0) {
+            $row = $q->row();
+            $this->session->set_userdata([
+                'superadmin_login' => 1,
+                'admin_login'      => 1,
+                'superadmin_id'    => $row->superadmin_id,
+                'login_user_id'    => $row->superadmin_id,
+                'name'             => $row->name,
+                'login_type'       => 'superadmin',
+            ]);
+            $this->json(['role' => 'superadmin', 'name' => $row->name, 'redirect' => '/admin/dashboard']);
+        }
+
+        // Admin
         $q = $this->db->get_where('admin', $credential);
         if ($q->num_rows() > 0) {
             $row = $q->row();
-            $is_super = ($row->level === 'superadmin');
             $this->session->set_userdata([
                 'admin_login'   => 1,
                 'admin_id'      => $row->admin_id,
                 'login_user_id' => $row->admin_id,
                 'name'          => $row->name,
-                'login_type'    => $is_super ? 'superadmin' : 'admin',
+                'login_type'    => 'admin',
             ]);
-            $redirect = $is_super ? '/admin/dashboard' : 'admin.html';
-            $role     = $is_super ? 'superadmin' : 'admin';
-            $this->json(['role' => $role, 'name' => $row->name, 'redirect' => $redirect]);
+            $this->json(['role' => 'admin', 'name' => $row->name, 'redirect' => 'admin.html']);
         }
 
         // Teacher
