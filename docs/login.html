@@ -677,7 +677,7 @@ async function handleLogin(e) {
     const data = await res.json();
     hideLoading(btn);
 
-    if (res.ok && data.success) {
+    if (res.ok && data.role) {
       // Redirect based on returned role
       const redirectMap = {
         student: 'dashboard.html',

@@ -546,12 +546,28 @@ async function loadData() {
 
 document.addEventListener('DOMContentLoaded', () => { loadData(); loadLessonHub(); });
 
-// ── Lesson Hub — loads from catalog.json, grouped by subject ──
+// ── Lesson Hub — catalog.json grouped by subject + student completion counts ──
 async function loadLessonHub() {
-  let catalog = [];
+  let catalog = [], progress = {};
   try {
-    const res = await fetch('/catalog.json');
-    if (res.ok) catalog = (await res.json()).filter(l => l.active !== false);
+    const [catRes, progRes] = await Promise.all([
+      fetch('/catalog.json'),
+      fetch('/api/teacher/lesson_progress', { credentials: 'include' }),
+    ]);
+    if (catRes.ok) catalog = (await catRes.json()).filter(l => l.active !== false);
+    if (progRes.ok) {
+      const rows = await progRes.json();
+      // rows = [{lesson_key, student_name, completed_at, xp_earned}]
+      if (Array.isArray(rows)) {
+        rows.forEach(r => {
+          if (!progress[r.lesson_key]) progress[r.lesson_key] = { completed_count: 0, total_xp: 0 };
+          progress[r.lesson_key].completed_count++;
+          progress[r.lesson_key].total_xp += (r.xp_earned || 0);
+        });
+        // Compute avg XP per lesson
+        Object.values(progress).forEach(p => { p.avg_xp = p.completed_count ? Math.round(p.total_xp / p.completed_count) : 0; });
+      }
+    }
   } catch(e) {}
   if (!catalog.length) return;
 
@@ -561,31 +577,38 @@ async function loadLessonHub() {
   const groups = {};
   catalog.forEach(l => { if (!groups[l.subject]) groups[l.subject] = []; groups[l.subject].push(l); });
 
-  const subjectIcons = { 'Number Sense':'🔢','Geometry':'📐','Pre-Algebra':'🟰','Ratios':'🔀' };
-  const subjectColors = { 'Number Sense':'#a855f7','Geometry':'#06b6d4','Pre-Algebra':'#10b981','Ratios':'#f59e0b' };
+  const subjectIcons   = { 'Number Sense':'🔢','Geometry':'📐','Pre-Algebra':'🟰','Ratios':'🔀' };
+  const subjectColors  = { 'Number Sense':'#a855f7','Geometry':'#06b6d4','Pre-Algebra':'#10b981','Ratios':'#f59e0b' };
 
-  const total = catalog.length;
-  document.getElementById('hub-total').textContent = total + ' lessons';
+  document.getElementById('hub-total').textContent = catalog.length + ' lessons';
 
   hub.innerHTML = Object.entries(groups).map(([subject, lessons]) => {
     const color = subjectColors[subject] || '#a855f7';
-    const icon = subjectIcons[subject] || '📚';
-    const id = 'hub-' + subject.replace(/\s+/g,'');
+    const icon  = subjectIcons[subject]  || '📚';
+    const id    = 'hub-' + subject.replace(/\s+/g,'');
+    const totalCompleted = lessons.reduce((s, l) => s + (progress[l.key] ? (progress[l.key].completed_count || 0) : 0), 0);
+
     return `
-    <div style="margin-bottom:14px;border:1px solid var(--border);border-radius:12px;overflow:hidden">
-      <div onclick="toggleHub('${id}')" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(255,255,255,.02);">
-        <span style="font-size:1.2rem">${icon}</span>
-        <span style="font-weight:700;flex:1">${subject}</span>
-        <span style="font-size:.72rem;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--muted)">${lessons.length} lessons</span>
-        <span id="arr-${id}" style="color:var(--muted);font-size:.8rem">▼</span>
+    <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div onclick="toggleHub('${id}')" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(255,255,255,.02)">
+        <span style="font-size:1.1rem">${icon}</span>
+        <span style="font-weight:700;flex:1;font-size:.9rem">${subject}</span>
+        ${totalCompleted ? `<span style="font-size:.7rem;color:${color};font-weight:700">${totalCompleted} completions</span>` : ''}
+        <span style="font-size:.72rem;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.06);color:var(--muted)">${lessons.length}</span>
+        <span id="arr-${id}" style="color:var(--muted);font-size:.8rem;margin-left:4px">▼</span>
       </div>
       <div id="${id}" style="display:none;padding:0 14px 10px">
-        ${lessons.map(l => `
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:1rem">${l.icon || '📖'}</span>
-          <span style="flex:1;font-size:.83rem">${l.title}</span>
-          <a href="boss-battle.html?lesson=${l.key}" style="font-size:.75rem;padding:4px 10px;background:rgba(124,58,237,.2);color:#a78bfa;border-radius:8px;text-decoration:none;font-weight:700;white-space:nowrap">⚔️ Preview</a>
-        </div>`).join('')}
+        ${lessons.map(l => {
+          const lp = progress[l.key] || {};
+          const cnt = lp.completed_count || 0;
+          const avgXP = lp.avg_xp || 0;
+          return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span>${l.icon || '📖'}</span>
+            <span style="flex:1;font-size:.82rem">${l.title}</span>
+            ${cnt ? `<span style="font-size:.7rem;color:var(--muted)">${cnt} won · avg ${avgXP}XP</span>` : `<span style="font-size:.7rem;color:var(--muted)">No completions yet</span>`}
+            <a href="boss-battle.html?lesson=${l.key}" style="font-size:.72rem;padding:3px 9px;background:rgba(124,58,237,.2);color:#a78bfa;border-radius:7px;text-decoration:none;font-weight:700;white-space:nowrap;margin-left:6px">⚔️</a>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('');
