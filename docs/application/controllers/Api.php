@@ -578,6 +578,38 @@ class Api extends CI_Controller {
         ]);
     }
 
+    public function admin_users_all() {
+        $this->requireSession('admin_login');
+        $users = [];
+        foreach ($this->db->get('student')->result_array() as $r)
+            $users[] = ['id'=>'s'.$r['student_id'],'name'=>$r['name'],'email'=>$r['email'],'phone'=>$r['phone']??'','role'=>'Student','status'=>'Active','joined'=>''];
+        foreach ($this->db->get('teacher')->result_array() as $r)
+            $users[] = ['id'=>'t'.$r['teacher_id'],'name'=>$r['name'],'email'=>$r['email'],'phone'=>$r['phone']??'','role'=>'Teacher','status'=>'Active','joined'=>''];
+        foreach ($this->db->get('parent')->result_array() as $r)
+            $users[] = ['id'=>'p'.$r['parent_id'],'name'=>$r['name'],'email'=>$r['email'],'phone'=>$r['phone']??'','role'=>'Parent','status'=>'Active','joined'=>''];
+        foreach ($this->db->get('admin')->result_array() as $r)
+            $users[] = ['id'=>'a'.$r['admin_id'],'name'=>$r['name'],'email'=>$r['email'],'phone'=>$r['phone']??'','role'=>'Admin','status'=>'Active','joined'=>''];
+        $this->json(['users'=>$users,'total'=>count($users)]);
+    }
+
+    public function admin_create_user() {
+        $this->requireSession('admin_login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') $this->json(['error'=>'POST required'],405);
+        $name  = trim($this->input->post('name'));
+        $email = trim($this->input->post('email'));
+        $pass  = $this->input->post('password');
+        $role  = strtolower($this->input->post('role'));
+        $phone = trim($this->input->post('phone'));
+        if (!$name || !$email || !$pass || !$role) $this->json(['error'=>'All fields required'],400);
+        $table_map = ['student'=>'student','teacher'=>'teacher','parent'=>'parent','admin'=>'admin'];
+        $table = $table_map[$role] ?? null;
+        if (!$table) $this->json(['error'=>'Invalid role'],400);
+        if ($this->db->get_where($table,['email'=>$email])->num_rows()>0)
+            $this->json(['error'=>'Email already exists'],409);
+        $this->db->insert($table,['name'=>$name,'email'=>$email,'password'=>sha1($pass),'phone'=>$phone]);
+        $this->json(['success'=>true,'name'=>$name,'role'=>$role]);
+    }
+
     public function admin_create_student() {
         $this->requireSession('admin_login');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST')

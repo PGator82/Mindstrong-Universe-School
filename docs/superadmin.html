@@ -982,21 +982,29 @@ function toggleSelectAll(cb) {
   document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked);
 }
 
-function addUser() {
+async function addUser() {
   const fname = document.getElementById('new-fname').value.trim();
   const lname = document.getElementById('new-lname').value.trim();
   const email = document.getElementById('new-email').value.trim();
   const role  = document.getElementById('new-role').value;
-  const status = document.getElementById('new-status').value;
-  if (!fname || !email) { showToast('Name and email are required', 'var(--red)'); return; }
-  const u = { id: ++store.nextId, fname, lname, email, role, status, joined: new Date().toISOString().slice(0,10), last: 'Just now' };
-  store.users.unshift(u);
-  saveStore(store);
-  renderUsers();
-  closeModal('add-user-modal');
-  ['new-fname','new-lname','new-email','new-phone','new-pass'].forEach(id => document.getElementById(id).value='');
-  showToast(`✅ User "${fname} ${lname}" added!`);
-  addLog('info', `New user created: ${fname} ${lname} (${role})`);
+  const pass  = document.getElementById('new-pass')?.value || 'MindStrong2026';
+  const phone = document.getElementById('new-phone')?.value.trim() || '';
+  if (!fname || !email || !role) { showToast('Name, email and role are required', 'var(--red)'); return; }
+  const name = fname + (lname ? ' ' + lname : '');
+  try {
+    const form = new FormData();
+    form.append('name', name); form.append('email', email);
+    form.append('password', pass); form.append('role', role.toLowerCase());
+    form.append('phone', phone);
+    const res = await fetch('/api/admin/create_user', { method:'POST', body:form, credentials:'include' });
+    const d = await res.json();
+    if (!res.ok) { showToast('Error: ' + (d.error||'Failed'), 'var(--red)'); return; }
+    showToast(`✅ ${name} (${role}) created!`);
+    closeModal('add-user-modal');
+    ['new-fname','new-lname','new-email','new-phone','new-pass'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    addLog('info', `New ${role} created: ${name}`);
+    loadLiveData(); // refresh table
+  } catch(e) { showToast('Network error', 'var(--red)'); }
 }
 
 function editUser(id) {
@@ -1297,60 +1305,68 @@ function runBackup() {
 // LIVE DATA
 // ══════════════════════════════════════════
 async function loadLiveData() {
-  // Stats
+  // 1 — Stats
   try {
     const res = await fetch('/api/admin/stats', { credentials: 'include' });
     if (res.status === 401) { window.location.replace('login.html'); return; }
     if (res.ok) {
       const d = await res.json();
-      if (d.total_users    !== undefined) document.getElementById('stat-users').textContent    = d.total_users.toLocaleString();
-      if (d.total_students !== undefined) document.getElementById('stat-students').textContent  = d.total_students.toLocaleString();
-      if (d.revenue        !== undefined) document.getElementById('stat-revenue').textContent   = '$' + Math.round(d.revenue).toLocaleString();
-      if (d.attendance     !== undefined) document.getElementById('stat-health').textContent    = d.attendance + '%';
+      if (d.total_users    != null) document.getElementById('stat-users').textContent    = d.total_users.toLocaleString();
+      if (d.total_students != null) document.getElementById('stat-students').textContent = d.total_students.toLocaleString();
+      if (d.revenue        != null) document.getElementById('stat-revenue').textContent  = '$' + Math.round(d.revenue).toLocaleString();
+      if (d.attendance     != null) document.getElementById('stat-health').textContent   = d.attendance + '%';
     }
   } catch(e) {}
 
-  // Live user table
+  // 2 — All users (students + teachers + parents + admins)
   try {
-    const res = await fetch('/api/admin/users?limit=20', { credentials: 'include' });
+    const res = await fetch('/api/admin/users_all', { credentials: 'include' });
     if (res.ok) {
       const d = await res.json();
       if (d.users && d.users.length) {
-        // Merge into store so renderUsers() picks it up
-        store.users = d.users.map((u, i) => ({
-          id: u.id || i+1, name: u.name, email: u.email || '',
-          role: 'Student', joined: 'Recently', status: 'Active', phone: ''
-        }));
+        store.users = d.users.map(u => {
+          const parts = u.name.trim().split(' ');
+          return {
+            id: u.id, fname: parts[0] || '', lname: parts.slice(1).join(' ') || '',
+            email: u.email, phone: u.phone || '', role: u.role,
+            status: u.status || 'Active', joined: u.joined || '—', last: 'Recently'
+          };
+        });
+        store.nextId = 9000;
+        saveStore(store);
         renderUsers();
+        document.getElementById('user-count-badge').textContent = store.users.length.toLocaleString();
       }
     }
   } catch(e) {}
 
-  // Activity feed
+  // 3 — Activity feed
   try {
     const res = await fetch('/api/admin/activity', { credentials: 'include' });
     if (res.ok) {
       const d = await res.json();
-      if (d.activity && d.activity.length) {
-        const feed = document.getElementById('activity-list');
-        if (feed) feed.innerHTML = d.activity.map(a => `
+      const items = Array.isArray(d) ? d : (d.activity || []);
+      if (items.length) {
+        const feed = document.getElementById('activity-feed');
+        if (feed) feed.innerHTML = items.map(a => `
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-            <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center">${a.icon || '⚡'}</div>
-            <div style="flex:1;font-size:.82rem">${a.message}</div>
-            <div style="font-size:.7rem;color:var(--muted)">${a.time || 'Just now'}</div>
+            <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:1rem">${a.icon||'📋'}</div>
+            <div style="flex:1;font-size:.82rem">${a.message||a.type||''}</div>
+            <div style="font-size:.7rem;color:var(--muted)">${a.time||a.date||'Recently'}</div>
           </div>`).join('');
       }
     }
   } catch(e) {}
 
-  // Boss battle completions across all students
+  // 4 — Boss battle completions
   try {
     const res = await fetch('/api/admin/catalog', { credentials: 'include' });
     if (res.ok) {
       const lessons = await res.json();
-      const totalComp = lessons.reduce((s, l) => s + (l.completions || 0), 0);
-      const el = document.querySelector('#sec-overview .stat-change.up');
-      if (el && totalComp) el.textContent = totalComp + ' battles won';
+      if (Array.isArray(lessons)) {
+        const total = lessons.reduce((s,l) => s+(l.completions||0), 0);
+        if (total) document.getElementById('stat-users-change').textContent = total + ' battles won';
+      }
     }
   } catch(e) {}
 }
