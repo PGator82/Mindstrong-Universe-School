@@ -153,6 +153,10 @@
   </a>
 
   <div class="nav-section">Academics</div>
+  <a class="nav-item" id="nav-bossbattles" onclick="showView('bossbattles');return false" href="#">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Boss Battles
+  </a>
   <a class="nav-item" id="nav-grades" onclick="showView('grades');return false" href="#">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
     Grades &amp; Scores
@@ -289,6 +293,64 @@
         <div id="feesOverviewList"></div>
       </div>
     </div><!-- /overview -->
+
+    <!-- ===== BOSS BATTLES ===== -->
+    <div class="view-panel" id="panel-bossbattles">
+      <div class="page-hd">
+        <h2>Boss Battles Progress</h2>
+        <p>Your child's lesson battle wins, XP earned, and current rank.</p>
+      </div>
+
+      <!-- XP / Rank hero strip -->
+      <div class="stat-grid mb" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f59e0b"></div>
+          <div class="stat-top"><div class="stat-icon">⚡</div></div>
+          <div class="stat-val" id="bb-total-xp">—</div>
+          <div class="stat-label">Total XP</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#a855f7"></div>
+          <div class="stat-top"><div class="stat-icon">🏅</div></div>
+          <div class="stat-val" id="bb-rank-label" style="font-size:18px">—</div>
+          <div class="stat-label">Current Rank</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#10b981"></div>
+          <div class="stat-top"><div class="stat-icon">✅</div></div>
+          <div class="stat-val" id="bb-battles-won">—</div>
+          <div class="stat-label">Battles Won</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-glow" style="background:#f43f5e"></div>
+          <div class="stat-top"><div class="stat-icon">⚔️</div></div>
+          <div class="stat-val" id="bb-battles-remaining">—</div>
+          <div class="stat-label">Remaining</div>
+        </div>
+      </div>
+
+      <!-- Rank progress bar -->
+      <div class="c mb" id="bb-rank-card">
+        <div class="c-hd">
+          <div><div class="c-title">Rank Progress</div><div class="c-sub" id="bb-rank-sub">—</div></div>
+          <span id="bb-rank-badge" style="font-size:13px;font-weight:700;padding:6px 14px;border-radius:12px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);color:#d8b4fe">—</span>
+        </div>
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px">
+            <span id="bb-rank-current-label">—</span>
+            <span id="bb-rank-next-label">—</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="bb-rank-prog" style="background:linear-gradient(90deg,#a855f7,#f59e0b);width:0%"></div></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px" id="bb-xp-to-next">—</div>
+        </div>
+      </div>
+
+      <!-- Battle list -->
+      <div class="c">
+        <div class="c-hd"><div><div class="c-title">All Boss Battles</div><div class="c-sub">Won battles and battles remaining</div></div></div>
+        <div id="bb-battle-list" style="margin-top:8px"></div>
+      </div>
+    </div><!-- /bossbattles -->
 
     <!-- ===== GRADES ===== -->
     <div class="view-panel" id="panel-grades">
@@ -615,7 +677,8 @@ function comingSoon(label) { toast('🚧 ' + (label || 'Coming Soon')); }
 
 // ── View Router ───────────────────────────────────────────────────────────────
 const VIEW_TITLES = {
-  overview: 'Parent Dashboard', grades: 'Grades & Scores', attendance: 'Attendance',
+  overview: 'Parent Dashboard', bossbattles: 'Boss Battles Progress',
+  grades: 'Grades & Scores', attendance: 'Attendance',
   schedule: 'Schedule', reports: 'Report Card', fees: 'Fees & Payments',
   messages: 'Messages', settings: 'Settings'
 };
@@ -629,6 +692,7 @@ function showView(name) {
   if (navEl) navEl.classList.add('active');
   document.getElementById('topbarTitle').textContent = VIEW_TITLES[name] || 'Parent Dashboard';
   // Lazy render
+  if (name === 'bossbattles') renderBossBattles();
   if (name === 'attendance') renderAttPanel();
   if (name === 'schedule') renderSchedule();
   if (name === 'reports') renderReportCard();
@@ -1188,6 +1252,112 @@ document.addEventListener('click', e => {
 });
 
 function toggleNotif() { document.getElementById('notifPanel').classList.toggle('open'); }
+
+// ── Boss Battles ──────────────────────────────────────────────────────────────
+
+const BB_ALL_LESSONS = [
+  { key: 'm1-l1',          title: 'Numbers Are Stories',       subject: 'Number Sense' },
+  { key: 'm1-l2',          title: 'Place Value Is a Volume Knob', subject: 'Number Sense' },
+  { key: 'm1-l3',          title: 'Expanded Form',             subject: 'Number Sense' },
+  { key: 'm1-l4',          title: 'Compare Without Guessing',  subject: 'Number Sense' },
+  { key: 'm1-l5',          title: 'Rounding That Makes Sense', subject: 'Number Sense' },
+  { key: 'm1-l6',          title: 'Estimation as a Superpower',subject: 'Number Sense' },
+  { key: 'geo-angles',     title: 'Angles & Lines',            subject: 'Geometry' },
+  { key: 'geo-area',       title: 'Perimeter & Area',          subject: 'Geometry' },
+  { key: 'geo-circles',    title: 'Circles — π Unlocked',      subject: 'Geometry' },
+  { key: 'geo-coordinate', title: 'The Coordinate Plane',      subject: 'Geometry' },
+  { key: 'geo-polygons',   title: 'Quadrilaterals & Polygons', subject: 'Geometry' },
+  { key: 'geo-triangles',  title: 'Triangles',                 subject: 'Geometry' },
+  { key: 'alg-equations',  title: 'Equations',                 subject: 'Pre-Algebra' },
+  { key: 'alg-expressions',title: 'Expressions',              subject: 'Pre-Algebra' },
+  { key: 'alg-percents',   title: 'Percents',                  subject: 'Pre-Algebra' },
+  { key: 'alg-proportions',title: 'Proportions',              subject: 'Pre-Algebra' },
+  { key: 'rat-ratios',     title: 'Ratios',                    subject: 'Ratios' }
+];
+
+const BB_SUBJECT_COLORS = {
+  'Number Sense': '#06b6d4',
+  'Geometry':     '#a855f7',
+  'Pre-Algebra':  '#10b981',
+  'Ratios':       '#f59e0b'
+};
+
+function bbXPRank(xp) {
+  if (xp >= 1500) return { label: 'Legend',     emoji: '🌟', next: null,    nextXP: null,  min: 1500 };
+  if (xp >= 1000) return { label: 'Champion',   emoji: '🏆', next: 'Legend',    nextXP: 1500, min: 1000 };
+  if (xp >=  600) return { label: 'Warrior',    emoji: '⚔️', next: 'Champion',  nextXP: 1000, min: 600  };
+  if (xp >=  300) return { label: 'Scholar',    emoji: '📚', next: 'Warrior',   nextXP: 600,  min: 300  };
+  if (xp >=  100) return { label: 'Apprentice', emoji: '🎓', next: 'Scholar',   nextXP: 300,  min: 100  };
+  return               { label: 'Rookie',      emoji: '🌱', next: 'Apprentice',nextXP: 100,  min: 0   };
+}
+
+function renderBossBattles() {
+  // Read progress from localStorage (same key used by boss-battle.html)
+  const progress = JSON.parse(localStorage.getItem('ms_progress') || '{}');
+
+  const totalXP = Object.values(progress).reduce((s, v) => s + (v.xp || 0), 0);
+  const battlesWon = Object.keys(progress).filter(k => progress[k].completed).length;
+  const battlesRemaining = BB_ALL_LESSONS.length - battlesWon;
+
+  document.getElementById('bb-total-xp').textContent      = totalXP.toLocaleString();
+  document.getElementById('bb-battles-won').textContent   = battlesWon;
+  document.getElementById('bb-battles-remaining').textContent = battlesRemaining;
+
+  const rank = bbXPRank(totalXP);
+  document.getElementById('bb-rank-label').textContent = rank.emoji + ' ' + rank.label;
+  document.getElementById('bb-rank-badge').textContent  = rank.emoji + ' ' + rank.label;
+
+  // Rank progress bar
+  if (rank.next) {
+    const rangeStart = rank.min;
+    const rangeEnd   = rank.nextXP;
+    const pct        = Math.min(Math.round((totalXP - rangeStart) / (rangeEnd - rangeStart) * 100), 100);
+    document.getElementById('bb-rank-sub').textContent          = totalXP + ' XP earned — ' + pct + '% to ' + rank.next;
+    document.getElementById('bb-rank-current-label').textContent = rank.label + ' (' + rangeStart + ' XP)';
+    document.getElementById('bb-rank-next-label').textContent    = rank.next + ' (' + rangeEnd + ' XP)';
+    document.getElementById('bb-rank-prog').style.width         = pct + '%';
+    document.getElementById('bb-xp-to-next').textContent        = (rangeEnd - totalXP) + ' XP needed to reach ' + rank.next;
+  } else {
+    document.getElementById('bb-rank-sub').textContent          = 'Maximum rank reached! ' + totalXP + ' total XP';
+    document.getElementById('bb-rank-current-label').textContent = 'Legend (1500+ XP)';
+    document.getElementById('bb-rank-next-label').textContent    = 'Max Rank';
+    document.getElementById('bb-rank-prog').style.width         = '100%';
+    document.getElementById('bb-xp-to-next').textContent        = 'You have achieved the highest rank!';
+  }
+
+  // Battle list grouped by subject
+  const subjects = [...new Set(BB_ALL_LESSONS.map(l => l.subject))];
+  const listHTML = subjects.map(subj => {
+    const lessons = BB_ALL_LESSONS.filter(l => l.subject === subj);
+    const col = BB_SUBJECT_COLORS[subj] || '#888';
+    const items = lessons.map(l => {
+      const done = !!(progress[l.key] && progress[l.key].completed);
+      const ts   = progress[l.key]?.timestamp;
+      const dateStr = ts ? new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <div style="font-size:20px;flex-shrink:0">${done ? '✅' : '⚔️'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:${done ? '600' : '400'};color:${done ? 'var(--text)' : 'var(--muted)'}">${l.title}</div>
+          ${done ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">Completed${dateStr ? ' · ' + dateStr : ''} · +100 XP</div>` : `<div style="font-size:11px;color:var(--muted);margin-top:2px">Not yet completed</div>`}
+        </div>
+        ${done ? '<span style="font-size:11px;font-weight:700;color:#f59e0b;white-space:nowrap">+100 XP</span>' : `<a href="boss-battle.html?lesson=${l.key}" style="font-size:11px;font-weight:600;color:${col};text-decoration:none;white-space:nowrap;padding:4px 10px;border:1px solid ${col}40;border-radius:6px">Fight →</a>`}
+      </div>`;
+    }).join('');
+
+    const wonCount = lessons.filter(l => !!(progress[l.key] && progress[l.key].completed)).length;
+    return `<div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:3px;height:16px;border-radius:2px;background:${col};flex-shrink:0"></div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:${col}">${subj}</div>
+        <div style="font-size:11px;color:var(--muted)">${wonCount}/${lessons.length} completed</div>
+      </div>
+      ${items}
+    </div>`;
+  }).join('');
+
+  document.getElementById('bb-battle-list').innerHTML = listHTML ||
+    '<div style="color:var(--muted);font-size:13px;padding:16px 0">No battles completed yet. Start a lesson to begin!</div>';
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 renderOverview();

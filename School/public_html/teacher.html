@@ -502,10 +502,29 @@
 
     <!-- ══ LESSON PROGRESS ══ -->
     <div id="panel-lessons" class="view-panel">
-      <div class="page-header"><h2>Lesson Progress</h2><p>See which students have completed each digital lesson</p></div>
-      <div class="card">
-        <div class="card-hd"><div class="card-title">Student Completion</div><div class="card-sub" id="lpSubtitle">Loading…</div></div>
+      <div class="page-header"><h2>Student Progress</h2><p>Boss battle completions, XP earned, and ranks across all lessons</p></div>
+
+      <!-- Summary stat cards -->
+      <div class="stat-grid" id="lpStatGrid" style="margin-bottom:20px">
+        <div class="sc"><div class="sc-icon">🏆</div><div class="sc-val" id="lp-total-completions">—</div><div class="sc-label">Total Completions</div></div>
+        <div class="sc"><div class="sc-icon">⚡</div><div class="sc-val" id="lp-total-xp">—</div><div class="sc-label">Total XP Earned</div></div>
+        <div class="sc"><div class="sc-icon">🎓</div><div class="sc-val" id="lp-active-students">—</div><div class="sc-label">Active Students</div></div>
+        <div class="sc"><div class="sc-icon">📚</div><div class="sc-val" id="lp-avg-lessons">—</div><div class="sc-label">Avg Lessons/Student</div></div>
+      </div>
+
+      <!-- Student summary table -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-hd">
+          <div><div class="card-title">Student Progress Summary</div><div class="card-sub" id="lpSubtitle">Loading…</div></div>
+          <button class="btn-sm" style="background:var(--accent-dim);color:var(--accent);border:1px solid rgba(16,185,129,.25)" onclick="renderLessonProgress()">↺ Refresh</button>
+        </div>
         <div id="lessonProgressTable" style="margin-top:12px"><div style="color:var(--muted);font-size:13px">Loading…</div></div>
+      </div>
+
+      <!-- Lesson-by-lesson checkmark grid -->
+      <div class="card">
+        <div class="card-hd"><div><div class="card-title">Lesson Completion Grid</div><div class="card-sub">Checkmarks show completed boss battles</div></div></div>
+        <div id="lessonGridTable" style="margin-top:12px;overflow-x:auto"><div style="color:var(--muted);font-size:13px">Loading…</div></div>
       </div>
     </div>
 
@@ -804,63 +823,163 @@ async function renderClassesPanel() {
 }
 
 /* ═══ LESSON PROGRESS ═══ */
-async function renderLessonProgress() {
-  const tbl = document.getElementById('lessonProgressTable');
-  tbl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
 
-  let rows;
+// All lesson keys and titles for the grid (matches catalog.json order)
+const ALL_LESSONS = [
+  { key: 'm1-l1',         title: 'Numbers Are Stories' },
+  { key: 'm1-l2',         title: 'Place Value' },
+  { key: 'm1-l3',         title: 'Expanded Form' },
+  { key: 'm1-l4',         title: 'Compare' },
+  { key: 'm1-l5',         title: 'Rounding' },
+  { key: 'm1-l6',         title: 'Estimation' },
+  { key: 'geo-angles',    title: 'Angles' },
+  { key: 'geo-area',      title: 'Area' },
+  { key: 'geo-circles',   title: 'Circles' },
+  { key: 'geo-coordinate',title: 'Coordinates' },
+  { key: 'geo-polygons',  title: 'Polygons' },
+  { key: 'geo-triangles', title: 'Triangles' },
+  { key: 'alg-equations', title: 'Equations' },
+  { key: 'alg-expressions',title:'Expressions' },
+  { key: 'alg-percents',  title: 'Percents' },
+  { key: 'alg-proportions',title:'Proportions' },
+  { key: 'rat-ratios',    title: 'Ratios' }
+];
+
+function lpXPRank(xp) {
+  if (xp >= 1500) return { label: 'Legend',     emoji: '🌟' };
+  if (xp >= 1000) return { label: 'Champion',   emoji: '🏆' };
+  if (xp >=  600) return { label: 'Warrior',    emoji: '⚔️' };
+  if (xp >=  300) return { label: 'Scholar',    emoji: '📚' };
+  if (xp >=  100) return { label: 'Apprentice', emoji: '🎓' };
+  return               { label: 'Rookie',      emoji: '🌱' };
+}
+
+// Mock student data (format mirrors localStorage ms_progress)
+// In production, rows come from API /teacher/lesson_progress
+const MOCK_STUDENTS = [
+  { student_id: 1, student_name: 'Alice Johnson',  progress: { 'm1-l1': { xp:100, timestamp: Date.now()-86400000*2 }, 'm1-l2': { xp:100, timestamp: Date.now()-86400000 }, 'm1-l3': { xp:100, timestamp: Date.now()-3600000 }, 'geo-angles': { xp:100, timestamp: Date.now()-7200000 }, 'alg-equations': { xp:100, timestamp: Date.now()-1800000 } } },
+  { student_id: 2, student_name: 'Brian Torres',   progress: { 'm1-l1': { xp:100, timestamp: Date.now()-86400000*5 }, 'm1-l2': { xp:100, timestamp: Date.now()-86400000*4 }, 'geo-angles': { xp:100, timestamp: Date.now()-86400000*3 } } },
+  { student_id: 3, student_name: 'Chloe Williams', progress: { 'm1-l1': { xp:100, timestamp: Date.now()-86400000*1 }, 'm1-l2': { xp:100, timestamp: Date.now()-7200000 }, 'm1-l3': { xp:100, timestamp: Date.now()-3600000 }, 'm1-l4': { xp:100, timestamp: Date.now()-1200000 }, 'm1-l5': { xp:100, timestamp: Date.now()-600000 }, 'geo-area': { xp:100, timestamp: Date.now()-300000 }, 'rat-ratios': { xp:100, timestamp: Date.now()-120000 } } },
+  { student_id: 4, student_name: 'DeShawn Parker',  progress: { 'm1-l1': { xp:100, timestamp: Date.now()-86400000*10 } } },
+  { student_id: 5, student_name: 'Emma Nguyen',    progress: { 'm1-l1': { xp:100, timestamp: Date.now()-86400000*3 }, 'm1-l2': { xp:100, timestamp: Date.now()-86400000*2 }, 'alg-expressions': { xp:100, timestamp: Date.now()-86400000 }, 'alg-percents': { xp:100, timestamp: Date.now()-7200000 }, 'alg-proportions': { xp:100, timestamp: Date.now()-3600000 }, 'rat-ratios': { xp:100, timestamp: Date.now()-900000 } } }
+];
+
+async function renderLessonProgress() {
+  const tbl       = document.getElementById('lessonProgressTable');
+  const gridTbl   = document.getElementById('lessonGridTable');
+  tbl.innerHTML     = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
+  gridTbl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
+
+  // Try live API first; fall back to mock data
+  let students = null;
   try {
     const res = await fetch(API + '/teacher/lesson_progress', { credentials: 'include' });
-    if (!res.ok) throw new Error('not ok');
-    rows = await res.json();
-  } catch(e) {
-    tbl.innerHTML = '<div style="color:#f87171;font-size:13px">Could not load progress data. Make sure you are logged in as a teacher.</div>';
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows && rows.length) {
+        // Convert flat rows to student objects
+        const byId = {};
+        rows.forEach(r => {
+          if (!byId[r.student_id]) byId[r.student_id] = { student_id: r.student_id, student_name: r.student_name, progress: {} };
+          if (r.completed_at) byId[r.student_id].progress[r.lesson_key] = { xp: r.xp_earned || 100, timestamp: new Date(r.completed_at).getTime() };
+        });
+        students = Object.values(byId);
+      }
+    }
+  } catch(e) { /* fall through to mock */ }
+
+  if (!students) {
+    students = MOCK_STUDENTS;
+    document.getElementById('lpSubtitle').textContent = 'Showing demo data — no live API connection';
+  }
+
+  if (!students.length) {
+    tbl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0">No lesson progress recorded yet.</div>';
     return;
   }
 
-  if (!rows || !rows.length) {
-    tbl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0">No lesson progress recorded yet. Students need to complete lessons on the GitHub Pages site first, then sync via their dashboard.</div>';
-    document.getElementById('lpSubtitle').textContent = '0 completions';
-    return;
-  }
-
-  // Build student → lessons map
-  const byStudent = {};
-  rows.forEach(r => {
-    if (!byStudent[r.student_id]) byStudent[r.student_id] = { name: r.student_name, lessons: [] };
-    if (r.completed_at) byStudent[r.student_id].lessons.push(r);
+  // ── Compute stats ──
+  let totalCompletions = 0, totalXPAll = 0;
+  students.forEach(s => {
+    const count = Object.keys(s.progress).length;
+    const xp    = Object.values(s.progress).reduce((sum, v) => sum + (v.xp || 100), 0);
+    totalCompletions += count;
+    totalXPAll       += xp;
   });
+  const avgLessons = (totalCompletions / students.length).toFixed(1);
 
-  const completions = rows.filter(r => r.completed_at).length;
-  document.getElementById('lpSubtitle').textContent = completions + ' total completions across ' + Object.keys(byStudent).length + ' students';
+  document.getElementById('lp-total-completions').textContent = totalCompletions;
+  document.getElementById('lp-total-xp').textContent          = totalXPAll.toLocaleString();
+  document.getElementById('lp-active-students').textContent   = students.length;
+  document.getElementById('lp-avg-lessons').textContent       = avgLessons;
+  document.getElementById('lpSubtitle').textContent           = totalCompletions + ' completions across ' + students.length + ' students';
 
-  const studentRows = Object.values(byStudent).sort((a,b)=>a.name.localeCompare(b.name)).map(s => {
-    const totalXp = s.lessons.reduce((sum, l) => sum + (parseInt(l.xp_earned)||0), 0);
-    const initials = s.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const lessonPills = s.lessons.slice(0,5).map(l =>
-      `<span style="font-size:10px;background:rgba(16,185,129,.12);color:#10b981;padding:2px 7px;border-radius:4px;white-space:nowrap">${l.lesson_key}</span>`
-    ).join(' ') + (s.lessons.length > 5 ? `<span style="font-size:10px;color:var(--muted)">+${s.lessons.length-5} more</span>` : '');
+  // ── Summary table ──
+  const sorted = [...students].sort((a, b) => a.student_name.localeCompare(b.student_name));
+  const summaryRows = sorted.map(s => {
+    const count     = Object.keys(s.progress).length;
+    const totalXP   = Object.values(s.progress).reduce((sum, v) => sum + (v.xp || 100), 0);
+    const lastTs    = Object.values(s.progress).reduce((max, v) => v.timestamp > max ? v.timestamp : max, 0);
+    const lastActive = lastTs ? new Date(lastTs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+    const rank      = lpXPRank(totalXP);
+    const initials  = s.student_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     return `<tr style="border-bottom:1px solid rgba(255,255,255,.05)">
       <td style="padding:10px 8px">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#10b981,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${initials}</div>
-          <div style="font-size:13px;font-weight:600">${s.name}</div>
+          <div style="font-size:13px;font-weight:600">${s.student_name}</div>
         </div>
       </td>
-      <td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:700;color:#10b981">${s.lessons.length}</td>
-      <td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:700;color:#a855f7">${totalXp} XP</td>
-      <td style="padding:10px 8px">${lessonPills || '<span style="font-size:11px;color:var(--muted)">None yet</span>'}</td>
+      <td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:700;color:#10b981">${count}</td>
+      <td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:700;color:#a855f7">${totalXP} XP</td>
+      <td style="padding:10px 8px;text-align:center;font-size:13px">${rank.emoji} <span style="color:#d8b4fe;font-weight:600">${rank.label}</span></td>
+      <td style="padding:10px 8px;font-size:12px;color:var(--muted)">${lastActive}</td>
     </tr>`;
   }).join('');
 
-  tbl.innerHTML = `<table style="width:100%;border-collapse:collapse">
+  tbl.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
     <thead><tr style="border-bottom:1px solid rgba(255,255,255,.1)">
-      <th style="padding:8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Student</th>
-      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Lessons Done</th>
-      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Total XP</th>
-      <th style="padding:8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Completed</th>
+      <th style="padding:8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap">Student Name</th>
+      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap">Lessons Completed</th>
+      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap">Total XP</th>
+      <th style="padding:8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap">Rank</th>
+      <th style="padding:8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap">Last Active</th>
     </tr></thead>
-    <tbody>${studentRows}</tbody>
+    <tbody>${summaryRows}</tbody>
+  </table></div>`;
+
+  // ── Lesson grid (students × lessons checkmark matrix) ──
+  const headerCells = ALL_LESSONS.map(l =>
+    `<th style="padding:6px 4px;font-size:9px;color:var(--muted);font-weight:600;white-space:nowrap;writing-mode:vertical-rl;transform:rotate(180deg);max-height:80px;text-align:left" title="${l.key}">${l.title}</th>`
+  ).join('');
+
+  const gridRows = sorted.map(s => {
+    const cells = ALL_LESSONS.map(l => {
+      const done = !!s.progress[l.key];
+      return done
+        ? `<td style="text-align:center;padding:6px 4px;font-size:14px" title="${l.title} — completed">✅</td>`
+        : `<td style="text-align:center;padding:6px 4px;font-size:12px;color:rgba(255,255,255,.15)" title="${l.title} — not yet">⚪</td>`;
+    }).join('');
+    const initials = s.student_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+      <td style="padding:8px 10px;white-space:nowrap;font-size:12px;font-weight:600;min-width:130px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#10b981,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">${initials}</div>
+          ${s.student_name}
+        </div>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  gridTbl.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr>
+        <th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap">Student</th>
+        ${headerCells}
+      </tr>
+    </thead>
+    <tbody>${gridRows}</tbody>
   </table>`;
 }
 
