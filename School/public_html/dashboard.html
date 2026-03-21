@@ -644,7 +644,7 @@ let _catalogCache = null;
 async function fetchCatalog() {
   if (_catalogCache) return _catalogCache;
   try {
-    const res = await fetch(API + '/catalog', { credentials: 'include' });
+    const res = await fetch('/catalog.json');
     if (!res.ok) throw new Error('catalog fetch failed');
     const data = await res.json();
     _catalogCache = (Array.isArray(data) ? data : []).filter(l => l.active !== false);

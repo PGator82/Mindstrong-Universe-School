@@ -1,0 +1,19 @@
+[
+  {"key":"m1-l1","title":"Numbers Are Stories","subject":"Number Sense","lesson_num":1,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/module-1/lesson-1.html","color":"#a855f7","icon":"🔢","active":true},
+  {"key":"m1-l2","title":"Place Value Is a Volume Knob","subject":"Number Sense","lesson_num":2,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/module-1/lesson-2.html","color":"#a855f7","icon":"🎚️","active":true},
+  {"key":"m1-l3","title":"Expanded Form","subject":"Number Sense","lesson_num":3,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/module-1/lesson-3.html","color":"#a855f7","icon":"📐","active":true},
+  {"key":"m1-l4","title":"Compare Without Guessing","subject":"Number Sense","lesson_num":4,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/module-1/lesson-4.html","color":"#a855f7","icon":"⚖️","active":true},
+  {"key":"m1-l5","title":"Rounding That Makes Sense","subject":"Number Sense","lesson_num":5,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/module-1/lesson-5.html","color":"#a855f7","icon":"🎯","active":true},
+  {"key":"m1-l6","title":"Estimation as a Superpower","subject":"Number Sense","lesson_num":6,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/module-1/lesson-6.html","color":"#a855f7","icon":"⚡","active":true},
+  {"key":"geo-angles","title":"Angles & Lines","subject":"Geometry","lesson_num":1,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/geometry/angles/","color":"#06b6d4","icon":"📐","active":true},
+  {"key":"geo-area","title":"Perimeter & Area","subject":"Geometry","lesson_num":2,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/geometry/area/","color":"#06b6d4","icon":"📏","active":true},
+  {"key":"geo-circles","title":"Circles — π Unlocked","subject":"Geometry","lesson_num":3,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/geometry/circles/","color":"#06b6d4","icon":"⭕","active":true},
+  {"key":"geo-coordinate","title":"The Coordinate Plane","subject":"Geometry","lesson_num":4,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/geometry/coordinate/","color":"#06b6d4","icon":"🗺️","active":true},
+  {"key":"geo-polygons","title":"Quadrilaterals & Polygons","subject":"Geometry","lesson_num":5,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/geometry/polygons/","color":"#06b6d4","icon":"🔷","active":true},
+  {"key":"geo-triangles","title":"Triangles","subject":"Geometry","lesson_num":6,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/geometry/triangles/","color":"#06b6d4","icon":"🔺","active":true},
+  {"key":"alg-equations","title":"Equations","subject":"Pre-Algebra","lesson_num":1,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/pre-algebra/equations/","color":"#10b981","icon":"🟰","active":true},
+  {"key":"alg-expressions","title":"Expressions","subject":"Pre-Algebra","lesson_num":2,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/pre-algebra/expressions/","color":"#10b981","icon":"✏️","active":true},
+  {"key":"alg-percents","title":"Percents","subject":"Pre-Algebra","lesson_num":3,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/pre-algebra/percents/","color":"#10b981","icon":"💯","active":true},
+  {"key":"alg-proportions","title":"Proportions","subject":"Pre-Algebra","lesson_num":4,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/pre-algebra/proportions/","color":"#10b981","icon":"⚖️","active":true},
+  {"key":"rat-ratios","title":"Ratios","subject":"Ratios","lesson_num":1,"url":"https://pgator82.github.io/mindstrong-universe-site/school/foundations/ratio/","color":"#f59e0b","icon":"🔀","active":true}
+]
