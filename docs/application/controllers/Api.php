@@ -868,6 +868,27 @@ class Api extends CI_Controller {
         $this->json(['success' => true, 'disabled_count' => count($disabled)]);
     }
 
+    // ─────────────────────────────────────────────────────────
+    // ADMIN PORTAL BRIDGE
+    // GET /admin_bridge — checks session, patches admin_id, redirects to CI backend
+    // ─────────────────────────────────────────────────────────
+    public function admin_bridge() {
+        if ($this->session->userdata('admin_login') != 1) {
+            redirect(base_url('login.html'));
+            return;
+        }
+        // Ensure admin_id is set (CI admin views expect it)
+        if (!$this->session->userdata('admin_id')) {
+            $admin = $this->db->get('admin')->row();
+            if ($admin) {
+                $this->session->set_userdata('admin_id', $admin->admin_id);
+            }
+        }
+        // Re-affirm admin_login as string '1' (same as Login::validate_login)
+        $this->session->set_userdata('admin_login', '1');
+        redirect(site_url('admin/student_information'));
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /** Full lesson catalog with metadata and GitHub Pages URLs */

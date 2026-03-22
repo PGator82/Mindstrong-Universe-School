@@ -84,3 +84,4 @@ $route['api/teacher/lesson_progress']     = 'api/teacher_lesson_progress';
 $route['api/admin/catalog']               = 'api/admin_catalog';
 $route['api/admin/catalog_save']          = 'api/admin_catalog_save';
 $route['api/seed_foundations']            = 'api/seed_foundations';
+$route['admin_bridge']                    = 'api/admin_bridge';
