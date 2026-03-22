@@ -51,9 +51,12 @@ class Api extends CI_Controller {
         $q = $this->db->get_where('superadmin', $credential);
         if ($q->num_rows() > 0) {
             $row = $q->row();
+            // Use any admin row for admin_id so CI backend controllers work
+            $any_admin = $this->db->get('admin')->row();
             $this->session->set_userdata([
                 'superadmin_login' => 1,
-                'admin_login'      => 1,
+                'admin_login'      => '1',
+                'admin_id'         => $any_admin ? $any_admin->admin_id : 1,
                 'superadmin_id'    => $row->superadmin_id,
                 'login_user_id'    => $row->superadmin_id,
                 'name'             => $row->name,
