@@ -610,6 +610,38 @@ class Api extends CI_Controller {
         $this->json(['success'=>true,'name'=>$name,'role'=>$role]);
     }
 
+    public function admin_update_user() {
+        $this->requireSession('admin_login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') $this->json(['error'=>'POST required'],405);
+        $uid   = $this->input->post('id');       // e.g. "s5", "t3"
+        $name  = trim($this->input->post('name'));
+        $email = trim($this->input->post('email'));
+        $role  = strtolower($this->input->post('role'));
+        $status= $this->input->post('status');
+        if (!$uid || !$name || !$email) $this->json(['error'=>'Missing fields'],400);
+        $prefix = $uid[0]; $id = substr($uid,1);
+        $tmap = ['s'=>'student','t'=>'teacher','p'=>'parent','a'=>'admin'];
+        $idmap= ['s'=>'student_id','t'=>'teacher_id','p'=>'parent_id','a'=>'admin_id'];
+        $table = $tmap[$prefix] ?? null;
+        if (!$table) $this->json(['error'=>'Unknown user type'],400);
+        $this->db->where($idmap[$prefix],$id)->update($table,['name'=>$name,'email'=>$email]);
+        $this->json(['success'=>true]);
+    }
+
+    public function admin_delete_user() {
+        $this->requireSession('admin_login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') $this->json(['error'=>'POST required'],405);
+        $uid = $this->input->post('id');
+        if (!$uid) $this->json(['error'=>'Missing id'],400);
+        $prefix = $uid[0]; $id = substr($uid,1);
+        $tmap = ['s'=>'student','t'=>'teacher','p'=>'parent','a'=>'admin'];
+        $idmap= ['s'=>'student_id','t'=>'teacher_id','p'=>'parent_id','a'=>'admin_id'];
+        $table = $tmap[$prefix] ?? null;
+        if (!$table) $this->json(['error'=>'Unknown user type'],400);
+        $this->db->where($idmap[$prefix],$id)->delete($table);
+        $this->json(['success'=>true]);
+    }
+
     public function admin_create_student() {
         $this->requireSession('admin_login');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST')

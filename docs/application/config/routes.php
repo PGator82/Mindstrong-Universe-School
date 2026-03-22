@@ -73,6 +73,8 @@ $route['api/admin/users_all']       = 'api/admin_users_all';
 $route['api/admin/activity']        = 'api/admin_activity';
 $route['api/admin/create_student']  = 'api/admin_create_student';
 $route['api/admin/create_user']     = 'api/admin_create_user';
+$route['api/admin/update_user']     = 'api/admin_update_user';
+$route['api/admin/delete_user']     = 'api/admin_delete_user';
 
 // Course catalog & progress routes
 $route['api/catalog']                     = 'api/catalog';

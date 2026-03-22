@@ -937,8 +937,8 @@ function renderUsers() {
       <td style="color:var(--muted);font-size:.78rem">${u.joined}</td>
       <td style="color:var(--muted);font-size:.78rem">${u.last}</td>
       <td><div class="action-btns">
-        <button class="btn btn-ghost btn-sm" onclick="editUser(${u.id})">✏️</button>
-        <button class="btn btn-${u.status==='Active'?'danger':'success'} btn-sm" onclick="toggleUserStatus(${u.id})">${u.status==='Active'?'🚫':'✅'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">✏️</button>
+        <button class="btn btn-${u.status==='Active'?'danger':'success'} btn-sm" onclick="toggleUserStatus('${u.id}')">${u.status==='Active'?'🚫':'✅'}</button>
       </div></td>
     </tr>`).join('');
 
@@ -1008,44 +1008,59 @@ async function addUser() {
 }
 
 function editUser(id) {
-  const u = store.users.find(u => u.id === id);
+  const u = store.users.find(u => String(u.id) === String(id));
   if (!u) return;
-  document.getElementById('edit-uid').value = id;
+  document.getElementById('edit-uid').value   = u.id;
   document.getElementById('edit-fname').value = u.fname;
   document.getElementById('edit-lname').value = u.lname;
   document.getElementById('edit-email').value = u.email;
-  document.getElementById('edit-role').value = u.role;
-  document.getElementById('edit-status').value = u.status;
+  document.getElementById('edit-role').value  = u.role;
+  document.getElementById('edit-status').value= u.status;
   openModal('edit-user-modal');
 }
 
-function saveUser() {
-  const id = +document.getElementById('edit-uid').value;
-  const u = store.users.find(u => u.id === id);
-  if (!u) return;
-  u.fname  = document.getElementById('edit-fname').value.trim();
-  u.lname  = document.getElementById('edit-lname').value.trim();
-  u.email  = document.getElementById('edit-email').value.trim();
-  u.role   = document.getElementById('edit-role').value;
-  u.status = document.getElementById('edit-status').value;
-  saveStore(store);
-  renderUsers();
-  closeModal('edit-user-modal');
-  showToast(`✅ User "${u.fname} ${u.lname}" updated!`);
-  addLog('info', `User updated: ${u.fname} ${u.lname}`);
+async function saveUser() {
+  const uid  = document.getElementById('edit-uid').value;
+  const fname= document.getElementById('edit-fname').value.trim();
+  const lname= document.getElementById('edit-lname').value.trim();
+  const email= document.getElementById('edit-email').value.trim();
+  const role = document.getElementById('edit-role').value;
+  const name = fname + (lname ? ' ' + lname : '');
+  try {
+    const form = new FormData();
+    form.append('id', uid); form.append('name', name);
+    form.append('email', email); form.append('role', role);
+    const res = await fetch('/api/admin/update_user', { method:'POST', body:form, credentials:'include' });
+    const d = await res.json();
+    if (!res.ok) { showToast('Error: ' + (d.error||'Failed'), 'var(--red)'); return; }
+    // Update local store
+    const u = store.users.find(u => u.id === uid);
+    if (u) { u.fname=fname; u.lname=lname; u.email=email; u.role=role; saveStore(store); }
+    renderUsers();
+    closeModal('edit-user-modal');
+    showToast(`✅ ${name} updated!`);
+    addLog('info', `User updated: ${name}`);
+  } catch(e) { showToast('Network error', 'var(--red)'); }
 }
 
-function deleteUser() {
-  const id = +document.getElementById('edit-uid').value;
-  const u = store.users.find(u => u.id === id);
-  if (!u) return;
-  if (!confirm(`Delete ${u.fname} ${u.lname}? This cannot be undone.`)) return;
-  store.users = store.users.filter(u => u.id !== id);
-  saveStore(store);
-  renderUsers();
-  closeModal('edit-user-modal');
-  showToast(`🗑️ User deleted`, 'var(--red)');
-  addLog('warn', `User deleted: ${u.fname} ${u.lname} (${u.role})`);
+async function deleteUser() {
+  const uid = document.getElementById('edit-uid').value;
+  const u = store.users.find(u => u.id === uid);
+  const name = u ? u.fname + ' ' + u.lname : uid;
+  if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+  try {
+    const form = new FormData();
+    form.append('id', uid);
+    const res = await fetch('/api/admin/delete_user', { method:'POST', body:form, credentials:'include' });
+    const d = await res.json();
+    if (!res.ok) { showToast('Error: ' + (d.error||'Failed'), 'var(--red)'); return; }
+    store.users = store.users.filter(u => u.id !== uid);
+    saveStore(store);
+    renderUsers();
+    closeModal('edit-user-modal');
+    showToast(`🗑️ ${name} deleted`, 'var(--red)');
+    addLog('warn', `Deleted: ${name}`);
+  } catch(e) { showToast('Network error', 'var(--red)'); }
 }
 
 function toggleUserStatus(id) {
