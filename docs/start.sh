@@ -81,6 +81,9 @@ EOF
 # Create session directory
 mkdir -p /tmp/ci_sessions
 
+# Download Adminer if not already present
+[ ! -f /app/adminer-4.8.1.php ] && curl -sL https://www.adminer.org/static/download/4.8.1/adminer-4.8.1.php -o /app/adminer-4.8.1.php || true
+
 # Start PHP-FPM in background
 php-fpm82 -y /tmp/php-fpm.conf -F &
 
