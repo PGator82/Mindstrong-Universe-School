@@ -46,7 +46,7 @@ http {
     location = /          { return 301 /home.html; }
     location = /home      { return 301 /home.html; }
     location = /login     { return 301 /login.html; }
-    location = /admin/dashboard { try_files /superadmin.html =404; }
+    location = /admin/dashboard { try_files /super-admin.html =404; }
 
     # HTML, JS, JSON — never cache (updates reach users immediately)
     location ~* \.(html|js|json)$ {
