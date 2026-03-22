@@ -678,13 +678,25 @@ async function handleLogin(e) {
     hideLoading(btn);
 
     if (res.ok && data.role) {
+      if (data.role === 'superadmin') {
+        // Use CI's native login so the session is set exactly right for the backend
+        const f = document.createElement('form');
+        f.method = 'POST'; f.action = '/login/validate_login';
+        [['email', email], ['password', pass]].forEach(([n, v]) => {
+          const i = document.createElement('input');
+          i.type = 'hidden'; i.name = n; i.value = v;
+          f.appendChild(i);
+        });
+        document.body.appendChild(f);
+        f.submit();
+        return;
+      }
       // Redirect based on returned role
       const redirectMap = {
         student:    'dashboard.html',
         teacher:    'teacher.html',
         parent:     'parent.html',
         admin:      'admin.html',
-        superadmin: 'super-admin.html',
       };
       window.location.href = data.redirect || redirectMap[data.role] || 'dashboard.html';
     } else {
