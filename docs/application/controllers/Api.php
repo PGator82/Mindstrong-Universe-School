@@ -59,7 +59,7 @@ class Api extends CI_Controller {
                 'name'             => $row->name,
                 'login_type'       => 'superadmin',
             ]);
-            $this->json(['role' => 'superadmin', 'name' => $row->name, 'redirect' => 'admin.html']);
+            $this->json(['role' => 'superadmin', 'name' => $row->name, 'redirect' => '/admin/dashboard']);
         }
 
         // Admin
