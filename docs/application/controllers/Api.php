@@ -873,9 +873,12 @@ class Api extends CI_Controller {
     // GET /admin_bridge — checks session, patches admin_id, redirects to CI backend
     // ─────────────────────────────────────────────────────────
     public function admin_bridge() {
+        // Override the JSON content-type set in __construct so redirect works
+        header('Content-Type: text/html', true);
+
         if ($this->session->userdata('admin_login') != 1) {
-            redirect(base_url('login.html'));
-            return;
+            header('Location: ' . base_url('login.html'));
+            exit;
         }
         // Ensure admin_id is set (CI admin views expect it)
         if (!$this->session->userdata('admin_id')) {
@@ -886,7 +889,8 @@ class Api extends CI_Controller {
         }
         // Re-affirm admin_login as string '1' (same as Login::validate_login)
         $this->session->set_userdata('admin_login', '1');
-        redirect(site_url('admin/student_information'));
+        header('Location: ' . site_url('admin/student_information'));
+        exit;
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
