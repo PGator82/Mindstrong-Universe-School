@@ -1,5 +1,4 @@
 <?php
-
 // ── Auto-connect using Railway DB credentials ──
 $mysql_url = getenv('MYSQL_URL') ?: getenv('DATABASE_URL') ?: '';
 if ($mysql_url) {
@@ -23,18 +22,10 @@ function adminer_object() {
             return [$DB_SERVER, $DB_USER, $DB_PASS];
         }
         function database() { global $DB_NAME; return $DB_NAME; }
-        function name() { return 'MindStrong DB'; }
+        function name() { return 'MindStrong Admin'; }
         function permanentLogin() { return true; }
     }
     return new AdminerSecure();
 }
 
-$adminer = __DIR__ . '/adminer-4.8.1.php';
-if (!file_exists($adminer)) {
-    echo '<p style="font:16px system-ui;padding:40px;color:#fff;background:#05050f">
-    Adminer loading on first deploy — wait 30 seconds and refresh.<br>
-    If it persists, run manually:<br>
-    <code>curl -o /app/adminer-4.8.1.php https://www.adminer.org/static/download/4.8.1/adminer-4.8.1.php</code></p>';
-    exit;
-}
-include $adminer;
+include __DIR__ . '/admin-db.php';
