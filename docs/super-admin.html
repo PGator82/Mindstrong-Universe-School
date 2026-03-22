@@ -345,7 +345,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
         <div class="card-header">
           <span class="card-title">User Management</span>
           <div style="display:flex;gap:8px;align-items:center;">
-            <select style="padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.78rem;outline:none;">
+            <select onchange="filterRole(this.value==='All Roles'?'':this.value)" style="padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.78rem;outline:none;">
               <option>All Roles</option><option>Admin</option><option>Teacher</option><option>Student</option><option>Parent</option>
             </select>
             <button class="btn btn-gold btn-sm" onclick="openModal('add-user-modal')">+ Add</button>
@@ -353,32 +353,13 @@ tr:hover td{background:rgba(255,255,255,.02);}
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Name</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="users-tbody">
-              <tr>
-                <td><div class="user-cell"><div class="u-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">🛡️</div><div><div class="u-name">Dr. E. Boateng</div><div class="u-email">admin@mindstrong.edu</div></div></div></td>
-                <td><span class="role-badge rb-admin">Admin</span></td>
-                <td>Jan 2026</td>
-                <td><span class="status-active">● Active</span></td>
-                <td><button class="btn btn-ghost btn-sm">Edit</button></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="u-avatar" style="background:linear-gradient(135deg,#ec4899,#7c3aed)">👩‍🏫</div><div><div class="u-name">Ms. Rachel Osei</div><div class="u-email">r.osei@mindstrong.edu</div></div></div></td>
-                <td><span class="role-badge rb-teacher">Teacher</span></td>
-                <td>Jan 2026</td>
-                <td><span class="status-active">● Active</span></td>
-                <td><button class="btn btn-ghost btn-sm">Edit</button></td>
-              </tr>
-              <tr>
-                <td><div class="user-cell"><div class="u-avatar" style="background:var(--grad)">👦</div><div><div class="u-name">Alex Johnson</div><div class="u-email">alex.j@student.edu</div></div></div></td>
-                <td><span class="role-badge rb-student">Student</span></td>
-                <td>Feb 2026</td>
-                <td><span class="status-active">● Active</span></td>
-                <td><button class="btn btn-ghost btn-sm">Edit</button></td>
-              </tr>
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Loading users…</td></tr>
             </tbody>
           </table>
         </div>
+        <div style="margin-top:12px;font-size:.78rem;color:var(--muted)" id="user-count-label">Loading…</div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:20px;">
@@ -436,18 +417,37 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <h2>Add New User</h2>
       <button class="close-btn" onclick="closeModal('add-user-modal')">✕</button>
     </div>
-    <div class="form-row-2">
-      <div class="form-field"><label>First Name</label><input type="text" placeholder="First name"></div>
-      <div class="form-field"><label>Last Name</label><input type="text" placeholder="Last name"></div>
-    </div>
-    <div class="form-field"><label>Email</label><input type="email" placeholder="email@mindstrong.edu"></div>
+    <div class="form-field"><label>Full Name</label><input id="add-name" type="text" placeholder="Full name"></div>
+    <div class="form-field"><label>Email</label><input id="add-email" type="email" placeholder="email@school.edu"></div>
+    <div class="form-field"><label>Phone</label><input id="add-phone" type="text" placeholder="Optional"></div>
     <div class="form-field"><label>Role</label>
-      <select><option>Student</option><option>Teacher</option><option>Parent</option><option>Admin</option></select>
+      <select id="add-role"><option value="student">Student</option><option value="teacher">Teacher</option><option value="parent">Parent</option><option value="admin">Admin</option></select>
     </div>
-    <div class="form-field"><label>Temporary Password</label><input type="password" placeholder="Set temporary password"></div>
+    <div class="form-field"><label>Password</label><input id="add-pass" type="password" placeholder="Set password"></div>
     <div style="display:flex;gap:10px;margin-top:6px;">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('add-user-modal')">Cancel</button>
-      <button class="btn btn-gold" style="flex:2" onclick="closeModal('add-user-modal');showToast('✅ User added successfully!','var(--green)')">Create User</button>
+      <button class="btn btn-gold" style="flex:2" onclick="addUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div class="modal-overlay" id="edit-user-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Edit User</h2>
+      <button class="close-btn" onclick="closeModal('edit-user-modal')">✕</button>
+    </div>
+    <input type="hidden" id="edit-id">
+    <div class="form-field"><label>Full Name</label><input id="edit-name" type="text"></div>
+    <div class="form-field"><label>Email</label><input id="edit-email" type="email"></div>
+    <div class="form-field"><label>Phone</label><input id="edit-phone" type="text"></div>
+    <div class="form-field"><label>Role</label>
+      <select id="edit-role"><option value="student">Student</option><option value="teacher">Teacher</option><option value="parent">Parent</option><option value="admin">Admin</option></select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px;">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('edit-user-modal')">Cancel</button>
+      <button class="btn btn-gold" style="flex:2" onclick="saveUser()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -462,6 +462,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 <div id="toast"></div>
 
 <script>
+// ── UI helpers ──
 function toggleNotif(){document.getElementById('notif-panel').classList.toggle('open');}
 document.addEventListener('click',e=>{const p=document.getElementById('notif-panel');if(!p.contains(e.target)&&!e.target.closest('.icon-btn'))p.classList.remove('open');});
 function openModal(id){document.getElementById(id).style.display='flex';}
@@ -475,18 +476,136 @@ function showToast(msg,color='var(--green)'){
 }
 document.querySelectorAll('.bc-bar,.spark-bar').forEach(b=>{const h=b.style.height;b.style.height='0%';setTimeout(()=>{b.style.height=h;},300);});
 
+// ── In-memory user store ──
+let _users = [];
+
+// ── Role badge helper ──
+const roleColors = {Student:'rb-student',Teacher:'rb-teacher',Parent:'rb-parent',Admin:'rb-admin'};
+const roleAvatars = {Student:'👦',Teacher:'👩‍🏫',Parent:'👪',Admin:'🛡️'};
+const avatarGrads  = {Student:'linear-gradient(135deg,#7c3aed,#2563eb)',Teacher:'linear-gradient(135deg,#ec4899,#7c3aed)',Parent:'linear-gradient(135deg,#06b6d4,#2563eb)',Admin:'linear-gradient(135deg,#f59e0b,#ef4444)'};
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><div class="user-cell">
+        <div class="u-avatar" style="background:${avatarGrads[u.role]||'var(--grad)'}">${roleAvatars[u.role]||'👤'}</div>
+        <div><div class="u-name">${u.name}</div><div class="u-email">${u.email}</div></div>
+      </div></td>
+      <td><span class="role-badge ${roleColors[u.role]||'rb-student'}">${u.role}</span></td>
+      <td>${u.phone||'—'}</td>
+      <td><span class="${u.status==='Active'?'status-active':'status-inactive'}">● ${u.status}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${u.name.replace(/'/g,'')}')">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Load all live data ──
 async function loadData() {
+  // Stats
   try {
-    const res = await fetch('/api/admin/stats', { credentials: 'include' });
-    if (res.status === 401) { window.location.href = '/login.html'; return; }
-    if (!res.ok) return;
-    const d = await res.json();
-    if (d.total_students !== undefined) document.getElementById('stat-students').textContent = Number(d.total_students).toLocaleString();
-    if (d.total_teachers !== undefined) document.getElementById('stat-teachers').textContent = Number(d.total_teachers).toLocaleString();
-    if (d.att_rate !== undefined) document.getElementById('stat-att').textContent = d.att_rate + '%';
-    if (d.revenue !== undefined) document.getElementById('stat-rev').textContent = '$' + Math.round(d.revenue).toLocaleString();
+    const r = await fetch('/api/admin/stats', {credentials:'include'});
+    if (r.status === 401) { window.location.href = '/login.html'; return; }
+    if (r.ok) {
+      const d = await r.json();
+      if (d.total_students !== undefined) document.getElementById('stat-students').textContent = Number(d.total_students).toLocaleString();
+      if (d.total_teachers !== undefined) document.getElementById('stat-teachers').textContent = Number(d.total_teachers).toLocaleString();
+      if (d.attendance  !== undefined) document.getElementById('stat-att').textContent = d.attendance + '%';
+      if (d.revenue     !== undefined) document.getElementById('stat-rev').textContent = '$' + Math.round(d.revenue/1000).toLocaleString() + 'k';
+    }
+  } catch(e) {}
+
+  // All users
+  try {
+    const r = await fetch('/api/admin/users_all', {credentials:'include'});
+    if (r.ok) {
+      const d = await r.json();
+      _users = d.users || [];
+      renderUsers(_users);
+      document.getElementById('user-count-label').textContent = 'Showing ' + _users.length + ' users';
+    }
+  } catch(e) {}
+
+  // Activity feed
+  try {
+    const r = await fetch('/api/admin/activity', {credentials:'include'});
+    if (r.ok) {
+      const d = await r.json();
+      const feed = document.getElementById('activity-feed');
+      if (feed && d.activity && d.activity.length) {
+        feed.innerHTML = d.activity.map(a => `
+          <div class="activity-item">
+            <div class="act-ico" style="background:rgba(124,58,237,.15)">📋</div>
+            <div><div class="act-text">${a.message}</div><div class="act-time">${a.date||'Recently'}</div></div>
+          </div>`).join('');
+      }
+    }
   } catch(e) {}
 }
+
+// ── Filter users by role ──
+function filterRole(val) {
+  renderUsers(val ? _users.filter(u=>u.role===val) : _users);
+}
+
+// ── Edit user ──
+function editUser(id) {
+  const u = _users.find(x => String(x.id) === String(id));
+  if (!u) return;
+  document.getElementById('edit-id').value    = u.id;
+  document.getElementById('edit-name').value  = u.name;
+  document.getElementById('edit-email').value = u.email;
+  document.getElementById('edit-phone').value = u.phone||'';
+  document.getElementById('edit-role').value  = u.role.toLowerCase();
+  openModal('edit-user-modal');
+}
+
+async function saveUser() {
+  const fd = new FormData();
+  fd.append('id',    document.getElementById('edit-id').value);
+  fd.append('name',  document.getElementById('edit-name').value);
+  fd.append('email', document.getElementById('edit-email').value);
+  fd.append('role',  document.getElementById('edit-role').value);
+  try {
+    const r = await fetch('/api/admin/update_user', {method:'POST',body:fd,credentials:'include'});
+    const d = await r.json();
+    if (d.success) { closeModal('edit-user-modal'); showToast('✅ User updated'); loadData(); }
+    else showToast('❌ ' + (d.error||'Update failed'), 'var(--red)');
+  } catch(e) { showToast('❌ Network error','var(--red)'); }
+}
+
+// ── Delete user ──
+async function deleteUser(id, name) {
+  if (!confirm('Delete ' + name + '? This cannot be undone.')) return;
+  const fd = new FormData(); fd.append('id', id);
+  try {
+    const r = await fetch('/api/admin/delete_user', {method:'POST',body:fd,credentials:'include'});
+    const d = await r.json();
+    if (d.success) { showToast('🗑️ ' + name + ' deleted'); loadData(); }
+    else showToast('❌ ' + (d.error||'Delete failed'), 'var(--red)');
+  } catch(e) { showToast('❌ Network error','var(--red)'); }
+}
+
+// ── Add user ──
+async function addUser() {
+  const fd = new FormData();
+  fd.append('name',     document.getElementById('add-name').value.trim());
+  fd.append('email',    document.getElementById('add-email').value.trim());
+  fd.append('role',     document.getElementById('add-role').value);
+  fd.append('password', document.getElementById('add-pass').value);
+  fd.append('phone',    document.getElementById('add-phone').value.trim());
+  if (!fd.get('name')||!fd.get('email')||!fd.get('password')) { showToast('❌ Fill all fields','var(--red)'); return; }
+  try {
+    const r = await fetch('/api/admin/create_user', {method:'POST',body:fd,credentials:'include'});
+    const d = await r.json();
+    if (d.success) { closeModal('add-user-modal'); showToast('✅ ' + d.name + ' added'); loadData(); }
+    else showToast('❌ ' + (d.error||'Create failed'), 'var(--red)');
+  } catch(e) { showToast('❌ Network error','var(--red)'); }
+}
+
 document.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
