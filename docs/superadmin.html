@@ -8,7 +8,7 @@
 (async function() {
   try {
     const r = await fetch('/api/admin/stats', { credentials: 'include' });
-    if (r.status === 401) window.location.replace('login.html');
+    if (r.status === 401) window.location.replace('/login.html');
   } catch(e) {}
 })();
 </script>
@@ -270,7 +270,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <a href="../index.html" class="sidebar-logo">
+  <a href="/home.html" class="sidebar-logo">
     <div class="sidebar-logo-icon">🛡️</div>
     MindStrong Universe
   </a>
@@ -319,7 +319,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
   <div class="nav-section">Account</div>
   <a class="nav-item" href="#sec-settings"><span class="ico">🔒</span> Security</a>
-  <a class="nav-item" href="login.html"><span class="ico">🚪</span> Sign Out</a>
+  <a class="nav-item" href="/login.html"><span class="ico">🚪</span> Sign Out</a>
 </aside>
 
 <!-- MAIN -->
@@ -1323,7 +1323,7 @@ async function loadLiveData() {
   // 1 — Stats
   try {
     const res = await fetch('/api/admin/stats', { credentials: 'include' });
-    if (res.status === 401) { window.location.replace('login.html'); return; }
+    if (res.status === 401) { window.location.replace('/login.html'); return; }
     if (res.ok) {
       const d = await res.json();
       if (d.total_users    != null) document.getElementById('stat-users').textContent    = d.total_users.toLocaleString();
