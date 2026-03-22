@@ -694,7 +694,7 @@ async function handleLogin(e) {
   } catch (err) {
     // Network error or no backend: fall back to demo login
     hideLoading(btn);
-    const redirectDemo = { student: 'dashboard.html', teacher: 'teacher.html', parent: 'parent.html', admin: 'admin.html' };
+    const redirectDemo = { student: 'dashboard.html', teacher: 'teacher.html', parent: 'parent.html', admin: 'admin.html', superadmin: '/admin/dashboard' };
     window.location.href = redirectDemo[roleHint] || 'dashboard.html';
   }
 }

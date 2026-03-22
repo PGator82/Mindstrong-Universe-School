@@ -42,20 +42,23 @@ http {
     location ~ ^/(application|system|School) { return 403; }
     location ~* \.(sql|log|env)$ { return 403; }
 
-    # Static assets — serve directly with cache
-    location ~* \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ {
+    # Named routes
+    location = /          { return 301 /home.html; }
+    location = /home      { return 301 /home.html; }
+    location = /login     { return 301 /login.html; }
+    location = /admin/dashboard { try_files /superadmin.html =404; }
+
+    # HTML, JS, JSON — never cache (updates reach users immediately)
+    location ~* \.(html|js|json)$ {
+      try_files \$uri =404;
+      expires -1;
+      add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+
+    # Static assets — cache 7 days
+    location ~* \.(css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webp)$ {
       try_files \$uri =404;
       expires 7d;
-    }
-
-    # Root → serve home.html directly (no redirect)
-    location = / {
-      try_files /home.html =404;
-    }
-
-    # Static HTML pages — serve directly
-    location ~* \.html$ {
-      try_files \$uri =404;
     }
 
     # Everything else → CodeIgniter (api/login, login/validate_login, admin/*, etc.)
@@ -74,6 +77,9 @@ http {
   }
 }
 EOF
+
+# Create session directory
+mkdir -p /tmp/ci_sessions
 
 # Start PHP-FPM in background
 php-fpm82 -y /tmp/php-fpm.conf -F &
