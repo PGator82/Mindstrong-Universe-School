@@ -28,7 +28,10 @@ button:hover{opacity:.9;}
   <h2>School Admin Login</h2>
   <p>Direct access to the MySchool management backend</p>
   <script>
-    if (new URLSearchParams(location.search).get('error'))
+    const _err = new URLSearchParams(location.search).get('error');
+    if (_err === 'superadmin')
+      document.write('<div class="err">Super Admin accounts must log in at <a href="/login.html" style="color:#f59e0b">/login.html</a></div>');
+    else if (_err)
       document.write('<div class="err">Incorrect credentials. Try again.</div>');
   </script>
   <!-- Real form POST — lets the browser handle the session cookie correctly -->

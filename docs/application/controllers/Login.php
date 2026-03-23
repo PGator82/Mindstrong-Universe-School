@@ -114,10 +114,17 @@ class Login extends CI_Controller {
     /*     * *DEFAULT NOR FOUND PAGE**** */
 
     // School Admin direct login — sets session and goes straight to CI backend
+    // Superadmin accounts are blocked here; they use login.html instead.
     function validate_school_login() {
         $email      = $this->input->post('email');
         $password   = $this->input->post('password');
         $credential = array('email' => $email, 'password' => sha1($password));
+
+        // Block superadmin accounts — they belong on login.html
+        $is_superadmin = $this->db->get_where('superadmin', $credential)->num_rows() > 0;
+        if ($is_superadmin) {
+            redirect(base_url('schooladmin.html') . '?error=superadmin', 'refresh');
+        }
 
         $query = $this->db->get_where('admin', $credential);
         if ($query->num_rows() > 0) {
@@ -130,8 +137,7 @@ class Login extends CI_Controller {
             redirect(site_url('admin/student_information'), 'refresh');
         }
 
-        // Bad credentials — back to school admin login
-        redirect(site_url('schooladmin.html') . '?error=1', 'refresh');
+        redirect(base_url('schooladmin.html') . '?error=1', 'refresh');
     }
 
     function four_zero_four() {
