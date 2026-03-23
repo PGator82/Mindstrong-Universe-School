@@ -1018,6 +1018,32 @@ CREATE TABLE `pvp_match_player` (
   `xp_earned` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `superadmin`
+-- MindStrong Super Admin — separate from CI's `admin` table
+-- Password stored as SHA1. To get current hash from Railway: SELECT password FROM superadmin;
+--
+
+CREATE TABLE `superadmin` (
+  `superadmin_id` int(11) NOT NULL,
+  `name` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `email` longtext COLLATE utf8_unicode_ci NOT NULL,
+  `password` longtext COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `superadmin`
+-- NOTE: Replace the password hash below with the correct SHA1 hash from your Railway DB.
+--       Run this in Adminer: SELECT name, email, password FROM superadmin;
+--
+
+INSERT INTO `superadmin` (`superadmin_id`, `name`, `email`, `password`) VALUES
+(1, 'MindStrong Corp', 'mindstrongcorp@gmail.com', 'REPLACE_WITH_SHA1_HASH_FROM_RAILWAY_DB');
+
+-- --------------------------------------------------------
+
 --
 -- Indexes for dumped tables
 --
@@ -1026,25 +1052,32 @@ CREATE TABLE `pvp_match_player` (
 -- Indexes for table `academic_syllabus`
 --
 ALTER TABLE `academic_syllabus`
-  ADD PRIMARY KEY (`academic_syllabus_id`);
+  ADD PRIMARY KEY (`academic_syllabus_id`),
+  ADD KEY `academic_syllabus_class_idx` (`class_id`),
+  ADD KEY `academic_syllabus_subject_idx` (`subject_id`);
 
 --
 -- Indexes for table `accountant`
 --
 ALTER TABLE `accountant`
-  ADD PRIMARY KEY (`accountant_id`);
+  ADD PRIMARY KEY (`accountant_id`),
+  ADD KEY `accountant_email_idx` (`email`(191));
 
 --
 -- Indexes for table `admin`
 --
 ALTER TABLE `admin`
-  ADD PRIMARY KEY (`admin_id`);
+  ADD PRIMARY KEY (`admin_id`),
+  ADD KEY `admin_email_idx` (`email`(191));
 
 --
 -- Indexes for table `attendance`
 --
 ALTER TABLE `attendance`
-  ADD PRIMARY KEY (`attendance_id`);
+  ADD PRIMARY KEY (`attendance_id`),
+  ADD KEY `attendance_student_idx` (`student_id`),
+  ADD KEY `attendance_class_idx` (`class_id`),
+  ADD KEY `attendance_section_idx` (`section_id`);
 
 --
 -- Indexes for table `book`
@@ -1056,7 +1089,9 @@ ALTER TABLE `book`
 -- Indexes for table `book_request`
 --
 ALTER TABLE `book_request`
-  ADD PRIMARY KEY (`book_request_id`);
+  ADD PRIMARY KEY (`book_request_id`),
+  ADD KEY `book_request_student_idx` (`student_id`),
+  ADD KEY `book_request_book_idx` (`book_id`);
 
 --
 -- Indexes for table `ci_sessions`
@@ -1069,19 +1104,25 @@ ALTER TABLE `ci_sessions`
 -- Indexes for table `class`
 --
 ALTER TABLE `class`
-  ADD PRIMARY KEY (`class_id`);
+  ADD PRIMARY KEY (`class_id`),
+  ADD KEY `class_teacher_idx` (`teacher_id`);
 
 --
 -- Indexes for table `class_routine`
 --
 ALTER TABLE `class_routine`
-  ADD PRIMARY KEY (`class_routine_id`);
+  ADD PRIMARY KEY (`class_routine_id`),
+  ADD KEY `class_routine_class_idx` (`class_id`),
+  ADD KEY `class_routine_section_idx` (`section_id`),
+  ADD KEY `class_routine_subject_idx` (`subject_id`);
 
 --
 -- Indexes for table `document`
 --
 ALTER TABLE `document`
-  ADD PRIMARY KEY (`document_id`);
+  ADD PRIMARY KEY (`document_id`),
+  ADD KEY `document_teacher_idx` (`teacher_id`),
+  ADD KEY `document_subject_idx` (`subject_id`);
 
 --
 -- Indexes for table `dormitory`
@@ -1093,7 +1134,10 @@ ALTER TABLE `dormitory`
 -- Indexes for table `enroll`
 --
 ALTER TABLE `enroll`
-  ADD PRIMARY KEY (`enroll_id`);
+  ADD PRIMARY KEY (`enroll_id`),
+  ADD KEY `enroll_student_idx` (`student_id`),
+  ADD KEY `enroll_class_idx` (`class_id`),
+  ADD KEY `enroll_section_idx` (`section_id`);
 
 --
 -- Indexes for table `exam`
@@ -1159,19 +1203,26 @@ ALTER TABLE `group_message_thread`
 -- Indexes for table `invoice`
 --
 ALTER TABLE `invoice`
-  ADD PRIMARY KEY (`invoice_id`);
+  ADD PRIMARY KEY (`invoice_id`),
+  ADD KEY `invoice_student_idx` (`student_id`);
 
 --
 -- Indexes for table `librarian`
 --
 ALTER TABLE `librarian`
-  ADD PRIMARY KEY (`librarian_id`);
+  ADD PRIMARY KEY (`librarian_id`),
+  ADD KEY `librarian_email_idx` (`email`(191));
 
 --
 -- Indexes for table `mark`
 --
 ALTER TABLE `mark`
-  ADD PRIMARY KEY (`mark_id`);
+  ADD PRIMARY KEY (`mark_id`),
+  ADD KEY `mark_student_idx` (`student_id`),
+  ADD KEY `mark_class_idx` (`class_id`),
+  ADD KEY `mark_subject_idx` (`subject_id`),
+  ADD KEY `mark_exam_idx` (`exam_id`),
+  ADD KEY `mark_student_exam_idx` (`student_id`,`exam_id`);
 
 --
 -- Indexes for table `message`
@@ -1195,43 +1246,57 @@ ALTER TABLE `noticeboard`
 -- Indexes for table `online_exam`
 --
 ALTER TABLE `online_exam`
-  ADD PRIMARY KEY (`online_exam_id`);
+  ADD PRIMARY KEY (`online_exam_id`),
+  ADD KEY `online_exam_class_idx` (`class_id`),
+  ADD KEY `online_exam_section_idx` (`section_id`),
+  ADD KEY `online_exam_subject_idx` (`subject_id`);
 
 --
 -- Indexes for table `online_exam_result`
 --
 ALTER TABLE `online_exam_result`
-  ADD PRIMARY KEY (`online_exam_result_id`);
+  ADD PRIMARY KEY (`online_exam_result_id`),
+  ADD KEY `online_exam_result_student_idx` (`student_id`),
+  ADD KEY `online_exam_result_exam_idx` (`online_exam_id`);
 
 --
 -- Indexes for table `parent`
 --
 ALTER TABLE `parent`
-  ADD PRIMARY KEY (`parent_id`);
+  ADD PRIMARY KEY (`parent_id`),
+  ADD KEY `parent_email_idx` (`email`(191));
 
 --
 -- Indexes for table `payment`
 --
 ALTER TABLE `payment`
-  ADD PRIMARY KEY (`payment_id`);
+  ADD PRIMARY KEY (`payment_id`),
+  ADD KEY `payment_student_idx` (`student_id`),
+  ADD KEY `payment_invoice_idx` (`invoice_id`);
 
 --
 -- Indexes for table `question_bank`
 --
 ALTER TABLE `question_bank`
-  ADD PRIMARY KEY (`question_bank_id`);
+  ADD PRIMARY KEY (`question_bank_id`),
+  ADD KEY `question_bank_exam_idx` (`online_exam_id`);
 
 --
 -- Indexes for table `question_paper`
 --
 ALTER TABLE `question_paper`
-  ADD PRIMARY KEY (`question_paper_id`);
+  ADD PRIMARY KEY (`question_paper_id`),
+  ADD KEY `question_paper_class_idx` (`class_id`),
+  ADD KEY `question_paper_exam_idx` (`exam_id`),
+  ADD KEY `question_paper_teacher_idx` (`teacher_id`);
 
 --
 -- Indexes for table `section`
 --
 ALTER TABLE `section`
-  ADD PRIMARY KEY (`section_id`);
+  ADD PRIMARY KEY (`section_id`),
+  ADD KEY `section_class_idx` (`class_id`),
+  ADD KEY `section_teacher_idx` (`teacher_id`);
 
 --
 -- Indexes for table `settings`
@@ -1243,19 +1308,24 @@ ALTER TABLE `settings`
 -- Indexes for table `student`
 --
 ALTER TABLE `student`
-  ADD PRIMARY KEY (`student_id`);
+  ADD PRIMARY KEY (`student_id`),
+  ADD KEY `student_email_idx` (`email`(191)),
+  ADD KEY `student_parent_idx` (`parent_id`);
 
 --
 -- Indexes for table `subject`
 --
 ALTER TABLE `subject`
-  ADD PRIMARY KEY (`subject_id`);
+  ADD PRIMARY KEY (`subject_id`),
+  ADD KEY `subject_class_idx` (`class_id`),
+  ADD KEY `subject_teacher_idx` (`teacher_id`);
 
 --
 -- Indexes for table `teacher`
 --
 ALTER TABLE `teacher`
-  ADD PRIMARY KEY (`teacher_id`);
+  ADD PRIMARY KEY (`teacher_id`),
+  ADD KEY `teacher_email_idx` (`email`(191));
 
 --
 -- Indexes for table `transport`
@@ -1263,6 +1333,12 @@ ALTER TABLE `teacher`
 ALTER TABLE `transport`
   ADD PRIMARY KEY (`transport_id`);
 
+--
+-- Indexes for table `superadmin`
+--
+ALTER TABLE `superadmin`
+  ADD PRIMARY KEY (`superadmin_id`),
+  ADD UNIQUE KEY `uniq_superadmin_email` (`email`(191));
 
 --
 -- Indexes for table `auth_account`
@@ -1676,6 +1752,11 @@ ALTER TABLE `teacher`
 ALTER TABLE `transport`
   MODIFY `transport_id` int(11) NOT NULL AUTO_INCREMENT;
 
+--
+-- AUTO_INCREMENT for table `superadmin`
+--
+ALTER TABLE `superadmin`
+  MODIFY `superadmin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `auth_account`

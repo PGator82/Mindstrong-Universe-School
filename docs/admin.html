@@ -559,7 +559,7 @@ async function loadData() {
     const nums = document.querySelectorAll('.stat-num');
     if (nums[0] && d.total_users !== undefined) nums[0].textContent = d.total_users.toLocaleString();
     if (nums[1] && d.revenue !== undefined) nums[1].textContent = '$' + Math.round(d.revenue).toLocaleString();
-    if (nums[2] && d.att_rate !== undefined) nums[2].textContent = d.att_rate + '%';
+    if (nums[2] && d.attendance !== undefined) nums[2].textContent = d.attendance + '%';
     if (nums[3] && d.total_students !== undefined) nums[3].textContent = d.total_students.toLocaleString();
   } catch (e) { /* silently keep demo data */ }
 

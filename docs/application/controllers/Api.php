@@ -134,6 +134,9 @@ class Api extends CI_Controller {
         $this->requireSession('student_login');
         $student_id = $this->session->userdata('student_id');
 
+        $student_row = $this->db->get_where('student', ['student_id' => $student_id])->row();
+        $student_name = $student_row ? $student_row->name : $this->session->userdata('name');
+
         $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         // Enrolled class
@@ -168,11 +171,12 @@ class Api extends CI_Controller {
         }
 
         $this->json([
+            'name'         => $student_name,
             'avg_score'    => $avg_score,
             'attendance'   => $att_rate,
             'course_count' => $course_count,
             'unread_msgs'  => $unread,
-            'streak'       => 7, // placeholder — no streak table in schema
+            'streak'       => 7,
             'xp'           => $avg_score * 10,
         ]);
     }
@@ -246,8 +250,11 @@ class Api extends CI_Controller {
         $parent_id    = $this->session->userdata('parent_id');
         $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
+        $parent_row = $this->db->get_where('parent', ['parent_id' => $parent_id])->row();
+        $parent_name = $parent_row ? $parent_row->name : $this->session->userdata('name');
+
         $students = $this->db->get_where('student', ['parent_id' => $parent_id])->result_array();
-        $result = [];
+        $children = [];
         foreach ($students as $s) {
             $enroll = $this->db->get_where('enroll', ['student_id' => $s['student_id'], 'year' => $running_year])->row();
             $class_name   = '';
@@ -260,15 +267,20 @@ class Api extends CI_Controller {
                     $section_name = $section ? $section->name : '';
                 }
             }
-            $result[] = [
-                'student_id'   => $s['student_id'],
-                'name'         => $s['name'],
-                'class'        => $class_name,
-                'section'      => $section_name,
-                'roll'         => $enroll ? $enroll->roll : '',
+            $children[] = [
+                'student_id' => $s['student_id'],
+                'name'       => $s['name'],
+                'class'      => $class_name,
+                'section'    => $section_name,
+                'grade'      => $class_name . ($section_name ? ' - ' . $section_name : ''),
+                'roll'       => $enroll ? $enroll->roll : '',
             ];
         }
-        $this->json($result);
+        $this->json([
+            'parent_name'   => $parent_name,
+            'greeting_name' => explode(' ', $parent_name)[0],
+            'children'      => $children,
+        ]);
     }
 
     public function parent_grades() {
@@ -329,7 +341,7 @@ class Api extends CI_Controller {
                 'grade'        => $grade_letter,
             ];
         }
-        $this->json($result);
+        $this->json(['grades' => $result]);
     }
 
     public function parent_attendance() {
@@ -352,13 +364,16 @@ class Api extends CI_Controller {
         $records = $this->db->get('attendance')->result_array();
 
         $result = [];
+        $present = 0;
         foreach ($records as $r) {
             $result[] = [
-                'date'   => date('Y-m-d', $r['timestamp']),
-                'status' => (int)$r['status'], // 1=present, 0=absent, 2=late
+                'date'   => date('Y-m-d', (int)$r['timestamp']),
+                'status' => (int)$r['status'],
             ];
+            if ((int)$r['status'] === 1) $present++;
         }
-        $this->json($result);
+        $rate = count($result) > 0 ? round(($present / count($result)) * 100, 1) : 100;
+        $this->json(['records' => $result, 'rate' => $rate]);
     }
 
     public function parent_fees() {
@@ -384,10 +399,10 @@ class Api extends CI_Controller {
                 'amount_paid'  => $inv['amount_paid'],
                 'due'          => $inv['due'],
                 'status'       => $inv['status'],
-                'date'         => $inv['creation_timestamp'] ? date('Y-m-d', $inv['creation_timestamp']) : '',
+                'date'         => $inv['creation_timestamp'] ? date('Y-m-d', (int)$inv['creation_timestamp']) : '',
             ];
         }
-        $this->json($result);
+        $this->json(['fees' => $result]);
     }
 
     public function parent_stats() {
@@ -444,6 +459,8 @@ class Api extends CI_Controller {
     public function teacher_stats() {
         $this->requireSession('teacher_login');
         $teacher_id   = $this->session->userdata('teacher_id');
+        $teacher_row  = $this->db->get_where('teacher', ['teacher_id' => $teacher_id])->row();
+        $teacher_name = $teacher_row ? $teacher_row->name : $this->session->userdata('name');
         $running_year = $this->db->get_where('settings', ['type' => 'running_year'])->row() ? $this->db->get_where('settings', array('type' => 'running_year'))->row()->description : date('Y');
 
         // Classes taught
@@ -469,6 +486,7 @@ class Api extends CI_Controller {
         }
 
         $this->json([
+            'name'          => $teacher_name,
             'student_count' => $student_count,
             'avg_score'     => $avg_score,
             'class_count'   => count($class_ids),
@@ -695,12 +713,13 @@ class Api extends CI_Controller {
             $s = $this->db->get_where('student', ['student_id' => $e['student_id']])->row();
             $c = $this->db->get_where('class', ['class_id' => $e['class_id']])->row();
             $result[] = [
+                'icon'    => '🎓',
                 'type'    => 'enrollment',
-                'message' => ($s ? $s->name : 'Unknown') . ' enrolled in ' . ($c ? $c->name : 'Unknown'),
-                'date'    => $e['date_added'],
+                'message' => ($s ? $s->name : 'Unknown') . ' enrolled in ' . ($c ? $c->name : 'class'),
+                'time'    => $e['date_added'] ? date('M j', (int)$e['date_added']) : '',
             ];
         }
-        $this->json($result);
+        $this->json(['activity' => $result]);
     }
 
     // ── Course Catalog ────────────────────────────────────────────────────────

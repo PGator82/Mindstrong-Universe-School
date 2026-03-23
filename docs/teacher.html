@@ -531,15 +531,15 @@ async function loadData() {
     const res = await fetch('/api/teacher/students', { credentials: 'include' });
     if (!res.ok) return;
     const d = await res.json();
-    if (!d.students || !d.students.length) return;
+    if (!Array.isArray(d) || !d.length) return;
     // Update student rows if table exists
     const tbody = document.querySelector('#students-table tbody, .student-table tbody');
     if (!tbody) return;
-    tbody.innerHTML = d.students.map((s, i) => `<tr>
+    tbody.innerHTML = d.map((s, i) => `<tr>
       <td>${i+1}</td>
       <td>${s.name}</td>
       <td>${s.email || ''}</td>
-      <td>${s.average}%</td>
+      <td>${s.avg_score}%</td>
     </tr>`).join('');
   } catch (e) {}
 }

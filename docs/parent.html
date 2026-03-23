@@ -770,10 +770,11 @@ async function loadData() {
     if (res.status === 401) { window.location.href = 'login.html'; return; }
     if (!res.ok) return;
     const data = await res.json();
-    if (data.parent_name) document.getElementById('parent-name').textContent = data.parent_name;
-    if (data.greeting_name) document.getElementById('greeting-name').textContent = data.greeting_name;
+    const pnEl = document.getElementById('parent-name');
+    if (pnEl && data.parent_name) pnEl.textContent = data.parent_name;
+    const gnEl = document.getElementById('greeting-name');
+    if (gnEl && data.greeting_name) gnEl.textContent = data.greeting_name;
     if (data.children && data.children.length) {
-      // Update child selector chips
       data.children.forEach((child, i) => {
         const nameEl = document.getElementById('child-' + i + '-name');
         const gradeEl = document.getElementById('child-' + i + '-grade');
@@ -788,9 +789,10 @@ async function loadData() {
     const res = await fetch('/api/parent/grades', { credentials: 'include' });
     if (res.ok) {
       const data = await res.json();
-      if (data.grades && data.grades.length) {
+      const grades = data.grades || data;
+      if (Array.isArray(grades) && grades.length) {
         const tbody = document.getElementById('grades-tbody');
-        tbody.innerHTML = data.grades.map(g => {
+        if (tbody) tbody.innerHTML = grades.map(g => {
           const gc = g.average >= 90 ? 'grade-a' : g.average >= 80 ? 'grade-b' : g.average >= 70 ? 'grade-c' : 'grade-d';
           return `<tr>
             <td><div style="font-weight:700">${g.subject}</div><div class="teacher-tag">${g.teacher}</div></td>
@@ -808,11 +810,14 @@ async function loadData() {
     const res = await fetch('/api/parent/fees', { credentials: 'include' });
     if (res.ok) {
       const data = await res.json();
-      if (data.fees) {
-        const total_unpaid = data.fees.filter(f => f.status !== 'paid').reduce((s, f) => s + parseFloat(f.amount), 0);
-        document.getElementById('stat-fees').textContent = '$' + total_unpaid.toFixed(0);
-        const unpaid = data.fees.filter(f => f.status !== 'paid').length;
-        document.getElementById('unpaid-badge').textContent = unpaid;
+      const fees = data.fees || data;
+      if (Array.isArray(fees)) {
+        const total_unpaid = fees.filter(f => f.status !== 'paid').reduce((s, f) => s + parseFloat(f.amount || 0), 0);
+        const fEl = document.getElementById('stat-fees');
+        if (fEl) fEl.textContent = '$' + total_unpaid.toFixed(0);
+        const unpaid = fees.filter(f => f.status !== 'paid').length;
+        const uEl = document.getElementById('unpaid-badge');
+        if (uEl) uEl.textContent = unpaid;
       }
     }
   } catch (e) {}
@@ -822,8 +827,12 @@ async function loadData() {
     const res = await fetch('/api/parent/attendance', { credentials: 'include' });
     if (res.ok) {
       const data = await res.json();
-      if (data.records) renderCalendar(data.records);
-      if (data.rate) { document.getElementById('stat-att').textContent = data.rate + '%'; }
+      const records = data.records || (Array.isArray(data) ? data : []);
+      if (records.length) renderCalendar(records);
+      if (data.rate !== undefined) {
+        const attEl = document.getElementById('stat-att');
+        if (attEl) attEl.textContent = data.rate + '%';
+      }
     }
   } catch (e) {}
 }
