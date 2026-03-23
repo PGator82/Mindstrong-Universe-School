@@ -113,6 +113,27 @@ class Login extends CI_Controller {
 
     /*     * *DEFAULT NOR FOUND PAGE**** */
 
+    // School Admin direct login — sets session and goes straight to CI backend
+    function validate_school_login() {
+        $email      = $this->input->post('email');
+        $password   = $this->input->post('password');
+        $credential = array('email' => $email, 'password' => sha1($password));
+
+        $query = $this->db->get_where('admin', $credential);
+        if ($query->num_rows() > 0) {
+            $row = $query->row();
+            $this->session->set_userdata('admin_login', '1');
+            $this->session->set_userdata('admin_id', $row->admin_id);
+            $this->session->set_userdata('login_user_id', $row->admin_id);
+            $this->session->set_userdata('name', $row->name);
+            $this->session->set_userdata('login_type', 'admin');
+            redirect(site_url('admin/student_information'), 'refresh');
+        }
+
+        // Bad credentials — back to school admin login
+        redirect(site_url('schooladmin.html') . '?error=1', 'refresh');
+    }
+
     function four_zero_four() {
         $this->load->view('four_zero_four');
     }
